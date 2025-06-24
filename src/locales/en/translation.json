@@ -1,0 +1,65 @@
+{
+  "home": "Home",
+  "about": "About",
+  "services": "Services",
+  "team": "Team",
+  "blog": "Blog",
+  "contact": "Contact",
+  "pages": "Pages",
+  "shop": "Shop",
+  "faq": "FAQ",
+
+  "hero_title": "Your Health is Our Priority",
+  "hero_subtitle": "We provide the best medical services with professional doctors",
+  "hero_button": "Book Appointment",
+
+  "about_title": "About Us",
+  "about_subtitle": "We are dedicated to providing the best healthcare",
+  "about_text": "Our medical center offers comprehensive healthcare services with state-of-the-art facilities and experienced medical professionals. We are committed to delivering personalized care to improve the health and wellbeing of our patients.",
+  "about_button": "Learn More",
+
+  "services_title": "Our Services",
+  "services_subtitle": "What We Offer",
+  "service1_title": "Cardiology",
+  "service1_text": "Comprehensive heart care services",
+  "service2_title": "Neurology",
+  "service2_text": "Expert neurological treatments",
+  "service3_title": "Orthopedics",
+  "service3_text": "Specialized bone and joint care",
+  "service4_title": "Pediatrics",
+  "service4_text": "Complete healthcare for children",
+
+  "team_title": "Our Doctors",
+  "team_subtitle": "Expert Medical Team",
+
+  "appointment_title": "Book an Appointment",
+  "appointment_name": "Your Name",
+  "appointment_email": "Email Address",
+  "appointment_phone": "Phone Number",
+  "appointment_date": "Preferred Date",
+  "appointment_department": "Department",
+  "appointment_message": "Your Message",
+  "appointment_button": "Book Now",
+
+  "testimonial_title": "What Our Patients Say",
+  "testimonial_subtitle": "Testimonials",
+
+  "blog_title": "Latest News",
+  "blog_subtitle": "Our Blog",
+  "read_more": "Read More",
+
+  "contact_title": "Get in Touch",
+  "contact_subtitle": "Contact Us",
+  "contact_address": "Address",
+  "contact_phone": "Phone",
+  "contact_email": "Email",
+  "send_message": "Send Message",
+
+  "footer_about": "We are dedicated to providing the highest quality healthcare services to our patients. Our team of experienced medical professionals is committed to your wellbeing.",
+  "quick_links": "Quick Links",
+  "useful_links": "Useful Links",
+  "contact_us": "Contact Us",
+  "copyright": "© 2024 Medical Center. All Rights Reserved.",
+
+  "language": "Language"
+}

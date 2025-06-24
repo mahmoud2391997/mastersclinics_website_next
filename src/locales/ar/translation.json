@@ -1,0 +1,65 @@
+{
+  "home": "الرئيسية",
+  "about": "من نحن",
+  "services": "خدماتنا",
+  "team": "فريقنا",
+  "blog": "المدونة",
+  "contact": "اتصل بنا",
+  "pages": "الصفحات",
+  "shop": "المتجر",
+  "faq": "الأسئلة الشائعة",
+
+  "hero_title": "صحتك هي أولويتنا",
+  "hero_subtitle": "نقدم أفضل الخدمات الطبية مع أطباء محترفين",
+  "hero_button": "حجز موعد",
+
+  "about_title": "من نحن",
+  "about_subtitle": "نحن ملتزمون بتقديم أفضل رعاية صحية",
+  "about_text": "يقدم مركزنا الطبي خدمات رعاية صحية شاملة مع مرافق حديثة ومتطورة وفريق طبي ذو خبرة. نحن ملتزمون بتقديم رعاية شخصية لتحسين صحة ورفاهية مرضانا.",
+  "about_button": "اقرأ المزيد",
+
+  "services_title": "خدماتنا",
+  "services_subtitle": "ما نقدمه",
+  "service1_title": "أمراض القلب",
+  "service1_text": "خدمات شاملة لرعاية القلب",
+  "service2_title": "طب الأعصاب",
+  "service2_text": "علاجات عصبية متخصصة",
+  "service3_title": "جراحة العظام",
+  "service3_text": "رعاية متخصصة للعظام والمفاصل",
+  "service4_title": "طب الأطفال",
+  "service4_text": "رعاية صحية كاملة للأطفال",
+
+  "team_title": "أطباؤنا",
+  "team_subtitle": "فريق طبي متخصص",
+
+  "appointment_title": "حجز موعد",
+  "appointment_name": "الاسم",
+  "appointment_email": "البريد الإلكتروني",
+  "appointment_phone": "رقم الهاتف",
+  "appointment_date": "التاريخ المفضل",
+  "appointment_department": "القسم",
+  "appointment_message": "رسالتك",
+  "appointment_button": "احجز الآن",
+
+  "testimonial_title": "ماذا يقول مرضانا",
+  "testimonial_subtitle": "آراء المرضى",
+
+  "blog_title": "أحدث الأخبار",
+  "blog_subtitle": "مدونتنا",
+  "read_more": "اقرأ المزيد",
+
+  "contact_title": "تواصل معنا",
+  "contact_subtitle": "معلومات الاتصال",
+  "contact_address": "العنوان",
+  "contact_phone": "الهاتف",
+  "contact_email": "البريد الإلكتروني",
+  "send_message": "إرسال رسالة",
+
+  "footer_about": "نحن ملتزمون بتقديم أعلى مستوى من خدمات الرعاية الصحية لمرضانا. فريقنا من المتخصصين الطبيين ذوي الخبرة ملتزم برفاهيتك.",
+  "quick_links": "روابط سريعة",
+  "useful_links": "روابط مفيدة",
+  "contact_us": "اتصل بنا",
+  "copyright": "© 2024 المركز الطبي. جميع الحقوق محفوظة.",
+
+  "language": "اللغة"
+}
