@@ -1,5 +1,6 @@
-
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 import about from '../../images/blog/about-widget.jpg'
 import blogs from '../../api/blogs'
 
@@ -23,10 +24,10 @@ const BlogSidebar = (props) => {
                     <p>Hi! beautiful people. I`m an authtor of this blog. Read our post - stay with us</p>
                     <div className="social">
                         <ul className="clearfix">
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-facebook"></i></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-twitter-alt"></i></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-linkedin"></i></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-pinterest"></i></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-facebook"></i></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-twitter-alt"></i></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-linkedin"></i></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-pinterest"></i></Link></li>
                         </ul>
                     </div>
                 </div>
@@ -43,13 +44,13 @@ const BlogSidebar = (props) => {
                     <h3>Post Categories</h3>
                     <ul>
                         <ul>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Neurology<span>5</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Urology<span>7</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Bags<span>3</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">HIV/AIDS<span>6</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Gestrology<span>2</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dermatology<span>8</span></Link></li>
-                            <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Otolaryngology<span>7</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Neurology<span>5</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Urology<span>7</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Bags<span>3</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">HIV/AIDS<span>6</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Gestrology<span>2</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dermatology<span>8</span></Link></li>
+                            <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Otolaryngology<span>7</span></Link></li>
                         </ul>
                     </ul>
                 </div>
@@ -72,15 +73,15 @@ const BlogSidebar = (props) => {
                 <div className="widget tag-widget">
                     <h3>Tags</h3>
                     <ul>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Health</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Beauty</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Heart</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Doctor</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Hospital</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Nurocare</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dental</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dermatologist</Link></li>
-                        <li><Link onClick={ClickHandler} to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Pediatrician</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Health</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Beauty</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Heart</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Doctor</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Hospital</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Nurocare</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dental</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Dermatologist</Link></li>
+                        <li><Link onClick={ClickHandler} href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Pediatrician</Link></li>
                     </ul>
                 </div>
             </div>

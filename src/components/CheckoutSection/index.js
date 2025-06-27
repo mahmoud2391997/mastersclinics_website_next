@@ -16,7 +16,7 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { totalPrice } from "../../utils";
 
 // images

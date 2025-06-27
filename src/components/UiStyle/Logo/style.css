@@ -1,7 +1,6 @@
 .logo {
   display: block;
   max-width: 170px;
-  padding: 5px;
 }
 @media (max-width: 767px) {
   .logo {

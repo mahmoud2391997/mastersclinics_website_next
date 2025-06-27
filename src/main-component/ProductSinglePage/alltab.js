@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TabContent, TabPane, Nav, NavItem, NavLink, Row, Col } from 'reactstrap';
+import { TabContent, TabPane, Nav, NavItem,  Row, Col } from 'reactstrap';
+import Link from 'next/link';
 import classnames from 'classnames';
 
 import rv1 from '../../images/shop/shop-single/review/img-1.jpg'
@@ -25,23 +26,26 @@ const ProductTabs = (props) => {
             <div className="col col-xs-12">
                 <div className="product-info">
                     <Nav tabs>
-                        <NavItem>
-                            <NavLink
-                                className={classnames({ active: activeTab === '1' })}
-                                onClick={() => { toggle('1'); }}
-                            >
-                               Description
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink
-                                className={classnames({ active: activeTab === '2' })}
-                                onClick={() => { toggle('2'); }}
-                            >
-
-                            Review
-                            </NavLink>
-                        </NavItem>
+                 <NavItem>
+    <a
+        className={classnames({ active: activeTab === '1' })}
+        onClick={e => { e.preventDefault(); toggle('1'); }}
+        href="#"
+        role="tab"
+    >
+       Description
+    </a>
+</NavItem>
+      <NavItem>
+    <a
+        className={classnames({ active: activeTab === '2' })}
+        onClick={e => { e.preventDefault(); toggle('2'); }}
+        href="#"
+        role="tab"
+    >
+        Review
+    </a>
+</NavItem>
                     </Nav>
                     <TabContent activeTab={activeTab}>
                         <TabPane tabId="1">

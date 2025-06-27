@@ -4,7 +4,7 @@ import PageTitle from "../../components/pagetitle/PageTitle";
 import Scrollbar from "../../components/scrollbar/scrollbar";
 import CalculateShipping from "./CalculateShipping";
 import Footer from '../../components/footer/Footer';
-import { Link } from "react-router-dom";
+import Link from 'next/link';
 import { connect } from "react-redux";
 import { totalPrice } from "../../utils";
 import {
@@ -24,7 +24,7 @@ const CartPage = (props) => {
   const [shippingMethod, setShippingMethod] = useState('Free');
 
   const handleQuantityChange = (e, id) => {
-    // const value = e.target.value;
+    const value = e.target.value;
   };
 
   const handleShippingChange = (e) => {
@@ -113,8 +113,9 @@ const CartPage = (props) => {
                       <input type="text" className="form-control" placeholder="Enter your coupon" />
                       <button className="theme-btn-s2" type="submit">Apply</button>
                     </div>
-                    <Link className="theme-btn-s2" onClick={ClickHandler}
-                      to="#" >Update Cart</Link>
+                   <button className="theme-btn-s2" type="button" onClick={ClickHandler}>
+  Update Cart
+</button>
                   </div>
                 </form>
               </div>
@@ -146,7 +147,7 @@ const CartPage = (props) => {
                     <h4>Total</h4>
                     <span>${totalPrice(carts) + (shippingMethod === 'Local' ? 10 : 0)}</span>
                   </div>
-                  <Link className="theme-btn-s2" to="/checkout">Proceed To Checkout</Link>
+                  <Link className="theme-btn-s2" href="/checkout">Proceed To Checkout</Link>
                 </div>
               </div>
             </div>

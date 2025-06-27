@@ -7,7 +7,7 @@ import './style.scss';
 const Logo = ({logo, className = '', alt = 'logo'}) => {
     return (
         <Grid className={`${className}`}>
-            <Link to="/"><img src={logo} alt={alt}/></Link>
+            <Link href="/"><img src={logo} alt={alt}/></Link>
         </Grid>
     )
 };

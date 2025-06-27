@@ -12,17 +12,17 @@ import CartPage from '../CartPage';
 import CheckoutPage from '../CheckoutPage';
 import OrderRecived from '../OrderRecived';
 import FaqPage from '../FaqPage/FaqPage';
-import ProjectPage from '../ProjectPage/ProjectPage';
+import ProjectPage from '../../../pages/project';
 import ProjectSingle from '../ProjectSingle/ProjectSingle';
 import ServicePages from '../ServicePage/ServicePage';
 import ServiceSinglePage from '../ServiceSinglePage/ServiceSinglePage';
-import BlogPage from '../BlogPage/BlogPage'
+import BlogPage from '../../../pages/blog'
 import BlogPageLeft from '../BlogPageLeft/BlogPageLeft' 
 import BlogPageFullwidth from '../BlogPageFullwidth/BlogPageFullwidth'
 import BlogDetails from '../BlogDetails/BlogDetails'
 import BlogDetailsLeftSiide from '../BlogDetailsLeftSiide/BlogDetailsLeftSiide'
 import BlogDetailsFull from '../BlogDetailsFull/BlogDetailsFull'
-import ContactPage from '../ContactPage/ContactPage';
+import ContactPage from '../../../pages/contact';
 import ErrorPage from '../ErrorPage/ErrorPage';
 
 

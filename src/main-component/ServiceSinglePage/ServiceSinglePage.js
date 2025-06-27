@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
-import { Link, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import Services from '../../api/Services';
 import ServiceFrom from './ServiceFrom ';
 import ServiceSidebar from './sidebar'

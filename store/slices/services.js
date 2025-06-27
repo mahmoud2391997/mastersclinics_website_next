@@ -1,4 +1,4 @@
-import { get } from "../../api/fetching"; // Axios helper
+import { get } from "../../pages/api/fetching"; // Axios helper
 
 // Initial state
 const initialState = {

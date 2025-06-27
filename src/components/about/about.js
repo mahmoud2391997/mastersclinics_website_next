@@ -12,13 +12,13 @@ import sine from '../../images/signeture.png'
 
 const about = (props) => {
     return (
-        <section className={"" + props.hclass} dir="rtl">
+        <section className={"" + props.hclass}>
             <div className="container">
                 <div className="row align-items-center">
                     <div className="col-lg-6 col-12">
                         <div className="about_left">
                             <div className="image">
-                                <img src={Ab1} alt="صورة عن العيادة" />
+                                <img src={Ab1} alt="" />
                                     <span className="round-on"></span>
                                     <span className="round-two"></span>
                                     <div className="award">
@@ -27,39 +27,39 @@ const about = (props) => {
                                         </div>
                                         <div className="text">
                                         <h2><CountUp end={25} enableScrollSpy />+</h2>
-                                            <p>سنة من الخبرة</p>
+                                            <p>Years Of Experience</p>
                                         </div>
                                     </div>
                                     <div className="doctors">
                                         <ul>
-                                        <li><img src={Abd1} alt="دكتور 1" /></li>
-                                        <li><img src={Abd2} alt="دكتور 2" /></li>
-                                        <li><img src={Abd3} alt="دكتور 3" /></li>
-                                        <li><img src={Abd4} alt="دكتور 4" /></li>
-                                            <li><span>٩٥+</span></li>
+                                        <li><img src={Abd1} alt="" /></li>
+                                        <li><img src={Abd2} alt="" /></li>
+                                        <li><img src={Abd3} alt="" /></li>
+                                        <li><img src={Abd4} alt="" /></li>
+                                            <li><span>95+</span></li>
                                         </ul>
-                                        <h4>الأطباء المتاحون</h4>
+                                        <h4>Available Doctors</h4>
                                     </div>
                             </div>
                         </div>
                     </div>
                     <div className="col-lg-6 col-12">
                         <div className="content">
-                            <h2>حول العيادات المتخصصة</h2>
-                            <h3>ابتسامتك وسعادتك هي مهمتنا الأولى</h3>
-                            <p>تشمل سياستنا الصحية والطبية جميع الاستراتيجيات والمبادئ التوجيهية والممارسات التي
-                                نستخدمها لتحقيق أهدافنا في تقديم أفضل رعاية صحية. تختلف خدماتنا الطبية
-                                حسب احتياجات المرضى وحالتهم الصحية والتخصص المطلوب. نحن ملتزمون
-                                بتقديم رعاية صحية شاملة ومتميزة لجميع مرضانا.</p>
-                            <p>نحن نقدم خدمات طبية عالية الجودة مع فريق من الأطباء والاستشاريين المتخصصين. 
-                                هدفنا هو ضمان حصولك على أفضل علاج طبي في بيئة آمنة ومريحة تلبي جميع احتياجاتك الصحية.</p>
+                            <h2>About Medically</h2>
+                            <h3>Your Smile & Happiness Is Our Mission</h3>
+                            <p>Our health and hospital policy encompasses the strategies, guidelines, and practices that
+                                technology companies use to achieve their goals and objectives. The policies may vary
+                                depending on the company's size, market position, and competitive landscape. Commodo
+                                erat amet vitae consectetur consectetur feugiat.</p>
+                            <p>Tellus viverra eu risus ut ipsum magna sed odio elit. Sed sem purus tincidunt
+                                condimentum amet condimentum massa. Nunc vel nascetur id cras.</p>
                             <div className="ceo">
                                 <div>
-                                    <h4>د. أحمد محمود</h4>
-                                    <span>المدير التنفيذي ومؤسس العيادات المتخصصة</span>
+                                    <h4>Savannah Nguyen</h4>
+                                    <span>CEO & Founder of Madically</span>
                                 </div>
                                 <div>
-                                    <img src={sine} alt="توقيع المدير" />
+                                    <img src={sine} alt="" />
                                 </div>
                             </div>
                         </div>

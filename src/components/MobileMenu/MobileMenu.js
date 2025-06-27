@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react';
 import List from "@mui/material/List";
 import ListItem from "@mui/material/List";
 import Collapse from "@mui/material/Collapse";
-import { NavLink } from "react-router-dom";
+import Link from 'next/link';
 import './style.css';
 
 const menus = [
@@ -197,8 +197,8 @@ const MobileMenu = () => {
                                                     {item.submenu.map((submenu, i) => {
                                                         return (
                                                             <ListItem key={i}>
-                                                                <NavLink onClick={ClickHandler} className="active"
-                                                                    to={submenu.link}>{submenu.title}</NavLink>
+                                                                <Link onClick={ClickHandler} className="active"
+                                                                    href={submenu.link}>{submenu.title}</Link>
                                                             </ListItem>
                                                         )
                                                     })}
@@ -206,8 +206,8 @@ const MobileMenu = () => {
                                             </List>
                                         </Collapse>
                                     </Fragment>
-                                    : <NavLink className="active"
-                                        to={item.link}>{item.title}</NavLink>
+                                    : <Link className="active"
+                                        href={item.link}>{item.title}</Link>
                                 }
                             </ListItem>
                         )

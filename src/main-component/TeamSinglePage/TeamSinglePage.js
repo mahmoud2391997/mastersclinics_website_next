@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import {Link, useParams } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import Teams from '../../api/team';
 import Navbar from '../../components/Navbar/Navbar'
 import PageTitle from '../../components/pagetitle/PageTitle'
@@ -9,7 +9,6 @@ import ContactForm from '../ServiceSinglePage/ServiceFrom ';
 import logo from '../../images/logo-2.svg'
 import Arrow from '../../images/team-single/arrow.svg'
 
-
 const progressData = [
     { label: 'Successful Surgery', value: 85 },
     { label: 'Satisfied Patients', value: 50 },
@@ -17,12 +16,12 @@ const progressData = [
     { label: 'Client Rating', value: 70 },
 ];
 
-
-
 const TeamSinglePage = (props) => {
+    const { slug } = useRouter().query;
+    const TeamSingles = Teams.find(item => item.slug === slug);
 
-    const { slug } = useParams()
-    const TeamSingles = Teams.find(item => item.slug === slug)
+    // Prevent rendering until slug and TeamSingles are available
+    if (!slug || !TeamSingles) return null;
 
     return (
         <Fragment>
@@ -39,10 +38,26 @@ const TeamSinglePage = (props) => {
                                     <span>Professional Surgeon & Expert Doctor . Love to care People & solve their
                                         Problems</span>
                                     <ul>
-                                        <li><Link to="#"><i className="flaticon-facebook-app-symbol"></i></Link></li>
-                                        <li><Link to="#"><i className="flaticon-twitter"></i></Link></li>
-                                        <li><Link to="#"><i className="flaticon-linkedin"></i></Link></li>
-                                        <li><Link to="#"><i className="flaticon-instagram"></i></Link></li>
+                                        <li>
+                                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                                                <i className="flaticon-facebook-app-symbol"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                                                <i className="flaticon-twitter"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                                                <i className="flaticon-linkedin"></i>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                                                <i className="flaticon-instagram"></i>
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -151,4 +166,5 @@ const TeamSinglePage = (props) => {
         </Fragment>
     )
 };
+
 export default TeamSinglePage;

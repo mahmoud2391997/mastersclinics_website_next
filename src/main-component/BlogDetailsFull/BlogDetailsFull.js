@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { useParams } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import blogs from '../../api/blogs'
 import Navbar from '../../components/Navbar/Navbar';
 import PageTitle from '../../components/pagetitle/PageTitle'

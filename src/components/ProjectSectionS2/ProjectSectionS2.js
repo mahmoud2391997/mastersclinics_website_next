@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from 'next/link';
 
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -53,7 +53,7 @@ const ProjectSectionS2 = (props) => {
                     </div>
                     <div className="col-lg-6 col-12">
                         <div className="project_btn">
-                            <Link to="/project" className="theme-btn">See All Cases </Link>
+                            <Link href="/project" className="theme-btn">See All Cases </Link>
                         </div>
                     </div>
                 </div>

@@ -1,42 +1,40 @@
-import { Pagination, A11y } from 'swiper/modules'; // Fixed import path
+import React, { useRef, useState } from 'react';
+import { Pagination, A11y } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
-import 'swiper/css/a11y'; // Required for A11y module
-import { Link } from 'react-router-dom';
+import Link from 'next/link'
 import VideoModal from "../ModalVideo/VideoModal";
 
+
 /* images */
-import Slider1 from '../../images/slider/slide-1.jpg';
-import Slider2 from '../../images/slider/slide-2.jpg';
-import Slider3 from '../../images/slider/slide-3.jpg';
+import Slider1 from '../../images/slider/slide-1.jpg'
+import Slider2 from '../../images/slider/slide-2.jpg'
+import Slider3 from '../../images/slider/slide-3.jpg'
 
+const pagination = {
+    clickable: true,
+    renderBullet: function (index, className) {
+        return '<span class="' + className + '">' + (index + 1) + '</span>';
+    },
+};
 const Hero3 = () => {
-    const pagination = {
-        clickable: true,
-        renderBullet: function (index, className) {
-            return '<span class="' + className + '">' + (index + 1) + '</span>';
-        },
-    };
-
     const ClickHandler = () => {
         window.scrollTo(10, 0);
-    };
+    }
+
 
     return (
         <section className="hero-slider">
             <Swiper
+                // install Swiper modules
                 modules={[Pagination, A11y]}
                 spaceBetween={0}
                 slidesPerView={1}
                 loop={true}
                 speed={1800}
                 pagination={pagination}
-                a11y={{
-                    enabled: true,
-                    prevSlideMessage: 'Previous slide',
-                    nextSlideMessage: 'Next slide',
-                }}
+                parallax={true}
             >
                 <SwiperSlide>
                     <div className="slide-inner slide-bg-image" style={{ backgroundImage: `url(${Slider1})` }}>
@@ -46,9 +44,8 @@ const Hero3 = () => {
                                     <h2>Your Smile & Happiness is Our Mission</h2>
                                 </div>
                                 <div className="slide-btns">
-                                    <Link onClick={ClickHandler} to="/about" className="theme-btn-s2">
-                                        Make Appointment <i className="flaticon-right-arrow"></i>
-                                    </Link>
+                                    <Link onClick={ClickHandler} href="/about" className="theme-btn-s2">Make Appointment <i
+                                        className="flaticon-right-arrow"></i></Link>
                                 </div>
                             </div>
                         </div>
@@ -64,7 +61,6 @@ const Hero3 = () => {
                         </div>
                     </div>
                 </SwiperSlide>
-
                 <SwiperSlide>
                     <div className="slide-inner slide-bg-image" style={{ backgroundImage: `url(${Slider2})` }}>
                         <div className="container-fluid">
@@ -73,9 +69,8 @@ const Hero3 = () => {
                                     <h2>Your Smile & Happiness is Our Mission</h2>
                                 </div>
                                 <div className="slide-btns">
-                                    <Link onClick={ClickHandler} to="/about" className="theme-btn-s2">
-                                        Make Appointment <i className="flaticon-right-arrow"></i>
-                                    </Link>
+                                    <Link onClick={ClickHandler} href="/about" className="theme-btn-s2">Make Appointment <i
+                                        className="flaticon-right-arrow"></i></Link>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +86,6 @@ const Hero3 = () => {
                         </div>
                     </div>
                 </SwiperSlide>
-
                 <SwiperSlide>
                     <div className="slide-inner slide-bg-image" style={{ backgroundImage: `url(${Slider3})` }}>
                         <div className="container-fluid">
@@ -100,9 +94,8 @@ const Hero3 = () => {
                                     <h2>Your Smile & Happiness is Our Mission</h2>
                                 </div>
                                 <div className="slide-btns">
-                                    <Link onClick={ClickHandler} to="/about" className="theme-btn-s2">
-                                        Make Appointment <i className="flaticon-right-arrow"></i>
-                                    </Link>
+                                    <Link onClick={ClickHandler} href="/about" className="theme-btn-s2">Make Appointment <i
+                                        className="flaticon-right-arrow"></i></Link>
                                 </div>
                             </div>
                         </div>
@@ -118,9 +111,13 @@ const Hero3 = () => {
                         </div>
                     </div>
                 </SwiperSlide>
+
+
+                ...
             </Swiper>
         </section>
-    );
-};
+    )
+}
 
 export default Hero3;
+

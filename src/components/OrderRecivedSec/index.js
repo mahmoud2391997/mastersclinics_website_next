@@ -1,5 +1,5 @@
 import React from 'react';
-import {Link} from 'react-router-dom'
+import Link from 'next/link'
 import Grid from "@mui/material/Grid";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";

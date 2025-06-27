@@ -14,7 +14,7 @@ const ProcessSection = (props) => {
             <div className="container">
                 <div className="row justify-content-center">
                     <div className="col-lg-9 col-12">
-                        <SectionTitle title={'عملية عملنا'} subtitle={'كيف نعمل'}/>
+                        <SectionTitle title={'Our Working Process'} subtitle={'How We Work'}/>
                     </div>
                 </div>
                 <div className="work_wrapper">
@@ -26,8 +26,9 @@ const ProcessSection = (props) => {
                                         <span className="number">01</span>
                                 </div>
                                 <div className="text">
-                                    <h3>حجز موعد</h3>
-                                    <p>نقدم خدمة حجز المواعيد بسهولة ويسر لضمان راحتكم وتلبية احتياجاتكم في الوقت المناسب.</p>
+                                    <h3>Make Appointment</h3>
+                                    <p>Amet usem turpis vestm hendrerit vestibulum molestie quis. Egestas ultricies
+                                        at placerat.</p>
                                 </div>
                             </div>
                         </div>
@@ -38,8 +39,9 @@ const ProcessSection = (props) => {
                                         <span className="number">02</span>
                                 </div>
                                 <div className="text">
-                                    <h3>استشارة الخبير</h3>
-                                    <p>تحصلون على استشارة من خبرائنا المتخصصين الذين يقدمون الحلول المناسبة لاحتياجاتكم.</p>
+                                    <h3>Get Consultant</h3>
+                                    <p>Amet usem turpis vestm hendrerit vestibulum molestie quis. Egestas ultricies
+                                        at placerat.</p>
                                 </div>
                             </div>
                         </div>
@@ -50,8 +52,9 @@ const ProcessSection = (props) => {
                                         <span className="number">03</span>
                                 </div>
                                 <div className="text">
-                                    <h3>تلقي العلاج</h3>
-                                    <p>نقدم لكم أفضل العلاجات والرعاية بأعلى معايير الجودة والكفاءة.</p>
+                                    <h3>Take Treatment</h3>
+                                    <p>Amet usem turpis vestm hendrerit vestibulum molestie quis. Egestas ultricies
+                                        at placerat.</p>
                                 </div>
                             </div>
                         </div>
@@ -62,8 +65,9 @@ const ProcessSection = (props) => {
                                         <span className="number">04</span>
                                 </div>
                                 <div className="text">
-                                    <h3>الحصول على الراحة</h3>
-                                    <p>الوصول إلى مرحلة الشفاء والراحة بعد تلقي العلاج والرعاية المثالية.</p>
+                                    <h3>Get Relief</h3>
+                                    <p>Amet usem turpis vestm hendrerit vestibulum molestie quis. Egestas ultricies
+                                        at placerat.</p>
                                 </div>
                             </div>
                         </div>

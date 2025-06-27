@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import blog3 from '../../images/blog-details/comments-author/img-1.jpg'
 import blog4 from '../../images/blog-details/comments-author/img-2.jpg'
 import blog5 from '../../images/blog-details/comments-author/img-3.jpg'
@@ -7,12 +7,13 @@ import blog6 from '../../images/blog-details/author.jpg'
 import gl1 from '../../images/blog/img-1.jpg'
 import gl2 from '../../images/blog/img-2.jpg'
 import blogs from '../../api/blogs';
-import { useParams } from 'react-router-dom'
+import { useRouter } from 'next/router'
 import BlogSidebar from '../BlogSidebar/BlogSidebar.js'
 
 const BlogSingle = (props) => {
-
-    const { slug } = useParams()
+    
+    const router = useRouter();
+    const { slug } = router.query
 
     const BlogDetails = blogs.find(item => item.slug === slug)
 
@@ -32,7 +33,7 @@ const BlogSingle = (props) => {
                                 </div>
                                 <div className="entry-meta">
                                     <ul>
-                                        <li><i className="fi flaticon-user"></i> By <Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">{BlogDetails.author}</Link> </li>
+                                        <li><i className="fi flaticon-user"></i> By <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">{BlogDetails.author}</Link> </li>
                                         <li><i className="fi flaticon-comment-white-oval-bubble"></i> Comments {BlogDetails.comment}</li>
                                         <li><i className="fi flaticon-calendar"></i> {BlogDetails.create_at}</li>
                                     </ul>
@@ -58,9 +59,9 @@ const BlogSingle = (props) => {
                                 <div className="tag">
                                     <span>Share: </span>
                                     <ul>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Planning</Link></li>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Helth</Link></li>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Beauty</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Planning</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Helth</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Beauty</Link></li>
                                     </ul>
                                 </div>
                             </div>
@@ -68,27 +69,27 @@ const BlogSingle = (props) => {
                                 <div className="tag">
                                     <span>Share: </span>
                                     <ul>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">facebook</Link></li>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">twitter</Link></li>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">linkedin</Link></li>
-                                        <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">pinterest</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">facebook</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">twitter</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">linkedin</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">pinterest</Link></li>
                                     </ul>
                                 </div>
                             </div>
 
                             <div className="author-box">
                                 <div className="author-avatar">
-                                    <Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" target="_blank"><img src={blog6} alt="" /></Link>
+                                    <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" target="_blank"><img src={blog6} alt="" /></Link>
                                 </div>
                                 <div className="author-content">
-                                    <Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" className="author-name">Author: {BlogDetails.author}</Link>
+                                    <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" className="author-name">Author: {BlogDetails.author}</Link>
                                     <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.</p>
                                     <div className="socials">
                                         <ul className="social-link">
-                                            <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-facebook"></i></Link></li>
-                                            <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-twitter-alt"></i></Link></li>
-                                            <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-linkedin"></i></Link></li>
-                                            <li><Link to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-instagram"></i></Link></li>
+                                            <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-facebook"></i></Link></li>
+                                            <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-twitter-alt"></i></Link></li>
+                                            <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-linkedin"></i></Link></li>
+                                            <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-instagram"></i></Link></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -96,13 +97,13 @@ const BlogSingle = (props) => {
 
                             <div className="more-posts">
                                 <div className="previous-post">
-                                    <Link to="/blog">
+                                    <Link href="/blog">
                                         <span className="post-control-link">Previous Post</span>
                                         <span className="post-name">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium.</span>
                                     </Link>
                                 </div>
                                 <div className="next-post">
-                                    <Link to="/blog-left-sidebar">
+                                    <Link href="/blog-left-sidebar">
                                         <span className="post-control-link">Next Post</span>
                                         <span className="post-name">Dignissimos ducimus qui blanditiis praesentiu deleniti atque corrupti quos dolores</span>
                                     </Link>
@@ -129,7 +130,7 @@ const BlogSingle = (props) => {
                                                                 expound the actual teachings of the great explorer of
                                                                 the truth, </p>
                                                             <div className="comments-reply">
-                                                                <Link className="comment-reply-link" to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -152,7 +153,7 @@ const BlogSingle = (props) => {
                                                                         and expound the actual teachings of the great
                                                                         explorer of the truth, </p>
                                                                     <div className="comments-reply">
-                                                                        <Link className="comment-reply-link" to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                        <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -175,7 +176,7 @@ const BlogSingle = (props) => {
                                                                                 system, and expound the actual teachings
                                                                                 of the great explorer of the truth, </p>
                                                                             <div className="comments-reply">
-                                                                                <Link className="comment-reply-link" to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -202,7 +203,7 @@ const BlogSingle = (props) => {
                                                                 expound the actual teachings of the great explorer of
                                                                 the truth, </p>
                                                             <div className="comments-reply">
-                                                                <Link className="comment-reply-link" to="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
                                                             </div>
                                                         </div>
                                                     </div>

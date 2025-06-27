@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import ins1 from '../../images/instagram/1.jpg'
 import ins2 from '../../images/instagram/2.jpg'
 import ins3 from '../../images/instagram/3.jpg'
@@ -91,12 +91,12 @@ const ServiceSidebar = (props) => {
             <div className="services_widget widget">
                 <h2>Services</h2>
                 <ul>
-                    <li><Link onClick={ClickHandler} to="/services">Dental Care <span>2</span></Link></li>
-                    <li><Link onClick={ClickHandler} to="/services">Orthopedic <span>5</span></Link></li>
-                    <li><Link onClick={ClickHandler} to="/services">Pharmacology <span>3</span></Link></li>
-                    <li><Link onClick={ClickHandler} to="/services">Genealogy <span>7</span></Link></li>
-                    <li><Link onClick={ClickHandler} to="/services">Rehabilitation <span>8</span></Link></li>
-                    <li><Link onClick={ClickHandler} to="/services">Heart Surgery <span>4</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Dental Care <span>2</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Orthopedic <span>5</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Pharmacology <span>3</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Genealogy <span>7</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Rehabilitation <span>8</span></Link></li>
+                    <li><Link onClick={ClickHandler} href="/services">Heart Surgery <span>4</span></Link></li>
                 </ul>
             </div>
             <div className="newsletter_widget widget">

@@ -1,28 +1,38 @@
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import SectionTitle from "../SectionTitle/SectionTitle";
-import { fetchTeams } from "../../store/slices/doctor";
+"use client"
 
-const TeamSection = ({ 
-  hclass = "", 
-  sliceStart = 0, 
-  sliceEnd = 3, 
+import React, { useEffect } from "react"
+import SectionTitle from "../SectionTitle/SectionTitle"
+import { useSelector, useDispatch } from "react-redux"
+import { fetchTeams } from "@/store/slices/doctor"
+
+const TeamSection = ({
+  hclass,
+  sliceStart,
+  sliceEnd,
   showSectionTitle = true,
-  onDoctorSelect 
+  onDoctorSelect
 }) => {
-  const dispatch = useDispatch();
-  const { teams, loading, error } = useSelector((state) => state.teams);
+  const dispatch = useDispatch()
+  const { teams = [], loading = false, error = null } = useSelector(
+    (state) => state.teams || {}
+  )
+const placeholder = "/download.png"; // or your preferred placeholder path
 
+const displayedTeams =
+  teams && teams.length > 0
+    ? teams.slice(0, 3) // Always show only 3 doctors
+    : [];
   useEffect(() => {
-    dispatch(fetchTeams());
-  }, [dispatch]);
+    dispatch(fetchTeams())
+  }, [dispatch])
+
+
 
   const handleDoctorSelect = (doctor) => {
-    console.log(doctor);
     if (onDoctorSelect) {
-      onDoctorSelect(doctor);
+      onDoctorSelect(doctor)
     }
-  };
+  }
 
   const getBranchName = (branchCode) => {
     const branchMap = {
@@ -32,80 +42,73 @@ const TeamSection = ({
       albasateen: "فرع البساتين",
       abhur: "ابحر الشمالية",
       altaif: "فرع الطائف",
-    };
-    return branchMap[branchCode] || branchCode;
-  };
+    }
+    return branchMap[branchCode] || branchCode
+  }
 
   return (
-    <section className={hclass}>
+    <section>
       <div className="container mx-auto px-4">
         {showSectionTitle && (
-          <div className="flex justify-center">
-            <div className="w-full lg:w-9/12">
+          <div className="row justify-center">
+            <div className="col-lg-9 col-12">
               <SectionTitle title="فريقنا" subtitle="تعرف على أخصائيينا" />
             </div>
           </div>
         )}
 
         {loading && (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#dec06a]"></div>
+          <div className="flex justify-center items-center py-10">
+            <div className="spinner-border text-primary" style={{ width: "3rem", height: "3rem" }} role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
           </div>
         )}
 
         {error && (
-          <div className="text-center py-6">
-            <p className="text-red-500 bg-red-50 px-4 py-2 rounded-lg inline-block">
-              {error}
-            </p>
+          <div className="flex justify-center items-center py-10">
+            <div className="alert alert-danger" role="alert">
+              Error loading team: {error}
+            </div>
           </div>
         )}
 
-        <div className="flex flex-wrap -mx-4">
-          {!loading &&
-            !error &&
-            teams.slice(sliceStart, sliceEnd).map((team, index) => (
+        {!loading && !error && (
+          <div className="flex flex-wrap -mx-4">
+            {displayedTeams.map((team, index) => (
               <div className="w-full md:w-1/2 lg:w-1/3 px-4 mb-8" key={index}>
-                <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col">
-                  <div className="relative p-4 flex-grow-0">
+                <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                  <div className="relative p-4">
                     <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
-                      <div className="relative overflow-hidden rounded-[20px] h-64">
-                        <img
-                          src={team.image || "/download.png"}
-                          alt={team.name}
-                          className="w-full h-full object-cover transform transition-transform duration-500 hover:scale-105"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.src = "/download.png";
-                          }}
-                        />
+                      <div className="relative overflow-hidden rounded-[20px]">
+                      <img
+  src={team.image && typeof team.image === "string" && team.image.trim() !== "" ? team.image : placeholder}
+  alt={"Team Member"}
+  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+  loading="lazy"
+  onError={(e) => {
+    e.target.src = placeholder;
+  }}
+/>
                       </div>
 
                       {team.branches && team.branches.length > 0 && (
                         <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
-                          {team.branches.length === 1 
-                            ? getBranchName(team.branches[0]) 
-                            : `${team.branches.length} فروع`}
+                          {team.branches.length === 1 ? getBranchName(team.branches[0]) : `${team.branches.length} فروع`}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="content p-6 text-center flex-grow flex flex-col">
-                    <div className="mb-4">
-                      <h3 className="text-xl font-bold mb-2 text-gray-900">
-                        {team.name}
-                      </h3>
-                      <span className="text-[#dec06a] block font-medium">
-                        {team.specialization}
-                      </span>
-                    </div>
+                  <div className="content p-6 text-center">
+                    <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
+                      {team.name}
+                    </h3>
+                    <span className="text-[#dec06a] mb-4 block font-medium">{team.specialization}</span>
 
-                    {team.branches && team.branches.length > 0 && (
-                      <div className="mb-4 flex-grow">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">
-                          متوفر في:
-                        </p>
+                    {team.branches.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">متوفر في:</p>
                         <div className="flex flex-wrap gap-2 justify-center">
                           {team.branches.map((branch, branchIndex) => (
                             <span
@@ -121,7 +124,7 @@ const TeamSection = ({
 
                     <button
                       onClick={() => handleDoctorSelect(team)}
-                      className="mt-auto w-full py-3 bg-gradient-to-r from-[#dec06a] to-[#d4b45c] text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] shadow-lg"
+                      className="theme-btn w-full py-3 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       احجز موعد
                     </button>
@@ -129,10 +132,11 @@ const TeamSection = ({
                 </div>
               </div>
             ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default TeamSection;
+export default TeamSection

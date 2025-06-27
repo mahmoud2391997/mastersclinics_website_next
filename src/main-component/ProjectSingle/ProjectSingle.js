@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
-import { Link, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import Navbar from '../../components/Navbar/Navbar'
 import PageTitle from '../../components/pagetitle/PageTitle'
 import Projects from '../../api/projects';
@@ -10,8 +11,6 @@ import logo from '../../images/logo-2.svg'
 import Psing1 from '../../images/project-single/img-1.jpg'
 import Psing2 from '../../images/project-single/img-2.jpg'
 
-
-
 const ClickHandler = () => {
     window.scrollTo(10, 0);
 }
@@ -19,8 +18,6 @@ const ClickHandler = () => {
 const ProjectSingle = (props) => {
     const { slug } = useParams()
     const ProjectSingle = Projects.find(item => item.slug === slug)
-
-
 
     return (
         <Fragment>
@@ -74,16 +71,31 @@ const ProjectSingle = (props) => {
                                         <th>Share :</th>
                                         <td>
                                             <ul>
-                                                <li><Link to="#"><i className="flaticon-facebook-app-symbol"></i></Link></li>
-                                                <li><Link to="#"><i className="flaticon-twitter"></i></Link></li>
-                                                <li><Link to="#"><i className="flaticon-linkedin"></i></Link></li>
-                                                <li><Link to="#"><i className="flaticon-instagram"></i></Link></li>
+                                                <li>
+                                                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                                                        <i className="flaticon-facebook-app-symbol"></i>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                                                        <i className="flaticon-twitter"></i>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                                                        <i className="flaticon-linkedin"></i>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                                                        <i className="flaticon-instagram"></i>
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-
                         </div>
                     </div>
                     <div className="quote">

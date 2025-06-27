@@ -1,4 +1,4 @@
-import { get, getById } from "../../api/fetching";
+import { get, getById } from "../../pages/api/fetching";
 
 // Initial State
 const initialState = {
