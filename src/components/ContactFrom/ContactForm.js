@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import SimpleReactValidator from 'simple-react-validator';
 
-
 const ContactForm = () => {
 
     const [forms, setForms] = useState({
@@ -14,6 +13,7 @@ const ContactForm = () => {
     const [validator] = useState(new SimpleReactValidator({
         className: 'errorMessage'
     }));
+
     const changeHandler = e => {
         setForms({ ...forms, [e.target.name]: e.target.value })
         if (validator.allValid()) {
@@ -40,7 +40,7 @@ const ContactForm = () => {
     };
 
     return (
-        <form onSubmit={(e) => submitHandler(e)} className="contact-validation-active" >
+        <form onSubmit={(e) => submitHandler(e)} className="contact-validation-active" dir="rtl" >
             <div className="row">
                 <div className="col col-lg-6 col-12">
                     <div className="form-field">
@@ -50,7 +50,9 @@ const ContactForm = () => {
                             name="name"
                             onBlur={(e) => changeHandler(e)}
                             onChange={(e) => changeHandler(e)}
-                            placeholder="Your Name" />
+                            placeholder="اسمك"
+                            style={{ paddingRight: '10px' }}  // Add margin/padding to placeholder text
+                        />
                         {validator.message('name', forms.name, 'required|alpha_space')}
                     </div>
                 </div>
@@ -62,7 +64,9 @@ const ContactForm = () => {
                             name="email"
                             onBlur={(e) => changeHandler(e)}
                             onChange={(e) => changeHandler(e)}
-                            placeholder="Your Email" />
+                            placeholder="بريدك الإلكتروني"
+                            style={{ paddingRight: '10px' }}  // Add margin/padding to placeholder text
+                        />
                         {validator.message('email', forms.email, 'required|email')}
                     </div>
                 </div>
@@ -74,7 +78,9 @@ const ContactForm = () => {
                             name="phone"
                             onBlur={(e) => changeHandler(e)}
                             onChange={(e) => changeHandler(e)}
-                            placeholder="Your phone" />
+                            placeholder="رقم هاتفك"
+                            style={{ paddingRight: '10px' }}  // Add margin/padding to placeholder text
+                        />
                         {validator.message('phone', forms.phone, 'required|phone')}
                     </div>
                 </div>
@@ -86,13 +92,13 @@ const ContactForm = () => {
                             value={forms.subject}
                             type="text"
                             name="subject">
-                            <option>Services</option>
-                            <option>Dental Care</option>
-                            <option>Pharmacology</option>
-                            <option>Orthopedic</option>
-                            <option>Gyneological</option>
-                            <option>Rehabilitation</option>
-                            <option>Heart Surgery</option>
+                            <option>الخدمات</option>
+                            <option>رعاية الأسنان</option>
+                            <option>الصيدلة</option>
+                            <option>جراحة العظام</option>
+                            <option>طب النساء</option>
+                            <option>إعادة التأهيل</option>
+                            <option>جراحة القلب</option>
                         </select>
                         {validator.message('subject', forms.subject, 'required')}
                     </div>
@@ -104,13 +110,14 @@ const ContactForm = () => {
                         value={forms.message}
                         type="text"
                         name="message"
-                        placeholder="Message">
-                    </textarea>
+                        placeholder="الرسالة"
+                        style={{ paddingRight: '10px' }}  // Add margin/padding to placeholder text
+                    />
                     {validator.message('message', forms.message, 'required')}
                 </div>
             </div>
             <div className="submit-area">
-                <button type="submit" className="theme-btn">Get in Touch</button>
+                <button type="submit" className="theme-btn">تواصل معنا</button>
             </div>
         </form >
     )

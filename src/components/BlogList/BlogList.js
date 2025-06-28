@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/router'; // Import useRouter hook for navigation
 import BlogSidebar from '../BlogSidebar/BlogSidebar';
 import VideoModal from '../ModalVideo/VideoModal';
 import blogs from '../../api/blogs';
@@ -12,9 +12,15 @@ const ClickHandler = () => {
   }
 };
 
-// ✅ استخدام قيم افتراضية بدون انتظار props
 const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-class' }) => {
+  const router = useRouter(); // Initialize useRouter hook to navigate programmatically
   const validBlogs = blogs.filter(blog => blog?.slug && blog?.title2);
+
+  const handleNavigation = (slug) => {
+    // Use router.push to navigate to the blog's individual page
+    router.push(`/blog-single/${slug}`);
+    ClickHandler(); // Scroll to the top after navigation
+  };
 
   return (
     <section className="wpo-blog-pg-section section-padding">
@@ -32,9 +38,12 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                     <ul>
                       <li>
                         <i className="fi flaticon-user"></i> By{' '}
-                        <Link href={`/blog-single/${blog.slug}`} onClick={ClickHandler}>
+                        <span
+                          onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for author
+                          style={{ cursor: 'pointer', color: '#3498db' }}
+                        >
                           {blog.author}
-                        </Link>
+                        </span>
                       </li>
                       <li>
                         <i className="fi flaticon-comment-white-oval-bubble"></i> Comments {blog.comment}
@@ -46,22 +55,25 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                   </div>
                   <div className="entry-details">
                     <h3>
-                      <Link href={`/blog-single/${blog.slug}`} onClick={ClickHandler}>
+                      <span
+                        onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for title click
+                        style={{ cursor: 'pointer', color: '#3498db' }}
+                      >
                         {blog.title2}
-                      </Link>
+                      </span>
                     </h3>
                     <p>
                       Law is a great career path if you want to build a broad skill set that includes
                       everything from critical thinking and strategic planning to communications. If you
                       love rising to a challenge.
                     </p>
-                    <Link
-                      href={`/blog-single/${blog.slug}`}
-                      onClick={ClickHandler}
+                    <span
+                      onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for "Read More" click
                       className="read-more"
+                      style={{ cursor: 'pointer', color: '#3498db' }}
                     >
                       READ MORE...
-                    </Link>
+                    </span>
                   </div>
                 </div>
               ))}
@@ -69,30 +81,53 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
               <div className="pagination-wrapper pagination-wrapper-left">
                 <ul className="pg-pagination">
                   <li>
-                    <Link href="/blog-left-sidebar" aria-label="Previous">
+                    <span
+                      onClick={() => router.push('/blog-left-sidebar')} // Programmatic navigation for pagination
+                      aria-label="Previous"
+                      style={{ cursor: 'pointer' }}
+                    >
                       <i className="fi ti-angle-left"></i>
-                    </Link>
+                    </span>
                   </li>
                   <li className="active">
-                    <Link href="/blog-left-sidebar">1</Link>
+                    <span
+                      onClick={() => router.push('/blog-left-sidebar')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      1
+                    </span>
                   </li>
                   <li>
-                    <Link href="/blog-left-sidebar">2</Link>
+                    <span
+                      onClick={() => router.push('/blog-left-sidebar')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      2
+                    </span>
                   </li>
                   <li>
-                    <Link href="/blog-left-sidebar">3</Link>
+                    <span
+                      onClick={() => router.push('/blog-left-sidebar')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      3
+                    </span>
                   </li>
                   <li>
-                    <Link href="/blog-left-sidebar" aria-label="Next">
+                    <span
+                      onClick={() => router.push('/blog-left-sidebar')}
+                      aria-label="Next"
+                      style={{ cursor: 'pointer' }}
+                    >
                       <i className="fi ti-angle-right"></i>
-                    </Link>
+                    </span>
                   </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* Sidebar باستخدام قيمة افتراضية أيضاً */}
+          {/* Sidebar using default value as well */}
           <BlogSidebar blLeft={blLeft} />
         </div>
       </div>

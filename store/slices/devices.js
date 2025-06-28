@@ -22,6 +22,7 @@ export const fetchDeviceById = createAsyncThunk(
     async (id, thunkAPI) => {
         try {
             const device = await getById('/devices', id);
+            console.log("Fetched device by ID:", device);
             return device;
         } catch (error) {
             return thunkAPI.rejectWithValue(error.message);

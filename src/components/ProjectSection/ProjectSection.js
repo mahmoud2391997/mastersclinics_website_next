@@ -20,7 +20,7 @@ const ProjectSection = (props) => {
     
     // Get devices from Redux store
     const { items : devices = [], loading = false, error = null } = useSelector(state => state.devices || {});
-console.log(devices);
+    console.log(devices);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -29,14 +29,19 @@ console.log(devices);
     if (error) {
         return <div>Error: {error}</div>;
     }
-
+console.log("Devices:", devices);
     return (
         <section className={hclass}>
             <div className="container">
                 {ShowSectionTitle && (
                     <div className="row align-items-center">
                         <div className="col-lg-6 col-12">
-                            <SectionTitle title="Our Portfolio" subtitle="All The Great Work That We Done" />
+                            <SectionTitle 
+                                title="أجهزتنا الطبية" 
+                                subtitle="أحدث التقنيات والأجهزة التي نقدمها لرعايتكم" 
+                                dir="rtl"
+                                className="medical-devices-title"
+                            />
                         </div>
                         <div className="col-lg-6 col-12">
                             <div className="project_btn">
@@ -54,9 +59,12 @@ console.log(devices);
                                 <div className="project_card">
                                     <img src={device.image} alt={device.name} />
                                     <div className="text">
-                                        {device.slug ? (
+                                        {device._id ? (
                                             <h2>
-                                                <Link href={`/project-single/${device.slug}`} onClick={ClickHandler}>
+                                                <Link 
+                                                    href={`/project/${device._id}`} // Navigate to the new URL
+                                                    onClick={ClickHandler}
+                                                >
                                                     {device.name}
                                                 </Link>
                                             </h2>

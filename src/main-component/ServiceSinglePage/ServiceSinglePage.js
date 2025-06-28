@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import Services from '../../api/Services';
-import ServiceFrom from './ServiceFrom ';
+import ServiceFrom from './ServiceFrom';
 import ServiceSidebar from './sidebar'
 import Navbar from '../../components/Navbar/Navbar'
 import PageTitle from '../../components/pagetitle/PageTitle'

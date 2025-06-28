@@ -28,10 +28,13 @@ const BlogSection = (props) => {
                                         <li>{bloge.author}</li>
                                     </ul>
                                     <h3>{bloge.title}</h3>
-                                    {bloge.slug && (
+                                    {/* Only render the Link if the slug exists */}
+                                    {bloge.slug ? (
                                         <Link href={`/blog-single/${bloge.slug}`} onClick={ClickHandler}>
                                             <i className="flaticon-right-arrow"></i>
                                         </Link>
+                                    ) : (
+                                        <span>No Link Available</span>  // Fallback if no slug
                                     )}
                                 </div>
                             </div>

@@ -14,6 +14,7 @@ import BlogSection from '../../components/BlogSection/BlogSection';
 import CtafromSection from '../../components/CtafromSection/CtafromSection';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
+import ImageSlider from '../../components/adsSlider/index';
 import Logo from '../../images/logo.svg'
 
 const HomePage = () => {
@@ -24,13 +25,12 @@ const HomePage = () => {
             <Navbar hclass={'wpo-site-header'}   />
             </div>
             <Hero hclass={'static-hero'} />
-            <AppointmentSection hclass={'appointment_section'}/>
+            <ImageSlider />
             <ServiceSection hclass={"service_section section-padding"} />
             <About hclass={'about_section section-padding'}/>
             <ProcessSection hclass={"work_section section-padding"}/>
             <ProjectSection hclass={'project_section section-padding'}/>
             <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
-            <CtaSection tClass={'cta_section'} />
             <TeamSection hclass={'team_section section-padding'}/>
             <FunFact hclass={'funfact_section'} />
             <BlogSection tClass={'blog_section section-padding'}/>

@@ -1,154 +1,138 @@
-import React, { Fragment } from 'react';
-import { useRouter } from 'next/router'
-import Teams from '../../api/team';
-import Navbar from '../../components/Navbar/Navbar'
-import PageTitle from '../../components/pagetitle/PageTitle'
+import { Fragment, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTeamBySlug } from '../../store/slices/doctor';
+import Navbar from '../../components/Navbar/Navbar';
+import PageTitle from '../../components/pagetitle/PageTitle';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
-import ContactForm from '../ServiceSinglePage/ServiceFrom ';
-import logo from '../../images/logo-2.svg'
+import ContactForm from '../ServiceSinglePage/ServiceFrom';
+import logo from '../../images/logo-2.svg';
 import Arrow from '../../images/team-single/arrow.svg'
+const TeamSinglePage = () => {
+    const dispatch = useDispatch();
+    const { slug } = useParams();
+    console.log(slug);
+    
+    // SINGLE useSelector call to get all state at once
+    const teamsState = useSelector((state) => state.teams || {});
+    const { 
+        selectedTeam: currentMember = null, 
+        loading = false, 
+        error = null 
+    } = teamsState;
 
-const progressData = [
-    { label: 'Successful Surgery', value: 85 },
-    { label: 'Satisfied Patients', value: 50 },
-    { label: 'Infection Prevention', value: 95 },
-    { label: 'Client Rating', value: 70 },
-];
+    useEffect(() => {
+        dispatch(fetchTeamBySlug(slug));
+    }, [dispatch, slug]);
 
-const TeamSinglePage = (props) => {
-    const { slug } = useRouter().query;
-    const TeamSingles = Teams.find(item => item.slug === slug);
+    // Debug logs using the already selected state
+    console.log('Teams state:', teamsState);
+    console.log('Current team member:', currentMember);
 
-    // Prevent rendering until slug and TeamSingles are available
-    if (!slug || !TeamSingles) return null;
-
+    if (loading) return <div className="text-center py-5">Loading doctor profile...</div>;
+    if (error) return <div className="text-center py-5 text-danger">Error: {error}</div>;
+    if (!currentMember) {
+        console.warn('No team member found:', teamsState);
+        return <div className="text-center py-5">Doctor data not available</div>;
+       }   // Rest of your component...
     return (
         <Fragment>
             <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2'} />
-            <PageTitle pageTitle={TeamSingles.title} pagesub={'Doctor Single'} />
+            <PageTitle pageTitle={currentMember.name} pagesub={'Doctor Single'} />
+            
             <section className="team_single_page section-padding">
                 <div className="container">
                     <div className="row align-items-end">
                         <div className="col-lg-6 col-12">
                             <div className="doctor_profile">
-                                <img src={TeamSingles.Sime} alt="" />
+                                <img 
+                                    src={currentMember.image} 
+                                    alt={currentMember.title} 
+                                    loading="lazy"
+                                />
                                 <div className="content">
-                                    <h3>{TeamSingles.title}</h3>
-                                    <span>Professional Surgeon & Expert Doctor . Love to care People & solve their
-                                        Problems</span>
-                                    <ul>
-                                        <li>
-                                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                                                <i className="flaticon-facebook-app-symbol"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                                                <i className="flaticon-twitter"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-                                                <i className="flaticon-linkedin"></i>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                                                <i className="flaticon-instagram"></i>
-                                            </a>
-                                        </li>
+                                    <h3>{currentMember.name}</h3>
+                                    <span>{currentMember.specialty || 'Professional Surgeon & Expert Doctor'}</span>
+                                    <ul className="social-links">
+                                        {currentMember.socialLinks?.map((link, index) => (
+                                            <li key={index}>
+                                                <Link to={link.url} target="_blank" rel="noopener noreferrer">
+                                                    <i className={link.iconClass}></i>
+                                                </Link>
+                                            </li>
+                                        ))}
                                     </ul>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-lg-6  col-12">
+                        
+                        <div className="col-lg-6 col-12">
                             <div className="doctor_info">
                                 <h2>Personal Info</h2>
-                                <table>
-                                    <tbody>
-                                        <tr>
-                                            <th>Position:</th>
-                                            <td>Senior Surgeon</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Practice Area:</th>
-                                            <td>Cardiothoracic Surgeon Specialist</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Experience:</th>
-                                            <td>10 years, New York Urgent Medical Care.</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Address:</th>
-                                            <td>6391 Elgin St. Celina, Delaware 10299</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Phone:</th>
-                                            <td>(603) 555-0123</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Email:</th>
-                                            <td>youremail@gmail.com</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <p>
+                                    {currentMember.bio}
+                                </p>
                             </div>
+                            
                             <div className="doctor_info s2">
                                 <h2>Education</h2>
-                                <ul>
-                                    <li><img src={Arrow} alt="" />MBBS University of California
-                                    </li>
-                                    <li><img src={Arrow} alt="" />Medify Institute of Medicine
-                                        Juzment School of Management,Cambridge</li>
-                                    <li><img src={Arrow} alt="" />The Syntify High School Of New
-                                        York</li>
-                                    <li><img src={Arrow} alt="" />Education &Medical Admissions
-                                    </li>
+                                <ul className="education-list">
+                                    {currentMember.education?.map((item, index) => (
+                                        <li key={index}>
+                                            <img src={Arrow} alt="" aria-hidden="true" />
+                                            {item}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
                     </div>
+                    
                     <div className="experience_wrap">
                         <div className="top_content">
                             <h2>Personal Experience</h2>
-                            <p>There are many variations of passages of Lorem Ipsum available, but the majority have
-                                suffered alteration in some form, by injected humour, or randomised words which don’t look
-                                even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be
-                                sure there isn’t anything embarrassing hidden in the middle of text.</p>
-
-                            <p>All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as
-                                necessary, making this the first true generator on the Internet. It uses a dictionary of
-                                over 200 Latin words,</p>
+                            {currentMember.experience?.map((paragraph, index) => (
+                                <p key={index}>{paragraph}</p>
+                            ))}
                         </div>
+                        
                         <div className="skill_wrap">
-                            <div className="skill">
+                            {/* <div className="skill">
                                 <h2>Professional Skills</h2>
                                 {progressData.map((item, index) => (
                                     <div className="progress_item" key={index}>
                                         <span>{item.label}</span>
                                         <div className="progres">
-                                            <div className="progress-value" style={{ width: `${item.value}%` }}>
+                                            <div 
+                                                className="progress-value" 
+                                                style={{ width: `${item.value}%` }}
+                                                aria-valuenow={item.value}
+                                                aria-valuemin="0"
+                                                aria-valuemax="100"
+                                            >
                                                 <span>{item.value}%</span>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                            </div>
+                            </div> */}
+                            
                             <div className="achievements">
                                 <h2>Achievements</h2>
                                 <ul>
-                                    <li><span>2018 - 2019 : </span>William Allan Award</li>
-                                    <li><span>2020 - 2021 : </span>Top Medical Resigning Star Award </li>
-                                    <li><span>2022 - 2023 : </span>Mother Philips Award</li>
-                                    <li><span>2024 - 2025 : </span>Institute of Top Medication Award</li>
-                                    <li><span>2017 - 2018 : </span>Harvard University Award</li>
-                                    <li><span>2016 - 2017 : </span>Best Doctor Award</li>
+                                    {currentMember.achievements?.map((achievement, index) => (
+                                        <li key={index}>
+                                            <span>{achievement.year}: </span>
+                                            {achievement.description}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
+                
                 <div className="AppointmentFrom">
                     <div className="container">
                         <div className="cta_form_s2">
@@ -156,15 +140,16 @@ const TeamSinglePage = (props) => {
                                 <h3>Make An Appointment</h3>
                                 <p>Get in touch with us to see how we can help you with your Problems.</p>
                             </div>
-                            <ContactForm />
+                            <ContactForm doctorId={currentMember.id} />
                         </div>
                     </div>
                 </div>
             </section>
+            
             <Footer hclass={'wpo-site-footer_s2'} />
             <Scrollbar />
         </Fragment>
-    )
+    );
 };
 
 export default TeamSinglePage;

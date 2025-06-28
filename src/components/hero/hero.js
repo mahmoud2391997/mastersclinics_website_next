@@ -53,7 +53,7 @@ const Hero = ({
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
-      className="relative z-[111] hero_section flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden min-h-[100vh] bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]"
+      className="relative z-[111] hero_section flex flex-col md:flex-row-reverse items-center justify-between overflow-hidden min-h-[100vh] bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]"
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden z-[-2]">
@@ -77,13 +77,13 @@ const Hero = ({
       >
         {/* Logo & Tagline Container */}
         <motion.div 
-          className="w-full flex flex-col items-end gap-5 mb-8"
+          className="w-full flex flex-col items-center md:items-end gap-5 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
           <motion.h2 
-            className="inline-block text-[20px] sm:text-[22px] lg:text-[24px] text-white bg-gradient-to-br from-[#A58532] via-[#CBA853] to-[#f0db83] px-6 py-3 rounded-[24px] mb-6 shadow-lg"
+            className="inline-block text-[20px]  sm:text-[22px] lg:text-[24px] text-[16px] sm:text-[18px] lg:text-[20px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]  px-6 py-3 rounded-[24px] mb-6 shadow-lg"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -93,7 +93,7 @@ const Hero = ({
 
         {/* Main Heading - Larger Text */}
         <motion.h3 
-          className="text-[42px] sm:text-[50px] md:text-[60px] lg:text-[70px] xl:text-[90px] 2xl:text-[110px] font-normal leading-[1.1] mb-8 text-[#2a2a2a] text-right w-full"
+          className="text-[42px] sm:text-[50px] md:text-[60px] lg:text-[70px] xl:text-[90px] 2xl:text-[110px] font-normal leading-[1.1] mb-8 text-[#2a2a2a] md:text-right  w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
@@ -113,13 +113,13 @@ const Hero = ({
 
         {/* CTA Buttons - Larger */}
         <motion.div 
-          className="flex flex-col sm:flex-row gap-6 justify-end w-full"
+          className="flex flex-col sm:flex-row gap-6 justify-center md:justify-end w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
           <motion.button
-            className="bg-gradient-to-br from-[#A58532] to-[#CBA853] theme-btn text-white px-10 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-xl font-medium"
+            className="bg-gradient-to-br from-[#A58532] to-[#CBA853] theme-btn text-white   rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-xl font-medium"
             whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(165, 133, 50, 0.4)" }}
             whileTap={{ scale: 0.95 }}
           >
@@ -174,23 +174,7 @@ const Hero = ({
         </div>
 
         {/* Floating video button */}
-        <motion.div 
-          className="absolute top-[30%] right-[10%] z-10"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="relative">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-b from-[#A58532] to-[#CBA853] rounded-full flex items-center justify-center shadow-xl cursor-pointer">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 5V19L19 12L8 5Z" fill="white" />
-              </svg>
-            </div>
-            <div className="absolute inset-0 rounded-full border-2 border-white border-opacity-30 animate-ping opacity-0"></div>
-          </div>
-          <span className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 text-sm font-medium text-[#555] whitespace-nowrap">
-            شاهد الفيديو
-          </span>
-        </motion.div>
+      
       </motion.div>
     </motion.section>
   )

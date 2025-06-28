@@ -26,18 +26,15 @@ const Header = (props) => {
     return (
         <header id="header" dir="rtl" className="relative">
             <div className={props.hclass}>
-                <nav className="navigation navbar navbar-expand-lg navbar-light">
+                <nav className="navigation navbar navbar-expand-lg navbar-light  w-[99%] md:mr-[45px] lg:mr-[95px]">
                     <div className="container-fluid">
-                        <div className="row flex items-start w-full">
+                        <div className="row flex :flex-row items-center justify-between m-auto">
                             {/* Moved mobile menu to the right side */}
-                            <div className="col-lg-3 col-md-3 col-3 d-lg-none dl-block text-end">
-                                <MobileMenu />
-                            </div>
                             
                             {/* Logo - centered in RTL */}
                             <div className="col-lg-2 col-md-6 col-6 text-center">
-                                <div className="navbar-header">
-                                    <Link href="/home" className="navbar-brand">
+                                <div className="navbar-header ">
+                                    <Link href="/home" className="navbar-brand flex justify-center items-center">
                                         <img 
                                             src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png" 
                                             alt="logo" 
@@ -48,13 +45,16 @@ const Header = (props) => {
                                 </div>
                             </div>
                             
+                            <div className="col-lg-3 col-md-3 col-6 flex justify-center items-center d-lg-none dl-block text-end">
+                                <MobileMenu />
+                            </div>
                             {/* Navigation menu - aligned right */}
                             <div className="col-lg-10 col-md-1 col-1">
-                                <div id="navbar" className="navbar-collapse navigation-holder">
+                                <div id="navbar" className="navbar-collapse navigation-holder mr-[10px]">
                                     <button className="menu-close absolute right-0 top-0 z-50 p-2 text-white"><i className="ti-close"></i></button>
                                     <ul className="nav navbar-nav mb-2 mb-lg-0 float-right flex-nowrap">
                                         <li className="menu-item-has-children relative group">
-                                            <Link href="/home" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
+                                            <Link href="/home" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
                                                 الرئيسية
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
@@ -65,13 +65,13 @@ const Header = (props) => {
                                             </ul>
                                         </li>
                                         <li>
-                                            <Link href="/about" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/about" className="block  px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 من نحن
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
                                         </li>
                                         <li className="menu-item-has-children relative group">
-                                            <Link href="/pages" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/pages" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 صفحات
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
@@ -87,7 +87,7 @@ const Header = (props) => {
                                             </ul>
                                         </li>
                                         <li className="menu-item-has-children relative group">
-                                            <Link href="/services" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/services" className="block  px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 الخدمات
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
@@ -97,7 +97,7 @@ const Header = (props) => {
                                             </ul>
                                         </li>
                                         <li className="menu-item-has-children relative group">
-                                            <Link href="/project" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/project" className="block  px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 معرض الأعمال
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
@@ -107,7 +107,7 @@ const Header = (props) => {
                                             </ul>
                                         </li>
                                         <li className="menu-item-has-children relative group">
-                                            <Link href="/blog" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/blog" className="block  px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 المدونة
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
@@ -126,7 +126,7 @@ const Header = (props) => {
                                             </ul>
                                         </li>
                                         <li>
-                                            <Link href="/contact" className="block  px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
+                                            <Link href="/contact" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative no-underline">
                                                 اتصل بنا
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>

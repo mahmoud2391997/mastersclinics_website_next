@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import Navbar from '../../components/Navbar/Navbar'
 import PageTitle from '../../components/pagetitle/PageTitle'
 import Projects from '../../api/projects';
-import ContactForm from '../ServiceSinglePage/ServiceFrom ';
+import ContactForm from '../ServiceSinglePage/ServiceFrom';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar'
 import logo from '../../images/logo-2.svg'

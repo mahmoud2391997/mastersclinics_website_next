@@ -4,6 +4,7 @@ import React, { useEffect } from "react"
 import SectionTitle from "../SectionTitle/SectionTitle"
 import { useSelector, useDispatch } from "react-redux"
 import { fetchTeams } from "@/store/slices/doctor"
+import Link from "next/link"
 
 const TeamSection = ({
   hclass,
@@ -122,12 +123,13 @@ const displayedTeams =
                       </div>
                     )}
 
-                    <button
-                      onClick={() => handleDoctorSelect(team)}
+                    <Link
+                      
+                    href={`/team/${team.id}`}
                       className="theme-btn w-full py-3 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       احجز موعد
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

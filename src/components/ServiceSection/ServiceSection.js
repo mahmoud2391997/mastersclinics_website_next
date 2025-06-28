@@ -10,6 +10,7 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import { useRouter } from "next/router";  // Import useRouter for navigation
 
 const ServiceSection = ({
   hclass = "",
@@ -21,6 +22,7 @@ const ServiceSection = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();
+  const router = useRouter();  // Hook to use programmatic navigation
   const { services = [], loading = false, error = null } = useSelector(
     (state) => state.services || {}
   );
@@ -53,6 +55,10 @@ const ServiceSection = ({
 
   const servicesToShow =
     services.length === 0 ? [] : services.slice(sliceStart, sliceEnd);
+
+  const handleSlideClick = (id) => {
+    router.push(`/services/${id}`); // Programmatically navigate to the service detail page
+  };
 
   if (!mounted) return null;
 
@@ -131,13 +137,19 @@ const ServiceSection = ({
                 swiper.params.navigation.nextEl = nextRef.current;
               }}
               loop={true}
-              className=" w-full p-5"
+              className="w-full p-5"
             >
               {servicesToShow.map((service, index) => (
                 <SwiperSlide key={index}>
-                  <div className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group">
+                  <div
+                    className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group"
+                    onClick={() => handleSlideClick(service.id)} // Click handler to navigate
+                  >
                     {/* Service Image or Icon */}
-                    <div className="mb-4 flex justify-center items-center w-full" style={{ minHeight: 120 }}>
+                    <div
+                      className="mb-4 flex justify-center items-center w-full"
+                      style={{ minHeight: 120 }}
+                    >
                       {service.image ? (
                         <img
                           src={service.image}
@@ -145,7 +157,9 @@ const ServiceSection = ({
                           className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
                         />
                       ) : (
-                        <i className={`text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a] ${service.icon}`}></i>
+                        <i
+                          className={`text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a] ${service.icon}`}
+                        ></i>
                       )}
                     </div>
 
@@ -213,28 +227,28 @@ const ServiceSection = ({
       </div>
 
       <style jsx global>{`
-      .swiper-button-prev-gradient,
-.swiper-button-next-gradient {
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  color: #dec06a !important;
-}
-.swiper-button-prev-gradient:hover,
-.swiper-button-next-gradient:hover {
-  background-color: transparent !important;
-  color: #d4b45c !important;
-}
-.swiper-button-prev-gradient i,
-.swiper-button-next-gradient i {
-  color: #dec06a !important;
-  font-size: 1.5rem;
-  transition: color 0.2s;
-}
-.swiper-button-prev-gradient:hover i,
-.swiper-button-next-gradient:hover i {
-  color: #d4b45c !important;
-}
+        .swiper-button-prev-gradient,
+        .swiper-button-next-gradient {
+          background-color: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          color: #dec06a !important;
+        }
+        .swiper-button-prev-gradient:hover,
+        .swiper-button-next-gradient:hover {
+          background-color: transparent !important;
+          color: #d4b45c !important;
+        }
+        .swiper-button-prev-gradient i,
+        .swiper-button-next-gradient i {
+          color: #dec06a !important;
+          font-size: 1.5rem;
+          transition: color 0.2s;
+        }
+        .swiper-button-prev-gradient:hover i,
+        .swiper-button-next-gradient:hover i {
+          color: #d4b45c !important;
+        }
         .swiper-button-prev,
         .swiper-button-next {
           color: #dec06a;

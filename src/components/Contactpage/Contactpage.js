@@ -1,11 +1,9 @@
 import React from 'react';
-import ContactForm from '../ContactFrom/ContactForm'
+import ContactForm from '../ContactFrom/ContactForm';
 
-
-const Contactpage = () => {
-
+const ContactpageArabic = () => {
     return (
-        <section className="wpo-contact-pg-section section-padding">
+        <section className="wpo-contact-pg-section section-padding" >
             <div className="container">
                 <div className="row">
                     <div className="col col-lg-10 offset-lg-1">
@@ -19,8 +17,8 @@ const Contactpage = () => {
                                             </div>
                                         </div>
                                         <div className="office-info-text">
-                                            <h2>Address</h2>
-                                            <p>7 Green Lake Street Crawfordsville, IN 47933</p>
+                                            <h2>العنوان</h2>
+                                            <p>الرياض، حي السليمانية، شارع الملك فهد</p>
                                         </div>
                                     </div>
                                 </div>
@@ -32,9 +30,9 @@ const Contactpage = () => {
                                             </div>
                                         </div>
                                         <div className="office-info-text">
-                                            <h2>Email Us</h2>
-                                            <p>medically@gmail.com</p>
-                                            <p>medically@gmail.com</p>
+                                            <h2>البريد الإلكتروني</h2>
+                                            <p>info@medically.com</p>
+                                            <p>support@medically.com</p>
                                         </div>
                                     </div>
                                 </div>
@@ -46,18 +44,17 @@ const Contactpage = () => {
                                             </div>
                                         </div>
                                         <div className="office-info-text">
-                                            <h2>Call Now</h2>
-                                            <p>+1 800 123 456 789</p>
-                                            <p>+1 800 123 654 987</p>
+                                            <h2>اتصل بنا</h2>
+                                            <p>+966 11 123 4567</p>
+                                            <p>+966 50 123 4567</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className="wpo-contact-title">
-                            <h2>Have Any Question?</h2>
-                            <p>It is a long established fact that a reader will be distracted
-                                content of a page when looking.</p>
+                            <h2>هل لديك أي استفسار؟</h2>
+                            <p>نحن هنا لمساعدتك والإجابة على جميع استفساراتك بخصوص خدماتنا الطبية والعناية الصحية</p>
                         </div>
                         <div className="wpo-contact-form-area">
                             <ContactForm />
@@ -67,12 +64,17 @@ const Contactpage = () => {
             </div>
             <section className="wpo-contact-map-section">
                 <div className="wpo-contact-map">
-                    <iframe title='comtact-map' src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.9147703055!2d-74.11976314309273!3d40.69740344223377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew+York%2C+NY%2C+USA!5e0!3m2!1sen!2sbd!4v1547528325671"></iframe>
+                    <iframe 
+                        title='خريطة الموقع'
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3621.511722002788!2d46.67558231500018!3d24.8174779840713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2ee3a9ae98a8a1%3A0x842054c1f81f8f0!2sKing%20Fahd%20Rd%2C%20As%20Sulimaniyah%2C%20Riyadh%2012631%2C%20Saudi%20Arabia!5e0!3m2!1sen!2seg!4v1658765432103!5m2!1sen!2seg"
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
             </section>
         </section>
     )
-
 }
 
-export default Contactpage;
+export default ContactpageArabic;
