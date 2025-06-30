@@ -26,7 +26,7 @@ const handleApiError = (error) => {
 };
 
 // Generic GET
-export const get = async (url, config = {}) => {
+export const get = async (url) => {
   try {
     const response = await api.get(url, {  timeout: 30000, // ⬅️ increase to 30 seconds or more
 });

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import erimg from '../../images/error-404.png'
 
 
-const Error = (props) => {
+const Error = () => {
     const ClickHandler = () =>{
         window.scrollTo(10, 0);
      }

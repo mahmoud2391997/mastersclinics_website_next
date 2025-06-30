@@ -18,7 +18,6 @@ const ServiceSection = ({
   sliceEnd = 6,
   showSectionTitle = true,
   AllServices = true,
-  viewMode = "carousel",
 }) => {
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();

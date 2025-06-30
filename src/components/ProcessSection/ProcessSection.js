@@ -1,12 +1,7 @@
 import React from 'react';
 import SectionTitle from '../SectionTitle/SectionTitle';
 
-/* image */
-import Pross1 from '../../images/work/1.jpg'
-import Pross2 from '../../images/work/2.jpg'
-import Pross3 from '../../images/work/3.jpg'
-import Pross4 from '../../images/work/4.jpg'
-import Shape from '../../images/work/shape.svg'
+
 
 const ProcessSection = (props) => {
     return (

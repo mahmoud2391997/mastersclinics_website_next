@@ -28,11 +28,7 @@ const TeamSection = ({
     dispatch(fetchTeams());
   }, [dispatch]);
 
-  const handleDoctorSelect = (doctor) => {
-    if (onDoctorSelect) {
-      onDoctorSelect(doctor);
-    }
-  };
+
 
   const getBranchName = (branchCode) => {
     const branchMap = {

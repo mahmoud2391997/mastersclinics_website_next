@@ -4,7 +4,7 @@ import About1 from '../../images/about2.jpg';
 import About3 from '../../images/signeture.png';
 
 
-const About2 = (props) => {
+const About2 = () => {
 
 
     return (
