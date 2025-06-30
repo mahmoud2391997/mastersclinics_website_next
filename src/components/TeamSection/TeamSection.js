@@ -11,7 +11,6 @@ const TeamSection = ({
   sliceStart = 0,
   sliceEnd = null, // Changed to null to show all by default
   showSectionTitle = true,
-  onDoctorSelect,
 }) => {
   const dispatch = useDispatch();
   const { teams = [], loading = false, error = null } = useSelector(

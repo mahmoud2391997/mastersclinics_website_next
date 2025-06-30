@@ -3,7 +3,6 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/List";
 import Collapse from "@mui/material/Collapse";
 import Link from 'next/link';
-import './style.css';
 
 const menus = [
     {
