@@ -1,4 +1,3 @@
-import React, { useRef, useState } from 'react';
 import { Pagination, A11y } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';

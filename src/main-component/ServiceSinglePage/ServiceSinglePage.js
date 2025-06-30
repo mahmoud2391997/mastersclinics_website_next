@@ -1,6 +1,5 @@
-import React, { Fragment } from 'react';
+import  { Fragment } from 'react';
 import Link from 'next/link'
-import { useRouter } from 'next/router'
 import Services from '../../api/Services';
 import ServiceFrom from './ServiceFrom';
 import ServiceSidebar from './sidebar'
@@ -12,7 +11,7 @@ import simg1 from '../../images/service-single/img-1.jpg'
 import simg2 from '../../images/service-single/img-2.jpg'
 import logo from '../../images/logo-2.svg'
 
-const ServiceSinglePage = (props) => {
+const ServiceSinglePage = () => {
     const ClickHandler = () => {
         window.scrollTo(10, 0);
     }

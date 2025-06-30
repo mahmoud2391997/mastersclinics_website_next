@@ -34,7 +34,7 @@ const insData = [
     },
 ]
 
-const ServiceSidebar = (props) => {
+const ServiceSidebar = () => {
 
 
 

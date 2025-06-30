@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react';
-import { useRouter } from 'next/router'
+import  { Fragment } from 'react';
 import blogs from '../../api/blogs'
 import Navbar from '../../components/Navbar/Navbar';
 import PageTitle from '../../components/pagetitle/PageTitle'

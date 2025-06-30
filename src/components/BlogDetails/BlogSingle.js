@@ -1,28 +1,27 @@
 import React from 'react';
-import Link from 'next/link'
-import blog3 from '../../images/blog-details/comments-author/img-1.jpg'
-import blog4 from '../../images/blog-details/comments-author/img-2.jpg'
-import blog5 from '../../images/blog-details/comments-author/img-3.jpg'
-import blog6 from '../../images/blog-details/author.jpg'
-import gl1 from '../../images/blog/img-1.jpg'
-import gl2 from '../../images/blog/img-2.jpg'
+import Link from 'next/link';
+import blog3 from '../../images/blog-details/comments-author/img-1.jpg';
+import blog4 from '../../images/blog-details/comments-author/img-2.jpg';
+import blog5 from '../../images/blog-details/comments-author/img-3.jpg';
+import blog6 from '../../images/blog-details/author.jpg';
+import gl1 from '../../images/blog/img-1.jpg';
+import gl2 from '../../images/blog/img-2.jpg';
 import blogs from '../../api/blogs';
-import { useRouter } from 'next/router'
-import BlogSidebar from '../BlogSidebar/BlogSidebar.js'
+import { useRouter } from 'next/router';
+import BlogSidebar from '../BlogSidebar/BlogSidebar';
 
 const BlogSingle = (props) => {
-    
     const router = useRouter();
-    const { slug } = router.query
+    const { slug } = router.query;
 
-    const BlogDetails = blogs.find(item => item.slug === slug)
+    const BlogDetails = blogs.find(item => item.slug === slug);
 
     const submitHandler = (e) => {
-        e.preventDefault()
-    }
+        e.preventDefault();
+    };
 
     return (
-        <section className="wpo-blog-single-section section-padding">
+        <section className="wpo-blog-single-section section-padding" dir="rtl">
             <div className="container">
                 <div className="row">
                     <div className={`col col-lg-8 col-12 ${props.blRight}`}>
@@ -33,17 +32,17 @@ const BlogSingle = (props) => {
                                 </div>
                                 <div className="entry-meta">
                                     <ul>
-                                        <li><i className="fi flaticon-user"></i> By <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">{BlogDetails.author}</Link> </li>
-                                        <li><i className="fi flaticon-comment-white-oval-bubble"></i> Comments {BlogDetails.comment}</li>
+                                        <li><i className="fi flaticon-user"></i> بواسطة <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">{BlogDetails.author}</Link></li>
+                                        <li><i className="fi flaticon-comment-white-oval-bubble"></i> تعليقات {BlogDetails.comment}</li>
                                         <li><i className="fi flaticon-calendar"></i> {BlogDetails.create_at}</li>
                                     </ul>
                                 </div>
                                 <h2>{BlogDetails.title2}</h2>
-                                <p>There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful.</p>
+                                <p>هناك العديد من الأشكال المختلفة لنصوص لوريم إيبسوم المتاحة، ولكن الغالبية تعرضت للتغيير بشكل ما، سواء بإدخال بعض النوادر أو الكلمات العشوائية. إذا كنت تنوي استخدام نص لوريم إيبسوم، يجب أن تتأكد من عدم وجود أي كلمات أو عبارات محرجة مخفية في منتصف النص.</p>
                                 <blockquote>
-                                    Combined with a handful of model sentence structures, generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.
+                                    عند دمجها مع بعض هياكل الجمل النموذجية، ينتج نص لوريم إيبسوم المعقول والخالي من التكرار أو الكلمات غير المميزة.
                                 </blockquote>
-                                <p>I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself,</p>
+                                <p>سأشرح لك كيف نشأت كل هذه الأفكار الخاطئة حول إنكار المتعة وتمجيد الألم، وسأعطيك شرحًا كاملًا للنظام، وسأعرض لك التعاليم الحقيقية لمستكشف الحقيقة العظيم، مهندس السعادة البشرية.</p>
 
                                 <div className="gallery">
                                     <div>
@@ -57,22 +56,22 @@ const BlogSingle = (props) => {
 
                             <div className="tag-share clearfix">
                                 <div className="tag">
-                                    <span>Share: </span>
+                                    <span>شارك: </span>
                                     <ul>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Planning</Link></li>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Helth</Link></li>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">Beauty</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">تخطيط</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">صحة</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">جمال</Link></li>
                                     </ul>
                                 </div>
                             </div>
                             <div className="tag-share-s2 clearfix">
                                 <div className="tag">
-                                    <span>Share: </span>
+                                    <span>شارك: </span>
                                     <ul>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">facebook</Link></li>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">twitter</Link></li>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">linkedin</Link></li>
-                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">pinterest</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">فيسبوك</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">تويتر</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">لينكد إن</Link></li>
+                                        <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack">بينتريست</Link></li>
                                     </ul>
                                 </div>
                             </div>
@@ -82,8 +81,8 @@ const BlogSingle = (props) => {
                                     <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" target="_blank"><img src={blog6} alt="" /></Link>
                                 </div>
                                 <div className="author-content">
-                                    <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" className="author-name">Author: {BlogDetails.author}</Link>
-                                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.</p>
+                                    <Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack" className="author-name">المؤلف: {BlogDetails.author}</Link>
+                                    <p>لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار المتعة وتمجيد الألم نشأت بالفعل.</p>
                                     <div className="socials">
                                         <ul className="social-link">
                                             <li><Link href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><i className="ti-facebook"></i></Link></li>
@@ -98,21 +97,21 @@ const BlogSingle = (props) => {
                             <div className="more-posts">
                                 <div className="previous-post">
                                     <Link href="/blog">
-                                        <span className="post-control-link">Previous Post</span>
-                                        <span className="post-name">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium.</span>
+                                        <span className="post-control-link">المقال السابق</span>
+                                        <span className="post-name">لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار المتعة وتمجيد الألم نشأت بالفعل.</span>
                                     </Link>
                                 </div>
                                 <div className="next-post">
                                     <Link href="/blog-left-sidebar">
-                                        <span className="post-control-link">Next Post</span>
-                                        <span className="post-name">Dignissimos ducimus qui blanditiis praesentiu deleniti atque corrupti quos dolores</span>
+                                        <span className="post-control-link">المقال التالي</span>
+                                        <span className="post-name">لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار المتعة وتمجيد الألم نشأت بالفعل.</span>
                                     </Link>
                                 </div>
                             </div>
 
                             <div className="comments-area">
                                 <div className="comments-section">
-                                    <h3 className="comments-title">Comments</h3>
+                                    <h3 className="comments-title">التعليقات</h3>
                                     <ol className="comments">
                                         <li className="comment even thread-even depth-1" id="comment-1">
                                             <div id="div-comment-1">
@@ -122,15 +121,12 @@ const BlogSingle = (props) => {
                                                 <div className="comment-main-area">
                                                     <div className="comment-wrapper">
                                                         <div className="comments-meta">
-                                                            <h4>John Abraham <span className="comments-date">January 12,2024 
-                                                                At 9.00am</span></h4>
+                                                            <h4>جون إبراهيم <span className="comments-date">12 يناير 2024 الساعة 9:00 ص</span></h4>
                                                         </div>
                                                         <div className="comment-area">
-                                                            <p>I will give you a complete account of the system, and
-                                                                expound the actual teachings of the great explorer of
-                                                                the truth, </p>
+                                                            <p>سأعطيك شرحًا كاملًا للنظام، وسأعرض لك التعاليم الحقيقية لمستكشف الحقيقة العظيم.</p>
                                                             <div className="comments-reply">
-                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>رد</span></Link>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -145,15 +141,12 @@ const BlogSingle = (props) => {
                                                         <div className="comment-main-area">
                                                             <div className="comment-wrapper">
                                                                 <div className="comments-meta">
-                                                                    <h4>Lily Watson <span className="comments-date">January
-                                                                        12,2024  At 9.00am</span></h4>
+                                                                    <h4>ليلي واتسون <span className="comments-date">12 يناير 2024 الساعة 9:00 ص</span></h4>
                                                                 </div>
                                                                 <div className="comment-area">
-                                                                    <p>I will give you a complete account of the system,
-                                                                        and expound the actual teachings of the great
-                                                                        explorer of the truth, </p>
+                                                                    <p>سأعطيك شرحًا كاملًا للنظام، وسأعرض لك التعاليم الحقيقية لمستكشف الحقيقة العظيم.</p>
                                                                     <div className="comments-reply">
-                                                                        <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                        <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>رد</span></Link>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -168,15 +161,12 @@ const BlogSingle = (props) => {
                                                                 <div className="comment-main-area">
                                                                     <div className="comment-wrapper">
                                                                         <div className="comments-meta">
-                                                                            <h4>John Abraham <span className="comments-date">January
-                                                                                12,2024  At 9.00am</span></h4>
+                                                                            <h4>جون إبراهيم <span className="comments-date">12 يناير 2024 الساعة 9:00 ص</span></h4>
                                                                         </div>
                                                                         <div className="comment-area">
-                                                                            <p>I will give you a complete account of the
-                                                                                system, and expound the actual teachings
-                                                                                of the great explorer of the truth, </p>
+                                                                            <p>سأعطيك شرحًا كاملًا للنظام، وسأعرض لك التعاليم الحقيقية لمستكشف الحقيقة العظيم.</p>
                                                                             <div className="comments-reply">
-                                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>رد</span></Link>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -195,15 +185,12 @@ const BlogSingle = (props) => {
                                                 <div className="comment-main-area">
                                                     <div className="comment-wrapper">
                                                         <div className="comments-meta">
-                                                            <h4>John Abraham <span className="comments-date">January 12,2024 
-                                                                At 9.00am</span></h4>
+                                                            <h4>جون إبراهيم <span className="comments-date">12 يناير 2024 الساعة 9:00 ص</span></h4>
                                                         </div>
                                                         <div className="comment-area">
-                                                            <p>I will give you a complete account of the system, and
-                                                                expound the actual teachings of the great explorer of
-                                                                the truth, </p>
+                                                            <p>سأعطيك شرحًا كاملًا للنظام، وسأعرض لك التعاليم الحقيقية لمستكشف الحقيقة العظيم.</p>
                                                             <div className="comments-reply">
-                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>Reply</span></Link>
+                                                                <Link className="comment-reply-link" href="/blog-single/Why-Industry-Are-A-Juicy-Target-For-Cyberattack"><span>رد</span></Link>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -213,18 +200,18 @@ const BlogSingle = (props) => {
                                     </ol>
                                 </div>
                                 <div className="comment-respond">
-                                    <h3 className="comment-reply-title">Post Comments</h3>
+                                    <h3 className="comment-reply-title">أضف تعليقًا</h3>
                                     <form onSubmit={submitHandler} id="commentform" className="comment-form">
                                         <div className="form-textarea">
-                                            <textarea id="comment" placeholder="Write Your Comments..."></textarea>
+                                            <textarea id="comment" placeholder="اكتب تعليقك هنا..."></textarea>
                                         </div>
                                         <div className="form-inputs">
-                                            <input placeholder="Website" type="url" />
-                                            <input placeholder="Name" type="text" />
-                                            <input placeholder="Email" type="email" />
+                                            <input placeholder="الموقع الإلكتروني" type="url" />
+                                            <input placeholder="الاسم" type="text" />
+                                            <input placeholder="البريد الإلكتروني" type="email" />
                                         </div>
                                         <div className="form-submit">
-                                            <input id="submit" value="Post Comment" type="submit" />
+                                            <input id="submit" value="نشر التعليق" type="submit" />
                                         </div>
                                     </form>
                                 </div>
@@ -235,8 +222,7 @@ const BlogSingle = (props) => {
                 </div>
             </div>
         </section>
-    )
-
-}
+    );
+};
 
 export default BlogSingle;

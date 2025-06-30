@@ -3,25 +3,13 @@ import Link from 'next/link'
 import MobileMenu from '../MobileMenu/MobileMenu'
 
 const Header = (props) => {
-    const [menuActive, setMenuState] = useState(false);
-    const [cartActive, setcartState] = useState(false);
-
-    const SubmitHandler = (e) => {
-        e.preventDefault()
-    }
 
     const ClickHandler = () => {
         window.scrollTo(10, 0);
     }
 
-    const { carts } = props;
 
-    // Helper for non-navigating menu items
-    const MenuButton = ({ children }) => (
-        <button type="button" className="menu-link" onClick={ClickHandler} style={{ background: 'none', border: 'none', padding: 0 }}>
-            {children}
-        </button>
-    );
+
 
     return (
         <header id="header" dir="rtl" className="relative">

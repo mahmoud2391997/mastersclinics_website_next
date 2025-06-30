@@ -1,5 +1,4 @@
 import React, {Fragment, useEffect, useState} from 'react';
-import { useRouter } from 'next/router'
 import { connect } from "react-redux";
 import Navbar from '../../components/Navbar/Navbar';
 import PageTitle from '../../components/pagetitle/PageTitle'

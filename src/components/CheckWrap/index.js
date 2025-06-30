@@ -8,7 +8,7 @@ import {useNavigate} from "react-router-dom";
 
 import './style.scss';
 
-const CheckWrap = (props) => {
+const CheckWrap = () => {
 
     const push = useNavigate()
 
