@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import Navbar from '../../src/components/Navbar/Navbar';
 import PageTitle from '../../src/components/pagetitle/PageTitle'
-import ServiceSection from '../../src/components/ServiceSection/ServiceSection';
+import ServiceSection from '../../src/main-component/servicesSection/index';
 import CtafromSection from '../../src/components/CtafromSection/CtafromSection';
 import Footer from '../../src/components/footer/Footer';
 import Scrollbar from '../../src/components/scrollbar/scrollbar';
@@ -11,7 +11,7 @@ const ServicePage = () => {
         <Fragment>
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'}  />
             <PageTitle pageTitle={'Service'} pagesub={'Service'} />
-            <ServiceSection hclass={"service_section_s2 s3 section-padding"} sliceEnd={6} showSectionTitle={false} AllServices={false} />
+<ServiceSection />
             <CtafromSection hclass={'ctafrom_section'} />
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar />

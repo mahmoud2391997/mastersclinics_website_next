@@ -69,7 +69,7 @@ const ProcessSection = (props) => {
                         </div>
                     </div>
                     <div className="shape">
-                        <img src={Shape} alt="" />
+                        <img src={"https://medically-react.wpolive.com/static/media/shape.5edd8922c81953a3c45652d466928c51.svg"} alt="" />
                     </div>
                 </div>
             </div>

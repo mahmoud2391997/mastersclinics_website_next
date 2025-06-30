@@ -1,39 +1,38 @@
-"use client"
+"use client";
 
-import React, { useEffect } from "react"
-import SectionTitle from "../SectionTitle/SectionTitle"
-import { useSelector, useDispatch } from "react-redux"
-import { fetchTeams } from "@/store/slices/doctor"
-import Link from "next/link"
+import React, { useEffect } from "react";
+import SectionTitle from "../SectionTitle/SectionTitle";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchTeams } from "@/store/slices/doctor";
+import Link from "next/link";
 
 const TeamSection = ({
-  hclass,
-  sliceStart,
-  sliceEnd,
+  hclass = "",
+  sliceStart = 0,
+  sliceEnd = null, // Changed to null to show all by default
   showSectionTitle = true,
-  onDoctorSelect
+  onDoctorSelect,
 }) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { teams = [], loading = false, error = null } = useSelector(
     (state) => state.teams || {}
-  )
-const placeholder = "/download.png"; // or your preferred placeholder path
+  );
+  const placeholder = "/download.png"; // or your preferred placeholder path
 
-const displayedTeams =
-  teams && teams.length > 0
-    ? teams.slice(0, 3) // Always show only 3 doctors
-    : [];
+  // Determine which teams to show based on props
+  const displayedTeams = sliceEnd 
+    ? teams.slice(sliceStart, sliceEnd)
+    : teams.slice(sliceStart);
+
   useEffect(() => {
-    dispatch(fetchTeams())
-  }, [dispatch])
-
-
+    dispatch(fetchTeams());
+  }, [dispatch]);
 
   const handleDoctorSelect = (doctor) => {
     if (onDoctorSelect) {
-      onDoctorSelect(doctor)
+      onDoctorSelect(doctor);
     }
-  }
+  };
 
   const getBranchName = (branchCode) => {
     const branchMap = {
@@ -43,12 +42,12 @@ const displayedTeams =
       albasateen: "فرع البساتين",
       abhur: "ابحر الشمالية",
       altaif: "فرع الطائف",
-    }
-    return branchMap[branchCode] || branchCode
-  }
+    };
+    return branchMap[branchCode] || branchCode;
+  };
 
   return (
-    <section>
+    <section className={hclass}>
       <div className="container mx-auto px-4">
         {showSectionTitle && (
           <div className="row justify-center">
@@ -60,7 +59,11 @@ const displayedTeams =
 
         {loading && (
           <div className="flex justify-center items-center py-10">
-            <div className="spinner-border text-primary" style={{ width: "3rem", height: "3rem" }} role="status">
+            <div
+              className="spinner-border text-primary"
+              style={{ width: "3rem", height: "3rem" }}
+              role="status"
+            >
               <span className="visually-hidden">Loading...</span>
             </div>
           </div>
@@ -82,20 +85,28 @@ const displayedTeams =
                   <div className="relative p-4">
                     <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
                       <div className="relative overflow-hidden rounded-[20px]">
-                      <img
-  src={team.image && typeof team.image === "string" && team.image.trim() !== "" ? team.image : placeholder}
-  alt={"Team Member"}
-  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-  loading="lazy"
-  onError={(e) => {
-    e.target.src = placeholder;
-  }}
-/>
+                        <img
+                          src={
+                            team.image &&
+                            typeof team.image === "string" &&
+                            team.image.trim() !== ""
+                              ? team.image
+                              : placeholder
+                          }
+                          alt={"Team Member"}
+                          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.src = placeholder;
+                          }}
+                        />
                       </div>
 
                       {team.branches && team.branches.length > 0 && (
                         <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
-                          {team.branches.length === 1 ? getBranchName(team.branches[0]) : `${team.branches.length} فروع`}
+                          {team.branches.length === 1
+                            ? getBranchName(team.branches[0])
+                            : `${team.branches.length} فروع`}
                         </div>
                       )}
                     </div>
@@ -105,11 +116,15 @@ const displayedTeams =
                     <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
                       {team.name}
                     </h3>
-                    <span className="text-[#dec06a] mb-4 block font-medium">{team.specialization}</span>
+                    <span className="text-[#dec06a] mb-4 block font-medium">
+                      {team.specialization}
+                    </span>
 
                     {team.branches.length > 0 && (
                       <div className="mb-4">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">متوفر في:</p>
+                        <p className="text-xs text-gray-500 mb-2 font-medium">
+                          متوفر في:
+                        </p>
                         <div className="flex flex-wrap gap-2 justify-center">
                           {team.branches.map((branch, branchIndex) => (
                             <span
@@ -124,8 +139,7 @@ const displayedTeams =
                     )}
 
                     <Link
-                      
-                    href={`/team/${team.id}`}
+                      href={`/team/${team.id}`}
                       className="theme-btn w-full py-3 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       احجز موعد
@@ -138,7 +152,7 @@ const displayedTeams =
         )}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default TeamSection
+export default TeamSection;

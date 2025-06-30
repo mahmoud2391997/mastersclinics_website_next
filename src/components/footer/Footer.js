@@ -8,18 +8,16 @@ const ClickHandler = () => {
 
 const Footer = (props) => {
     return (
-        <footer className={"" + props.hclass}>
+        <footer className={"rtl " + props.hclass} dir="rtl">
             <div className="wpo-upper-footer">
                 <div className="container">
                     <div className="row">
                         <div className="col col-lg-3 col-md-6 col-sm-12 col-12">
                             <div className="widget about-widget">
                                 <div className="logo widget-title">
-                                    <img src={logo} alt="blog" />
+                                    <img src={logo} alt="logo" />
                                 </div>
-                                <p>Mattis inelit neque quis donec eleifnd amet. Amet sed et cursus eu euismod.
-                                    Egestas
-                                    in morbi tristique.</p>
+                                <p>نقدم لكم أفضل الخدمات الطبية والعناية الصحية بأعلى معايير الجودة والكفاءة المهنية.</p>
                                 <div className="social-widget">
                                     <ul>
                                         <li>
@@ -49,28 +47,28 @@ const Footer = (props) => {
                         <div className="col col-lg-3 col-md-6 col-sm-12 col-12">
                             <div className="widget link-widget">
                                 <div className="widget-title">
-                                    <h3>Quick Links</h3>
+                                    <h3>روابط سريعة</h3>
                                 </div>
                                 <ul>
-                                    <li><Link href="/home" onClick={ClickHandler}>Home</Link></li>
-                                    <li><Link href="/about" onClick={ClickHandler}>About Us</Link></li>
-                                    <li><Link href="/services" onClick={ClickHandler}>Services</Link></li>
-                                    <li><Link href="/blog" onClick={ClickHandler}>Latest News</Link></li>
-                                    <li><Link href="/doctor" onClick={ClickHandler}>Team</Link></li>
+                                    <li><Link href="/home" onClick={ClickHandler}>الرئيسية</Link></li>
+                                    <li><Link href="/about" onClick={ClickHandler}>من نحن</Link></li>
+                                    <li><Link href="/services" onClick={ClickHandler}>الخدمات</Link></li>
+                                    <li><Link href="/blog" onClick={ClickHandler}>أحدث الأخبار</Link></li>
+                                    <li><Link href="/doctor" onClick={ClickHandler}>فريق العمل</Link></li>
                                 </ul>
                             </div>
                         </div>
                         <div className="col col-lg-3 col-md-6 col-sm-12 col-12">
                             <div className="widget link-widget s2">
                                 <div className="widget-title">
-                                    <h3>Useful Links</h3>
+                                    <h3>روابط مفيدة</h3>
                                 </div>
                                 <ul>
-                                    <li><Link href="/project" onClick={ClickHandler}>Projects</Link></li>
-                                    <li><Link href="/shop" onClick={ClickHandler}>Shop</Link></li>
-                                    <li><Link href="/cart" onClick={ClickHandler}>Cart</Link></li>
-                                    <li><Link href="/contact" onClick={ClickHandler}>Contact us</Link></li>
-                                    <li><Link href="/faq" onClick={ClickHandler}>Faq</Link></li>
+                                    <li><Link href="/project" onClick={ClickHandler}>المشاريع</Link></li>
+                                    <li><Link href="/shop" onClick={ClickHandler}>المتجر</Link></li>
+                                    <li><Link href="/cart" onClick={ClickHandler}>سلة التسوق</Link></li>
+                                    <li><Link href="/contact" onClick={ClickHandler}>اتصل بنا</Link></li>
+                                    <li><Link href="/faq" onClick={ClickHandler}>الأسئلة الشائعة</Link></li>
                                 </ul>
                             </div>
                         </div>
@@ -78,15 +76,12 @@ const Footer = (props) => {
                         <div className="col col-lg-3 col-md-6 col-sm-12 col-12">
                             <div className="widget contact-widget">
                                 <div className="widget-title">
-                                    <h3>Contact Us</h3>
+                                    <h3>تواصل معنا</h3>
                                 </div>
                                 <ul>
-                                    <li><i className="flaticon-email"></i><span>medically@gmail.com</span>
-                                    </li>
-                                    <li> <i className="flaticon-telephone"></i><span>(704) 555-0127
-                                        <br />(208) 555-0112</span></li>
-                                    <li><i className="flaticon-location-1"></i><span>4517 Washington Ave. <br />
-                                        Manchter, Kentucky 495</span></li>
+                                    <li><i className="flaticon-email"></i><span>info@example.com</span></li>
+                                    <li><i className="flaticon-telephone"></i><span>+966 12 345 6789<br />+966 98 765 4321</span></li>
+                                    <li><i className="flaticon-location-1"></i><span>الرياض، المملكة العربية السعودية<br />شارع الملك فهد</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -97,18 +92,17 @@ const Footer = (props) => {
                 <div className="container">
                     <div className="row g-0">
                         <div className="col col-lg-6 col-12">
-                            <p className="copyright"> Copyright &copy; 2024 Medically by <Link href="/" onClick={ClickHandler}>wpOceans</Link>.
-                                All
-                                Rights Reserved.</p>
+                            <p className="copyright">جميع الحقوق محفوظة &copy; {new Date().getFullYear()} عيادتي</p>
                         </div>
                         <div className="col col-lg-6 col-12">
                             <ul>
-                                <li><Link href="/privace" onClick={ClickHandler}>Privace & Policy</Link></li>
-                                <li><Link href="/terms" onClick={ClickHandler}>Terms</Link></li>
-                                <li><Link href="/about" onClick={ClickHandler}>About us</Link></li>
-                                <li><Link href="/faq" onClick={ClickHandler}>FAQ</Link></li>
+                                <li><Link href="/privace" onClick={ClickHandler}>سياسة الخصوصية</Link></li>
+                                <li><Link href="/terms" onClick={ClickHandler}>الشروط والأحكام</Link></li>
+                                <li><Link href="/about" onClick={ClickHandler}>من نحن</Link></li>
+                                <li><Link href="/faq" onClick={ClickHandler}>الأسئلة الشائعة</Link></li>
                             </ul>
-                            </div> </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </footer>

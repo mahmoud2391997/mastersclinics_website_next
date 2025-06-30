@@ -93,7 +93,7 @@ const Hero = ({
 
         {/* Main Heading - Larger Text */}
         <motion.h3 
-          className="text-[42px] sm:text-[50px] md:text-[60px] lg:text-[70px] xl:text-[90px] 2xl:text-[110px] font-normal leading-[1.1] mb-8 text-[#2a2a2a] md:text-right  w-full"
+          className="text-[42px] sm:text-[50px] md:text-[55px]  xl:text-[90px] 2xl:text-[110px] font-normal leading-[1.1] mb-8 text-[#2a2a2a] md:text-right  w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}

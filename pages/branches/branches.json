@@ -1,0 +1,115 @@
+[
+  {
+    "_id": "1",
+    "id": 1,
+    "region_id": 1,
+    "name": "فرع العوالي",
+    "address": "حي العوالي شارع ابراهيم الجفالي قبل بنك الراجحي",
+    "location_link": "https://maps.app.goo.gl/1ibregK8ZArXVA9W9",
+    "coordinates": {
+      "latitude": 21.35643494168666,
+      "longitude": 39.87606743757779
+    },
+    "region": "مكة",
+    "working_hours": [
+      {
+        "days": "من السبت إلى الأربعاء",
+        "time": "9:00 صباحًا - 10:00 مساءً"
+      },
+      {
+        "days": "الخميس",
+        "time": "9:00 صباحًا - 9:00 مساءً"
+      }
+    ]
+  },
+  {
+    "_id": "2",
+    "id": 2,
+    "region_id": 1,
+    "name": "فرع الخالدية",
+    "address": "طريق الدائري الثالث حي الخالدية برج المشارق الدور الرابع",
+    "location_link": "https://maps.app.goo.gl/Rvtpe9143U2wasQh9",
+    "working_hours": [
+      {
+        "days": "من السبت إلى الأربعاء",
+        "time": "9:00 صباحًا - 10:00 مساءً"
+      },
+      {
+        "days": "الخميس",
+        "time": "9:00 صباحًا - 8:00 مساءً"
+      }
+    ],
+    "coordinates": {
+      "latitude": 21.399068460295886,
+      "longitude": 39.799157884740396
+    }
+  },
+  {
+    "_id": "3",
+    "id": 3,
+    "region_id": 2,
+    "name": "فرع الشاطئ",
+    "address": "حي الشاطئ طريق الكورنيش برج النخبة خلف برج الشاشة طريق الملك الدور الثالث",
+    "location_link": "https://maps.app.goo.gl/R1GvSn8F9Zyemd5C7",
+    "working_hours": [
+      {
+        "days": "من السبت إلى الأربعاء",
+        "time": "9:00 صباحًا - 10:00 مساءً"
+      },
+      {
+        "days": "الخميس",
+        "time": "9:00 صباحًا - 8:00 مساءً"
+      }
+    ],
+    "coordinates": {
+      "latitude": 21.61200113668299,
+      "longitude": 39.124924349757556
+    }
+  },
+  {
+    "_id": "4",
+    "id": 4,
+    "region_id": 2,
+    "name": "فرع البساتين",
+    "address": "حي البساتين شارع اسماعيل بن كثير",
+    "location_link": "https://maps.app.goo.gl/BZjojSyV4xSdE32U9",
+    "working_hours": [
+      {
+        "days": "من السبت إلى الأربعاء",
+        "time": "2:00 مساءً - 10:00 مساءً"
+      },
+      {
+        "days": "الخميس",
+        "time": "1:00 مساءً - 9:00 مساءً"
+      }
+    ],
+    "coordinates": {
+      "latitude": 21.74581388140332,
+      "longitude": 39.091236812391045
+    }
+  },
+  {
+    "_id": "5",
+    "id": 5,
+    "region_id": 2,
+    "name": "ابحر الشمالية",
+    "address": "ابحر الشمالية شارع عبر القارات برج الجوهرة",
+    "location_link": "https://maps.app.goo.gl/QKGoAYWYorAR8riKA",
+    "coordinates": {
+      "latitude": 21.765875885393115,
+      "longitude": 39.11321074232811
+    }
+  },
+  {
+    "_id": "6",
+    "id": 6,
+    "region_id": 3,
+    "name": "فرع الطائف",
+    "address": "الدور الارضي شارع قريش اسفل جو فالي",
+    "location_link": "https://maps.app.goo.gl/L54ngMRmpofW5ski7",
+    "coordinates": {
+      "latitude": 21.23460590468905,
+      "longitude": 40.41442388465623
+    }
+  }
+] 

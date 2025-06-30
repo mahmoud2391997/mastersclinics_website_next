@@ -3015,6 +3015,7 @@ Version:        1.0.0
 
     font-size: 20px;
     padding: 65px 20px;
+    padding-bottom: 0px;
     display: block;
     color: #000B47;
     font-weight: 500;
@@ -3025,6 +3026,8 @@ Version:        1.0.0
 @media screen and (min-width: 992px) and (max-width: 1870px) {
   .wpo-site-header #navbar > ul > li > a {
     padding: 65px 18px;
+        padding-bottom: 0px;
+
   }
 }
 @media screen and (min-width: 992px) {
@@ -3034,7 +3037,7 @@ Version:        1.0.0
     width: 225px;
     position: absolute;
     padding: 20px 0;
-    left: 0;
+    right: 0;
     top: 110%;
     z-index: 10;
     visibility: hidden;
@@ -3052,12 +3055,12 @@ Version:        1.0.0
   }
   .wpo-site-header #navbar > ul > li .sub-menu a:after {
     position: absolute;
-    left: 15px;
+    right: 15px;
     bottom: 4px;
     width: 0px;
     height: 2px;
     content: "";
-    background: linear-gradient(358deg, #1E63FF -1077.15%, #187CFF -690.64%, #128FFF -213.19%, #0CA9FF 218.79%, #06C2FF 764.46%, #00DBFF 1196.44%);
+    background: linear-gradient(358deg, #A58532 -1077.15%, #CBA853 -690.64%, #B59542 -213.19%, #D7B763 218.79%, #DEBF6C 764.46%, #f0db83 1196.44%);
     transition: all 0.3s;
     opacity: 0;
     visibility: hidden;
@@ -3334,6 +3337,8 @@ Version:        1.0.0
 @media (max-width: 1500px) {
   .wpo-site-header #navbar > ul > li > a {
     padding: 65px 10px;
+        padding-bottom: 0px;
+
   }
   .wpo-site-header {
     padding: 0 10px;
@@ -3348,6 +3353,8 @@ Version:        1.0.0
 @media (max-width: 1200px) {
   .wpo-site-header #navbar > ul > li > a {
     padding: 65px 0;
+        padding-bottom: 0px;
+
     font-size: 16px;
   }
   .wpo-site-header .header-right .theme-btn, .wpo-site-header .header-right .view-cart-btn {
@@ -3642,7 +3649,7 @@ Version:        1.0.0
 }
 @media (max-width: 1399px) {
   .hero_section .content h3 {
-    font-size: 80px;
+    font-size: 70px;
     line-height: 90px;
   }
 }
@@ -5364,7 +5371,6 @@ Version:        1.0.0
   width: 480px;
   height: 480px;
   top: -80px;
-  left: -35px;
   border-radius: 480px;
   z-index: -1;
   border: 2px solid #F0F0F0;
@@ -9330,6 +9336,17 @@ Version:        1.0.0
   content: "";
   opacity: 0;
   visibility: hidden;
+}
+.gradient {
+  background-image: linear-gradient(
+    358deg,
+    #A58532 -1077.15%,
+    #CBA853 -690.64%,
+    #B59542 -213.19%,
+    #D7B763 218.79%,
+    #DEBF6C 764.46%,
+    #f0db83 1196.44%
+  );
 }
 .shop_single .product-info .nav-tabs a:hover:before,
 .shop_single .product-info .nav-tabs a.active:before {
