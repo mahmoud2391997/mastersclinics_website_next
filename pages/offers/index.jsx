@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
-import Navbar from '../../src/components/Navbar/Navbar';
-import PageTitle from '../../src/components/pagetitle/PageTitle'
-import ServiceSection from '../../src/components/ServiceSection/ServiceSection';
-import CtafromSection from '../../src/components/CtafromSection/CtafromSection';
-import Footer from '../../src/components/footer/Footer';
-import Scrollbar from '../../src/components/scrollbar/scrollbar';
-import OffersSection from '../../src/components/offersSection';
+import Navbar from '../../helpers/components/Navbar/Navbar';
+import PageTitle from '../../helpers/components/pagetitle/PageTitle'
+import ServiceSection from '../../helpers/components/ServiceSection/ServiceSection';
+import CtafromSection from '../../helpers/components/CtafromSection/CtafromSection';
+import Footer from '../../helpers/components/footer/Footer';
+import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
+import OffersSection from '../../helpers/components/offersSection';
 
 const ServicePage = () => {
     return (

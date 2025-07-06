@@ -2,15 +2,15 @@ import React, { Fragment, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';  // Using Next.js useRouter
 import { fetchServiceById } from '../../store/slices/services'; // Adjust the import path as needed
-import ServiceForm from '../../src/main-component/ServiceSinglePage/ServiceFrom';  // Adjust import path
-import ServiceSidebar from '../../src/main-component/ServiceSinglePage/sidebar';  // Adjust import path
-import Navbar from '../../src/components/Navbar/Navbar';
-import PageTitle from '../../src/components/pagetitle/PageTitle';
-import Footer from '../../src/components/footer/Footer';
-import Scrollbar from '../../src/components/scrollbar/scrollbar';
-import simg1 from '../../src/images/service-single/img-1.jpg';
-import simg2 from '../../src/images/service-single/img-2.jpg';
-import logo from '../../src/images/logo-2.svg';
+import ServiceForm from '../../helpers/main-component/ServiceSinglePage/ServiceFrom';  // Adjust import path
+import ServiceSidebar from '../../helpers/main-component/ServiceSinglePage/sidebar';  // Adjust import path
+import Navbar from '../../helpers/components/Navbar/Navbar';
+import PageTitle from '../../helpers/components/pagetitle/PageTitle';
+import Footer from '../../helpers/components/footer/Footer';
+import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
+import simg1 from '../../helpers/images/service-single/img-1.jpg';
+import simg2 from '../../helpers/images/service-single/img-2.jpg';
+import logo from '../../helpers/images/logo-2.svg';
 
 const ServiceSinglePage = (props) => {
     const dispatch = useDispatch();
@@ -51,17 +51,17 @@ console.log(id);
                     <div className="row g-0">
                         <div className="col-lg-8 col-12 service_content">
                             <div>
-                                <img src={currentService.image} alt={currentService.title} />
+                                <img helpers={currentService.image} alt={currentService.title} />
                                 <h2>{currentService.name}</h2>
                                 <p>{currentService.longDescription || currentService.description}</p>
                             </div>
 
                             <div className="row">
                                 <div className="col-lg-6 col-12">
-                                    <img src={simg1} alt="Service illustration" />
+                                    <img helpers={simg1} alt="Service illustration" />
                                 </div>
                                 <div className="col-lg-6 col-12">
-                                    <img src={simg2} alt="Service in action" />
+                                    <img helpers={simg2} alt="Service in action" />
                                 </div>
                             </div>
 

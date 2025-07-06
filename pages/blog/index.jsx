@@ -1,10 +1,10 @@
 import  { Fragment } from 'react';
-import PageTitle from '../../src/components/pagetitle/PageTitle.js'
-import BlogList from '../../src/components/BlogList/BlogList.js'
-import Navbar from '../../src/components/Navbar/Navbar.js';
-import Footer from '../../src/components/footer/Footer.js';
-import Scrollbar from '../../src/components/scrollbar/scrollbar.js';
-import blogs from '../../src/api/blogs.js'
+import PageTitle from '../../helpers/components/pagetitle/PageTitle.js'
+import BlogList from '../../helpers/components/BlogList/BlogList.js'
+import Navbar from '../../helpers/components/Navbar/Navbar.js';
+import Footer from '../../helpers/components/footer/Footer.js';
+import Scrollbar from '../../helpers/components/scrollbar/scrollbar.js';
+import blogs from '../../helpers/api/blogs.js'
 
 const BlogPage = () => {
     return (

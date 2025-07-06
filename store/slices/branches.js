@@ -1,29 +1,44 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { get, getById } from "../../pages/api/fetching";
+import localBranches from "../../pages/branches/branches.json"; // Import the static data
 
-// Async thunk to fetch all branches
 export const fetchBranches = createAsyncThunk(
     'branches/fetchBranches',
     async (_, thunkAPI) => {
         try {
             const branches = await get('/branches');
             console.log("Fetched branches:", branches);
+            
+            // If API returns no data or empty array, use local branches data
+            if (!branches || branches.length === 0) {
+                return localBranches;
+            }
             return branches;
         } catch (error) {
-            return thunkAPI.rejectWithValue(error.message);
+            // If API fails, return local branches data
+            return localBranches;
         }
     }
 );
 
-// Async thunk to fetch branch by ID
 export const fetchBranchById = createAsyncThunk(
     'branches/fetchBranchById',
     async (id, thunkAPI) => {
         try {
             const branch = await getById('/branches', id);
             console.log("Fetched branch by ID:", branch);
+            
+            // If API returns no data, try to find in local branches
+            if (!branch) {
+                const localBranch = localBranches.find(b => b.id === id);
+                if (localBranch) return localBranch;
+                throw new Error('Branch not found');
+            }
             return branch;
         } catch (error) {
+            // If API fails, try to find in local branches
+            const localBranch = localBranches.find(b => b.id === id);
+            if (localBranch) return localBranch;
             return thunkAPI.rejectWithValue(error.message);
         }
     }
@@ -40,7 +55,6 @@ const branchesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // fetchBranches
             .addCase(fetchBranches.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -50,10 +64,10 @@ const branchesSlice = createSlice({
                 state.items = action.payload;
             })
             .addCase(fetchBranches.rejected, (state, action) => {
+                // This case won't be reached since we return local data on error
                 state.loading = false;
                 state.error = action.payload;
             })
-            // fetchBranchById
             .addCase(fetchBranchById.pending, (state) => {
                 state.loading = true;
                 state.error = null;

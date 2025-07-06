@@ -1,9 +1,64 @@
-import { get } from "../../pages/api/fetching"; // Axios helper
+import { get } from "../../pages/api/fetching";
+
+// Local fallback data matching your component's schema
+const localServices = [
+  {
+    id: '1',
+    name: 'الفحص الشامل',
+    title: 'فحص طبي شامل',
+    description: 'فحص طبي شامل لجميع أعضاء الجسم',
+    longDescription: 'يقدم مركزنا فحص طبي شامل يشمل جميع أعضاء الجسم مع تحاليل الدم الشاملة وصور الأشعة اللازمة لتقييم الحالة الصحية العامة.',
+    image: '/services/comprehensive-checkup.jpg',
+    capabilities: [
+      'فحص القلب والأوعية الدموية',
+      'فحص الجهاز التنفسي',
+      'فحص الجهاز الهضمي',
+      'فحص الغدد الصماء'
+    ],
+    capabilitiesDescription: 'نقدم مجموعة متكاملة من الفحوصات لتقييم صحتك العامة',
+    approach: 'نتبع نهجًا شاملاً يركز على الوقاية والتشخيص المبكر للأمراض',
+    icon: 'flaticon-health-check'
+  },
+  {
+    id: '2',
+    name: 'علاج الأسنان',
+    title: 'حزمة العناية بالأسنان',
+    description: 'علاج وتجميل الأسنان بأحدث التقنيات',
+    longDescription: 'يقدم قسم الأسنان لدينا جميع خدمات علاج وتجميل الأسنان باستخدام أحدث الأجهزة والتقنيات العالمية.',
+    image: '/services/dental-care.jpg',
+    capabilities: [
+      'حشوات تجميلية',
+      'تبييض الأسنان',
+      'تركيبات ثابتة ومتحركة',
+      'علاج الجذور'
+    ],
+    capabilitiesDescription: 'جميع علاجات الأسنان بجودة عالية وضمان طويل المدى',
+    approach: 'نهتم براحة المريض ونستخدم أحدث التقنيات الخالية من الألم',
+    icon: 'flaticon-dental-care'
+  },
+  {
+    id: '3',
+    name: 'جراحة العظام',
+    title: 'جراحات العظام والمفاصل',
+    description: 'علاج إصابات وجراحات العظام والمفاصل',
+    longDescription: 'يقدم فريقنا المتخصص أحدث جراحات العظام والمفاصل بما في ذلك جراحات المناظير واستبدال المفاصل.',
+    image: '/services/orthopedic.jpg',
+    capabilities: [
+      'جراحات المناظير',
+      'استبدال المفاصل',
+      'علاج كسور العظام',
+      'جراحات العمود الفقري'
+    ],
+    capabilitiesDescription: 'حلول متكاملة لجميع مشاكل العظام والمفاصل',
+    approach: 'نستخدم أحدث التقنيات الجراحية لضمان الشفاء السريع',
+    icon: 'flaticon-bone'
+  }
+];
 
 // Initial state
 const initialState = {
   services: [],
-  selectedService: null, // 👈 new field for single service
+  selectedService: null,
   loading: false,
   error: null,
 };
@@ -48,9 +103,15 @@ export const fetchServices = () => async (dispatch) => {
     const data = await get("/services");
     console.log(data);
     
-    dispatch({ type: FETCH_SERVICES_SUCCESS, payload: data });
+    // If API returns no data or empty array, use local services data
+    if (!data || data.length === 0) {
+      dispatch({ type: FETCH_SERVICES_SUCCESS, payload: localServices });
+    } else {
+      dispatch({ type: FETCH_SERVICES_SUCCESS, payload: data });
+    }
   } catch (error) {
-    dispatch({ type: FETCH_SERVICES_ERROR, payload: error.message });
+    // If API fails, use local services data
+    dispatch({ type: FETCH_SERVICES_SUCCESS, payload: localServices });
   }
 };
 
@@ -59,8 +120,25 @@ export const fetchServiceById = (id) => async (dispatch) => {
   dispatch({ type: FETCH_SERVICE_BY_ID_START });
   try {
     const data = await get(`/services/${id}`);
-    dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: data });
+    
+    // If API returns no data, try to find in local services
+    if (!data) {
+      const localService = localServices.find(service => service.id === id);
+      if (localService) {
+        dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: localService });
+      } else {
+        throw new Error('Service not found');
+      }
+    } else {
+      dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: data });
+    }
   } catch (error) {
-    dispatch({ type: FETCH_SERVICE_BY_ID_ERROR, payload: error.message });
+    // If API fails, try to find in local services
+    const localService = localServices.find(service => service.id === id);
+    if (localService) {
+      dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: localService });
+    } else {
+      dispatch({ type: FETCH_SERVICE_BY_ID_ERROR, payload: error.message });
+    }
   }
 };

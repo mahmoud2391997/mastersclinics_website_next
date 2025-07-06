@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { get, getById } from "../../pages/api/fetching";
+import localDevices from "../../helpers/api/projects"; // Import the static data
 
-// Async thunk to fetch all devices
 export const fetchDevices = createAsyncThunk(
     'devices/fetchDevices',
     async (_, thunkAPI) => {
@@ -9,22 +9,36 @@ export const fetchDevices = createAsyncThunk(
             const devices = await get('/devices');
             console.log("Fetched devices:", devices);
             
+            // If API returns no data or empty array, use local devices data
+            if (!devices || devices.length === 0) {
+                return localDevices;
+            }
             return devices;
         } catch (error) {
-            return thunkAPI.rejectWithValue(error.message);
+            // If API fails, return local devices data
+            return localDevices;
         }
     }
 );
 
-// Async thunk to fetch device by ID
 export const fetchDeviceById = createAsyncThunk(
     'devices/fetchDeviceById',
     async (id, thunkAPI) => {
         try {
             const device = await getById('/devices', id);
             console.log("Fetched device by ID:", device);
+            
+            // If API returns no data, try to find in local devices
+            if (!device) {
+                const localDevice = localDevices.find(d => d.id === id);
+                if (localDevice) return localDevice;
+                throw new Error('Device not found');
+            }
             return device;
         } catch (error) {
+            // If API fails, try to find in local devices
+            const localDevice = localDevices.find(d => d.id === id);
+            if (localDevice) return localDevice;
             return thunkAPI.rejectWithValue(error.message);
         }
     }
@@ -41,7 +55,6 @@ const devicesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            // fetchDevices
             .addCase(fetchDevices.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -54,7 +67,6 @@ const devicesSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            // fetchDeviceById
             .addCase(fetchDeviceById.pending, (state) => {
                 state.loading = true;
                 state.error = null;

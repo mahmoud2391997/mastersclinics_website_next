@@ -4,11 +4,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
 
-import Navbar from '../../src/components/Navbar/Navbar';
-import PageTitle from '../../src/components/pagetitle/PageTitle';
-import Footer from '../../src/components/footer/Footer';
-import SectionTitle from '../../src/components/SectionTitle/SectionTitle';
-import OffersSlider from '../../src/components/adsSlider/index';
+import Navbar from '../../helpers/components/Navbar/Navbar';
+import PageTitle from '../../helpers/components/pagetitle/PageTitle';
+import Footer from '../../helpers/components/footer/Footer';
+import SectionTitle from '../../helpers/components/SectionTitle/SectionTitle';
+import OffersSlider from '../../helpers/components/adsSlider/index';
+import ContactForm from '../../helpers/main-component/ServiceSinglePage/ServiceFrom';
 
 const OfferSinglePage = () => {
   const router = useRouter();
@@ -65,7 +66,7 @@ const OfferSinglePage = () => {
           <div className="lg:w-1/2 ">
             <div className="relative w-full h-full bg-white rounded-xl shadow-md overflow-hidden">
               <Image
-                src={images[activeImage]}
+                helpers={images[activeImage]}
                 alt={offer.title}
                 fill
                 className="object-cover"
@@ -150,6 +151,17 @@ const OfferSinglePage = () => {
           </div>
         </div>
       </main>
+         <div className="AppointmentFrom">
+                <div className="container">
+                  <div className="cta_form_s2">
+                    <div className="title s2">
+                      <h3>Make An Appointment</h3>
+                      <p>Get in touch with us to see how we can help you with your Problems.</p>
+                    </div>
+                    <ContactForm />
+                  </div>
+                </div>
+              </div>
 <SectionTitle title="العروض الأخرى" />
 <OffersSlider />
       <Footer hclass={'wpo-site-footer'}/>

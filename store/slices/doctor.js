@@ -1,4 +1,5 @@
 import { get, getById } from "../../pages/api/fetching";
+import Teams from "../../helpers/api/team"; // Adjust the import path as needed
 
 // Initial State
 const initialState = {
@@ -45,12 +46,17 @@ export default teamReducer;
 export const fetchTeams = () => async (dispatch) => {
   dispatch({ type: FETCH_TEAMS_START });
   try {
-    const data = await get("/doctors"); // adjust to your API endpoint
-    console.log(data);
+    let data = await get("/doctors"); // Try to fetch from API
+    
+    // If API returns no data or empty array, use local Teams data
+    if (!data || data.length === 0) {
+      data = Teams;
+    }
     
     dispatch({ type: FETCH_TEAMS_SUCCESS, payload: data });
   } catch (error) {
-    dispatch({ type: FETCH_TEAMS_ERROR, payload: error.message });
+    // If API fails, use local Teams data as fallback
+    dispatch({ type: FETCH_TEAMS_SUCCESS, payload: Teams });
   }
 };
 
@@ -58,9 +64,31 @@ export const fetchTeams = () => async (dispatch) => {
 export const fetchTeamById = (id) => async (dispatch) => {
   dispatch({ type: FETCH_TEAM_BY_ID_START });
   try {
-    const data = await getById("/doctors", id);
-    dispatch({ type: FETCH_TEAM_BY_ID_SUCCESS, payload: data });
+    let data = await getById("/doctors", id);
+    
+    // If API returns no data, try to find in local Teams data
+    if (!data) {
+      data = Teams.find(team => team.id === id);
+    }
+    
+    if (data) {
+      dispatch({ type: FETCH_TEAM_BY_ID_SUCCESS, payload: data });
+    } else {
+      dispatch({ 
+        type: FETCH_TEAM_BY_ID_ERROR, 
+        payload: `Team member with ID ${id} not found` 
+      });
+    }
   } catch (error) {
-    dispatch({ type: FETCH_TEAM_BY_ID_ERROR, payload: error.message });
+    // If API fails, try to find in local Teams data
+    const localData = Teams.find(team => team.id === id);
+    if (localData) {
+      dispatch({ type: FETCH_TEAM_BY_ID_SUCCESS, payload: localData });
+    } else {
+      dispatch({ 
+        type: FETCH_TEAM_BY_ID_ERROR, 
+        payload: error.message || `Team member with ID ${id} not found` 
+      });
+    }
   }
 };

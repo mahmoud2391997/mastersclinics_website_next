@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBranches } from "../../store/slices/branches"; // adjust import path if needed
 import { FaMapMarkerAlt, FaClock } from "react-icons/fa";
-import Navbar from "../../src/components/Navbar/Navbar";
-import PageTitle from "../../src/components/pagetitle/PageTitle";
+import Navbar from "../../helpers/components/Navbar/Navbar";
+import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 
 export const metadata = {
   title: "فروعنا",
@@ -49,7 +49,7 @@ console.log(branches);
                   <div className="w-full ">
                     <img
                       className="w-full h-full object-cover"
-                      src={branch.imageUrl || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
+                      helpers={branch.imageUrl || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
                       alt={branch.name}
                     />
                   </div>

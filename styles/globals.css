@@ -1026,7 +1026,7 @@ Version:        1.0.0
 }
 .form select {
   font-style: normal;
-  background: url(../src/images/select-icon.png) no-repeat right center;
+  background: url(../helpers/images/select-icon.png) no-repeat right center;
   display: inline-block;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1225,7 +1225,7 @@ Version:        1.0.0
 1. General
 ----------------------------------------------------------------*/
 .wpo-breadcumb-area {
-  background: url(../src/images/page-title.jpg) no-repeat center top/cover;
+  background: url(../helpers/images/page-title.jpg) no-repeat center top/cover;
   min-height: 500px;
   position: relative;
   display: flex;
@@ -4453,7 +4453,7 @@ Version:        1.0.0
 4. wpo-footer
 --------------------------------------------------------------*/
 .wpo-site-footer, .wpo-site-footer_s2 {
-  background: url(../src/images/footer-bg.png) center/cover no-repeat;
+  background: url(../helpers/images/footer-bg.png) center/cover no-repeat;
   position: relative;
   font-size: 15px;
   overflow: hidden;
@@ -4962,7 +4962,7 @@ Version:        1.0.0
   -o-appearance: none;
   appearance: none;
   -moz-appearance: none;
-  background: transparent url(../src/images/down-arrow.svg) no-repeat calc(100% - 15px) center;
+  background: transparent url(../helpers/images/down-arrow.svg) no-repeat calc(100% - 15px) center;
   position: relative;
 }
 .appointment_section .wrapper .form_item .form_control,
@@ -5000,7 +5000,7 @@ Version:        1.0.0
   right: 12px;
   width: 18px;
   height: 13px;
-  content: url(../src/images/down-arrow.svg);
+  content: url(../helpers/images/down-arrow.svg);
   top: 60%;
   transform: translateY(-50%);
   z-index: 1;
@@ -5070,7 +5070,7 @@ Version:        1.0.0
   height: 70px;
   content: "";
   transform: translate(-50%, -50%);
-  background: url(../src/images/common-shape.png) no-repeat center;
+  background: url(../helpers/images/common-shape.png) no-repeat center;
 }
 .service_card .icon {
   color: #fff;
@@ -5313,7 +5313,7 @@ Version:        1.0.0
 .about_section_s2 .about_left .image,
 .about_section_s3 .about_left .image {
   position: relative;
-  background: url(../src/images/about-shape.png) no-repeat 50%;
+  background: url(../helpers/images/about-shape.png) no-repeat 50%;
   background-size: cover;
 }
 .about_section .about_left .image img,
@@ -6062,7 +6062,7 @@ Version:        1.0.0
   width: 190px;
   height: 60px;
   content: "";
-  background: url(../src/images/common-shape.png) no-repeat center;
+  background: url(../helpers/images/common-shape.png) no-repeat center;
 }
 @media (max-width: 425px) {
   .testimonial_card::before {
@@ -6188,7 +6188,7 @@ Version:        1.0.0
   position: relative;
   padding: 95px 60px;
   border-radius: 40px;
-  background-image: url(../src/images/cta-shape.png);
+  background-image: url(../helpers/images/cta-shape.png);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
@@ -6420,7 +6420,7 @@ Version:        1.0.0
   left: 50%;
   top: 20%;
   transform: translateX(-50%);
-  content: url(../src/images/team/border-shape.svg);
+  content: url(../helpers/images/team/border-shape.svg);
   z-index: -1;
   width: 100%;
 }
@@ -6461,7 +6461,7 @@ Version:        1.0.0
 .funfact_section,
 .funfact_section_s2 {
   position: relative;
-  background: url(../src/images/funfut-shape.png) no-repeat center/cover;
+  background: url(../helpers/images/funfut-shape.png) no-repeat center/cover;
   padding: 60px 0;
   padding-bottom: 30px;
 }
@@ -6732,7 +6732,7 @@ Version:        1.0.0
   width: 130px;
   height: 60px;
   content: "";
-  background: url(../src/images/common-shape-2.png) no-repeat center;
+  background: url(../helpers/images/common-shape-2.png) no-repeat center;
 }
 .blog_card::after {
   position: absolute;
@@ -6741,7 +6741,7 @@ Version:        1.0.0
   width: 130px;
   height: 60px;
   content: "";
-  background: url(../src/images/common-shape-blog.png) no-repeat center;
+  background: url(../helpers/images/common-shape-blog.png) no-repeat center;
   z-index: -1;
   transform: rotate(180deg);
 }
@@ -6760,7 +6760,7 @@ Version:        1.0.0
 
 .cta_wrap {
   padding: 80px 70px;
-  background: url(../src/images/cta-bg.png) center/cover no-repeat;
+  background: url(../helpers/images/cta-bg.png) center/cover no-repeat;
   border-radius: 40px;
   position: relative;
   overflow: hidden;
@@ -7189,7 +7189,7 @@ Version:        1.0.0
 }
 .funfact_section_s2 .wrapper {
   position: relative;
-  background: url(../src/images/funfut-shape.png) no-repeat center/cover;
+  background: url(../helpers/images/funfut-shape.png) no-repeat center/cover;
   padding: 60px 0;
   padding-bottom: 30px;
   padding-left: 70px;
@@ -7272,7 +7272,7 @@ Version:        1.0.0
   bottom: -5px;
   width: 100%;
   height: 220px;
-  background: url(../src/images/team/shape-team.svg) no-repeat;
+  background: url(../helpers/images/team/shape-team.svg) no-repeat;
   background-size: cover;
   background-position: center;
 }
@@ -7462,7 +7462,7 @@ Version:        1.0.0
   box-shadow: none;
 }
 .service_section_s3 .service_card::before {
-  background: url(../src/images/common-shape-black.png) no-repeat center;
+  background: url(../helpers/images/common-shape-black.png) no-repeat center;
 }
 .service_section_s3 .btn {
   display: none;
@@ -7666,7 +7666,7 @@ Version:        1.0.0
   left: 15px;
   top: 4px;
   transform: translateX(-50%);
-  content: url(../src/images/service-single/icon.svg);
+  content: url(../helpers/images/service-single/icon.svg);
   width: 25px;
   height: 25px;
   line-height: 25px;
@@ -7691,7 +7691,7 @@ Version:        1.0.0
 }
 .service_content .service_card::before {
   top: 30px;
-  background: url(../src/images/common-shape-service.png) no-repeat center;
+  background: url(../helpers/images/common-shape-service.png) no-repeat center;
 }
 .service_content .service_card .icon {
   width: 70px;
@@ -7802,7 +7802,7 @@ Version:        1.0.0
   -o-appearance: none;
   appearance: none;
   -moz-appearance: none;
-  background: transparent url(../src/images/down-arrow.svg) no-repeat calc(100% - 15px) center;
+  background: transparent url(../helpers/images/down-arrow.svg) no-repeat calc(100% - 15px) center;
   position: relative;
 }
 .cta_form_s2 .theme-btn {
@@ -8308,7 +8308,7 @@ Version:        1.0.0
   left: 15px;
   top: 4px;
   transform: translateX(-50%);
-  content: url(../src/images/service-single/icon.svg);
+  content: url(../helpers/images/service-single/icon.svg);
   width: 25px;
   height: 25px;
   line-height: 25px;
@@ -10706,7 +10706,7 @@ Version:        1.0.0
   -o-appearance: none;
   appearance: none;
   -moz-appearance: none;
-  background: transparent url(../src/images/select-icon2.png) no-repeat calc(100% - 15px) center;
+  background: transparent url(../helpers/images/select-icon2.png) no-repeat calc(100% - 15px) center;
   position: relative;
 }
 .checkout-area .billing-adress {
@@ -12769,11 +12769,11 @@ Version:        1.0.0
   -o-appearance: none;
   appearance: none;
   -moz-appearance: none;
-  background: transparent url(../src/images/select-icon2.png) no-repeat calc(100% - 15px) center;
+  background: transparent url(../helpers/images/select-icon2.png) no-repeat calc(100% - 15px) center;
   position: relative;
 }
 .wpo-contact-pg-section form select:focus {
-  background: transparent url(../src/images/select-icon2.png) no-repeat calc(100% - 15px) center;
+  background: transparent url(../helpers/images/select-icon2.png) no-repeat calc(100% - 15px) center;
 }
 .wpo-contact-pg-section form input,
 .wpo-contact-pg-section form select,

@@ -1,8 +1,8 @@
 import { Provider } from "react-redux";
 import {store} from "../store/index"; // Adjust path
 import '../styles/globals.css' // <-- updated path
-import "../src/components/MobileMenu/style.css";
-import "../src/components/scrollbar/style.css";
+import "../helpers/components/MobileMenu/style.css";
+import "../helpers/components/scrollbar/style.css";
 
 import type { AppProps } from 'next/app';
 

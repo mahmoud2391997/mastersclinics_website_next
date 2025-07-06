@@ -7,8 +7,8 @@ import { useRouter } from "next/router";
 import { fetchBranchById } from "../../store/slices/branches";
 import { FaMapMarkerAlt, FaClock, FaArrowLeft, FaPhone, FaEnvelope } from "react-icons/fa";
 import { Nav } from "reactstrap";
-import Navbar from "../../src/components/Navbar/Navbar";
-import PageTitle from "../../src/components/pagetitle/PageTitle";
+import Navbar from "../../helpers/components/Navbar/Navbar";
+import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 
 const BranchPage = () => {
   const dispatch = useDispatch();
@@ -53,7 +53,7 @@ console.log(id);
        max-w-7xl m-auto mt-5 md:h-screen/2">
         <img
           className="w-full h-full object-cover"
-          src={branch.imageUrl}
+          helpers={branch.imageUrl}
           alt={branch.name}
         />
    
@@ -123,7 +123,7 @@ console.log(id);
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="h-full">
               <iframe
-                src={`https://maps.google.com/maps?q=${branch.coordinates.latitude},${branch.coordinates.longitude}&z=15&output=embed`}
+                helpers={`https://maps.google.com/maps?q=${branch.coordinates.latitude},${branch.coordinates.longitude}&z=15&output=embed`}
                 width="100%"
                 height="100%"
                 className="min-h-[400px] lg:min-h-[500px]"
@@ -145,7 +145,7 @@ console.log(id);
               <div key={img} className="overflow-hidden rounded-xl shadow-md">
                 <img
                   className="w-full  object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                  src={branch.imageUrl}
+                  helpers={branch.imageUrl}
                   alt={`${branch.name} - صورة ${img}`}
                 />
               </div>

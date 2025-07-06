@@ -1,18 +1,70 @@
 import React, { Fragment, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchDeviceById } from '../../store/slices/devices'; // Adjust the import path as needed
-import Navbar from '../../src/components/Navbar/Navbar';
-import PageTitle from '../../src/components/pagetitle/PageTitle';
-import ContactForm from '../../src/main-component/ServiceSinglePage/ServiceFrom';
-import Footer from '../../src/components/footer/Footer';
-import Scrollbar from '../../src/components/scrollbar/scrollbar';
-import logo from '../../src/images/logo-2.svg';
-import Psing1 from '../../src/images/project-single/img-1.jpg';
-import Psing2 from '../../src/images/project-single/img-2.jpg';
+import { fetchDeviceById } from '../../store/slices/devices';
+import Navbar from '../../helpers/components/Navbar/Navbar';
+import PageTitle from '../../helpers/components/pagetitle/PageTitle';
+import ContactForm from '../../helpers/main-component/ServiceSinglePage/ServiceFrom';
+import Footer from '../../helpers/components/footer/Footer';
+import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
+import logo from '../../helpers/images/logo-2.svg';
+import Psing1 from '../../helpers/images/project-single/img-1.jpg';
+import Psing2 from '../../helpers/images/project-single/img-2.jpg';
 
 const ClickHandler = () => {
   window.scrollTo(10, 0);
+};
+
+// Dummy data matching your schema
+const dummyDeviceData = {
+  _id: '1',
+  id: '1',
+  name: 'MRI Scanner',
+  description: 'High-resolution MRI scanner for detailed diagnostic imaging',
+  department_id: [1, 2],
+  branches: [1, 3],
+  working_time_slots: [
+    {
+      type: 'dateRange',
+      startDay: 'Monday',
+      endDay: 'Friday',
+      recurringTime: {
+        startTime: '08:00',
+        endTime: '18:00'
+      }
+    }
+  ],
+  sessionPeriod: '45 minutes',
+  imageUrl: '/images/mri-scanner.jpg',
+  image: '/images/mri-scanner.jpg',
+  // Additional fields for UI
+  location: 'Main Radiology Department, Floor 2',
+  client: 'City General Hospital',
+  surgeon: 'Dr. Ahmed Mahmoud',
+  category: 'Diagnostic Imaging',
+  tags: ['Radiology', 'Non-invasive', 'Diagnostic'],
+  date: 'Installed: 15 Jan 2023',
+  quote: 'This MRI scanner has revolutionized our diagnostic capabilities',
+  quoteSource: 'Chief Radiologist',
+  strategies: 'We employ advanced imaging protocols for accurate diagnosis',
+  strategiesList: [
+    'T1 and T2 weighted imaging',
+    'Diffusion-weighted imaging',
+    'Functional MRI when needed'
+  ],
+  approach: 'Patient-centered imaging with minimal discomfort',
+  goals: 'Provide accurate diagnostics with 99.5% accuracy',
+  goalsList: [
+    'Reduce scan time by 20%',
+    'Improve image resolution',
+    'Enhance patient comfort'
+  ],
+  result: 'Diagnostic accuracy improved by 35% since installation',
+  resultList: [
+    'Faster diagnosis',
+    'Reduced need for repeat scans',
+    'Better treatment planning'
+  ]
 };
 
 const ProjectSinglePage = () => {
@@ -32,148 +84,152 @@ const ProjectSinglePage = () => {
     }
   }, [dispatch, id]);
 
+  // Use dummy data if no data from API
+  const displayData = currentService || dummyDeviceData;
+
   if (loading) {
-    return <div className="text-center py-5">Loading project details...</div>;
+    return <div className="text-center py-5">Loading device details...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-5 text-danger">Error loading project: {error}</div>;
-  }
-
-  if (!currentService) {
-    return <div className="text-center py-5">Project not found</div>;
+    return <div className="text-center py-5 text-danger">Error loading device: {error}</div>;
   }
 
   return (
     <Fragment>
       <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
-      <PageTitle pageTitle={currentService?.name || 'Project Details'} pagesub={'Portfolio'} />
+      <PageTitle pageTitle={displayData.name} pagesub={'Medical Device'} />
+      
       <section className="project_single section-padding">
         <div className="container">
-          <img src={currentService?.image || Psing1} alt={currentService?.name || 'Project Image'} />
+          <img src={displayData.image || Psing1} alt={displayData.name} className="w-full rounded-lg shadow-lg mb-8" />
+          
           <div className="row">
             <div className="col-lg-7 col-12">
-              <h2>{currentService?.name || 'Project Name'}</h2>
-              <p>{currentService?.description || 'No description available.'}</p>
+              <h2 className="text-3xl font-bold mb-4">{displayData.name}</h2>
+              <p className="text-gray-700 leading-relaxed mb-6">{displayData.description}</p>
+              
+              <div className="device-specs mb-8">
+                <h3 className="text-2xl font-bold mb-3">Technical Specifications</h3>
+                <ul className="space-y-2">
+                  <li><strong>Session Period:</strong> {displayData.sessionPeriod}</li>
+                  {displayData.working_time_slots?.map((slot, index) => (
+                    <li key={index}>
+                      <strong>Availability:</strong> {slot.startDay} to {slot.endDay}, {slot.recurringTime?.startTime} - {slot.recurringTime?.endTime}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
+            
             <div className="col-lg-5 col-12">
-              <table>
-                <tbody>
+              <table className="w-full border-collapse">
+                <tbody className="divide-y divide-gray-200">
                   <tr>
-                    <th>Location:</th>
-                    <td>{currentService?.location || 'N/A'}</td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Location:</th>
+                    <td className="py-3 px-4">{displayData.location}</td>
                   </tr>
                   <tr>
-                    <th>Client:</th>
-                    <td>{currentService?.client || 'N/A'}</td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Department:</th>
+                    <td className="py-3 px-4">Radiology</td>
                   </tr>
                   <tr>
-                    <th>Surgeon:</th>
-                    <td>{currentService?.surgeon || 'N/A'}</td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Responsible:</th>
+                    <td className="py-3 px-4">{displayData.surgeon}</td>
                   </tr>
                   <tr>
-                    <th>Category:</th>
-                    <td>{currentService?.category || 'N/A'}</td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Category:</th>
+                    <td className="py-3 px-4">{displayData.category}</td>
                   </tr>
                   <tr>
-                    <th>Tag:</th>
-                    <td>{currentService?.tags?.join(', ') || 'N/A'}</td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Tags:</th>
+                    <td className="py-3 px-4">{displayData.tags?.join(', ')}</td>
                   </tr>
                   <tr>
-                    <th>Date:</th>
-                    <td>{currentService?.date || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <th>Share:</th>
-                    <td>
-                      <ul>
-                        <li>
-                          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
-                            <i className="flaticon-facebook-app-symbol"></i>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                            <i className="flaticon-twitter"></i>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-                            <i className="flaticon-linkedin"></i>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
-                            <i className="flaticon-instagram"></i>
-                          </a>
-                        </li>
-                      </ul>
-                    </td>
+                    <th className="text-left py-3 px-4 bg-gray-50">Installed:</th>
+                    <td className="py-3 px-4">{displayData.date}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-          <div className="quote">
-            <h4>"{currentService?.quote || 'Amazing looking theme and instantly turns your application into a great looking one. Very happy with the way the theme looks.'}"</h4>
-            <p>{currentService?.client || 'Robert'} - <span>{currentService?.quoteSource || 'Yellow Theme'}</span></p>
+          
+          <div className="quote bg-gray-50 p-6 rounded-lg my-8">
+            <h4 className="text-xl italic mb-2">"{displayData.quote}"</h4>
+            <p className="text-right">— {displayData.quoteSource}</p>
           </div>
-          <div className="row">
-            <div className="col-lg-6 col-12 strategies s2">
-              <h2>Our Strategies</h2>
-              <p>{currentService?.strategies || 'No strategies provided.'}</p>
-              <ul>
-                {currentService?.strategiesList?.map((item, index) => (
-                  <li key={index}>{item}</li>
-                )) || <li>No strategies available.</li>}
+          
+          <div className="row my-8">
+            <div className="col-lg-6 col-12">
+              <h3 className="text-2xl font-bold mb-3">Capabilities</h3>
+              <p className="text-gray-700 mb-4">{displayData.strategies}</p>
+              <ul className="space-y-2">
+                {displayData.strategiesList?.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="col-lg-6 col-12 strategies">
-              <h2>Our Approach</h2>
-              <p>{currentService?.approach || 'No approach provided.'}</p>
+            
+            <div className="col-lg-6 col-12">
+              <h3 className="text-2xl font-bold mb-3">Usage Protocol</h3>
+              <p className="text-gray-700 mb-4">{displayData.approach}</p>
             </div>
           </div>
-          <div className="row">
-            <div className="col-lg-6 col-12">
-              <img src={Psing1} alt={currentService?.title || 'Image 1'} />
+          
+          <div className="row my-8">
+            <div className="col-lg-6 col-12 mb-4">
+              <img src={Psing1} alt="Device in use" className="w-full rounded-lg" />
             </div>
-            <div className="col-lg-6 col-12">
-              <img src={Psing2} alt={currentService?.title || 'Image 2'} />
+            <div className="col-lg-6 col-12 mb-4">
+              <img src={Psing2} alt="Device close-up" className="w-full rounded-lg" />
             </div>
           </div>
-          <div className="row">
-            <div className="col-lg-6 col-12 strategies s3">
-              <h2>Received Goals</h2>
-              <p>{currentService?.goals || 'No goals provided.'}</p>
-              <ul>
-                {currentService?.goalsList?.map((goal, index) => (
-                  <li key={index}>{goal}</li>
-                )) || <li>No goals available.</li>}
+          
+          <div className="row my-8">
+            <div className="col-lg-6 col-12">
+              <h3 className="text-2xl font-bold mb-3">Performance Metrics</h3>
+              <p className="text-gray-700 mb-4">{displayData.goals}</p>
+              <ul className="space-y-2">
+                {displayData.goalsList?.map((goal, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{goal}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="col-lg-6 col-12 strategies s3">
-              <h2>Result</h2>
-              <p>{currentService?.result || 'No results provided.'}</p>
-              <ul>
-                {currentService?.resultList?.map((result, index) => (
-                  <li key={index}>{result}</li>
-                )) || <li>No results available.</li>}
+            
+            <div className="col-lg-6 col-12">
+              <h3 className="text-2xl font-bold mb-3">Outcomes</h3>
+              <p className="text-gray-700 mb-4">{displayData.result}</p>
+              <ul className="space-y-2">
+                {displayData.resultList?.map((result, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{result}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
-        <div className="AppointmentFrom">
+        
+        <div className="AppointmentFrom bg-gray-100 py-12">
           <div className="container">
-            <div className="cta_form_s2">
-              <div className="title s2">
-                <h3>Make An Appointment</h3>
-                <p>Get in touch with us to see how we can help you with your Problems.</p>
+            <div className="cta_form_s2 bg-white p-8 rounded-lg shadow-md">
+              <div className="title s2 text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">Schedule This Device</h3>
+                <p className="text-gray-600">Contact us to book this medical device for your needs</p>
               </div>
               <ContactForm />
             </div>
           </div>
         </div>
       </section>
+      
       <Footer hclass={'wpo-site-footer_s2'} />
       <Scrollbar />
     </Fragment>
