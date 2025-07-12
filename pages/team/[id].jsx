@@ -28,6 +28,7 @@ const TeamSinglePage = () => {
             dispatch(fetchTeamById(id));
         }
     }, [dispatch, id]);
+console.log(currentMember);
 
     if (loading) return <div className="text-center py-5">جاري تحميل الملف الشخصي للطبيب...</div>;
     if (error) return <div className="text-center py-5 text-danger">خطأ: {error}</div>;

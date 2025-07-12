@@ -49,24 +49,24 @@ const OfferSinglePage = () => {
     );
   }
 
-  const images = [offer.image];
+  const images = [offer.image || '/default-image.jpg'];
 
   const discountPercentage = Math.round(
     ((offer.priceBefore - offer.priceAfter) / offer.priceBefore) * 100
   );
 
   return (
-    <div className="min-h-screen " dir="rtl">
+    <div className="min-h-screen" dir="rtl">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
       <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض" />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
-          {/* Image - On the left in RTL layout */}
-          <div className="lg:w-1/2 ">
+          {/* Image */}
+          <div className="lg:w-1/2">
             <div className="relative w-full h-full bg-white rounded-xl shadow-md overflow-hidden">
               <Image
-                helpers={images[activeImage]}
+                src={images[activeImage]}
                 alt={offer.title}
                 fill
                 className="object-cover"
@@ -80,10 +80,9 @@ const OfferSinglePage = () => {
             </div>
           </div>
 
-          {/* Content - On the right in RTL layout */}
+          {/* Content */}
           <div className="lg:w-1/2">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{offer.title}</h1>
-
             <p className="text-gray-700 mb-6 leading-relaxed">{offer.description}</p>
 
             {/* Pricing */}
@@ -103,9 +102,7 @@ const OfferSinglePage = () => {
                   {offer.priceAfter} ر.س
                 </span>
                 {offer.priceBefore > offer.priceAfter && (
-                  <span className="text-green-600 text-sm mr-2">
-                    (شامل الضريبة)
-                  </span>
+                  <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
                 )}
               </div>
             </div>
@@ -124,7 +121,13 @@ const OfferSinglePage = () => {
               <ul className="space-y-2 text-gray-700">
                 <li className="flex">
                   <span className="font-medium w-32">الفروع:</span>
-                  <span>{offer.branches?.join('، ') || "غير محدد"}</span>
+                  <span>
+                    {Array.isArray(offer.branches)
+                      ? offer.branches.join('، ')
+                      : offer.branches
+                      ? offer.branches
+                      : "غير محدد"}
+                  </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium w-32">السعر الأصلي:</span>
@@ -140,31 +143,47 @@ const OfferSinglePage = () => {
                 </li>
                 <li className="flex">
                   <span className="font-medium w-32">الخدمات:</span>
-                  <span>{offer.services_ids?.join('، ') || "غير محدد"}</span>
+                  <span>
+                    {Array.isArray(offer.services_ids) && offer.services_ids.length > 0
+                      ? offer.services_ids
+                          .flatMap(item => item.split(','))
+                          .filter(Boolean)
+                          .join('، ')
+                      : "غير محدد"}
+                  </span>
                 </li>
                 <li className="flex">
                   <span className="font-medium w-32">الأطباء:</span>
-                  <span>{offer.doctors_ids?.join('، ') || "غير محدد"}</span>
+                  <span>
+                    {Array.isArray(offer.doctors_ids) && offer.doctors_ids.length > 0
+                      ? offer.doctors_ids
+                          .flatMap(item => item.split(','))
+                          .filter(Boolean)
+                          .join('، ')
+                      : "غير محدد"}
+                  </span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </main>
-         <div className="AppointmentFrom">
-                <div className="container">
-                  <div className="cta_form_s2">
-                    <div className="title s2">
-                      <h3>Make An Appointment</h3>
-                      <p>Get in touch with us to see how we can help you with your Problems.</p>
-                    </div>
-                    <ContactForm />
-                  </div>
-                </div>
-              </div>
-<SectionTitle title="العروض الأخرى" />
-<OffersSlider />
-      <Footer hclass={'wpo-site-footer'}/>
+
+      <div className="AppointmentFrom">
+        <div className="container">
+          <div className="cta_form_s2">
+            <div className="title s2">
+              <h3>Make An Appointment</h3>
+              <p>Get in touch with us to see how we can help you with your Problems.</p>
+            </div>
+            <ContactForm />
+          </div>
+        </div>
+      </div>
+
+      <SectionTitle title="العروض الأخرى" />
+      <OffersSlider />
+      <Footer hclass={'wpo-site-footer'} />
     </div>
   );
 };

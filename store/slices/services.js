@@ -54,6 +54,25 @@ const localServices = [
     icon: 'flaticon-bone'
   }
 ];
+const parseJsonField = (field) => {
+  try {
+    if (typeof field === "string") {
+      return JSON.parse(field);
+    }
+    return Array.isArray(field) ? field : [];
+  } catch {
+    return [];
+  }
+};
+
+const normalizeService = (service) => {
+  return {
+    ...service,
+    capabilities: parseJsonField(service.capabilities),
+    doctors_ids: parseJsonField(service.doctors_ids),
+    branches: parseJsonField(service.branches),
+  };
+};
 
 // Initial state
 const initialState = {
@@ -101,16 +120,14 @@ export const fetchServices = () => async (dispatch) => {
   dispatch({ type: FETCH_SERVICES_START });
   try {
     const data = await get("/services");
-    console.log(data);
-    
-    // If API returns no data or empty array, use local services data
+
     if (!data || data.length === 0) {
       dispatch({ type: FETCH_SERVICES_SUCCESS, payload: localServices });
     } else {
-      dispatch({ type: FETCH_SERVICES_SUCCESS, payload: data });
+      const normalized = data.map(normalizeService);
+      dispatch({ type: FETCH_SERVICES_SUCCESS, payload: normalized });
     }
   } catch (error) {
-    // If API fails, use local services data
     dispatch({ type: FETCH_SERVICES_SUCCESS, payload: localServices });
   }
 };
@@ -120,21 +137,20 @@ export const fetchServiceById = (id) => async (dispatch) => {
   dispatch({ type: FETCH_SERVICE_BY_ID_START });
   try {
     const data = await get(`/services/${id}`);
-    
-    // If API returns no data, try to find in local services
+
     if (!data) {
-      const localService = localServices.find(service => service.id === id);
+      const localService = localServices.find((service) => service.id === id);
       if (localService) {
         dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: localService });
       } else {
-        throw new Error('Service not found');
+        throw new Error("Service not found");
       }
     } else {
-      dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: data });
+      const normalized = normalizeService(data);
+      dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: normalized });
     }
   } catch (error) {
-    // If API fails, try to find in local services
-    const localService = localServices.find(service => service.id === id);
+    const localService = localServices.find((service) => service.id === id);
     if (localService) {
       dispatch({ type: FETCH_SERVICE_BY_ID_SUCCESS, payload: localService });
     } else {

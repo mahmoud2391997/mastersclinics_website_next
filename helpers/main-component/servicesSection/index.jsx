@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchServices } from "../../../store/slices/services";
 import { useRouter } from "next/router";
 import SectionTitle from "../../components/SectionTitle/SectionTitle";
-
+import getImageUrl from "../../../utilies/getImageUrl"; 
 const ServiceSection = ({
   hclass = "",
   sliceStart = 0,
@@ -101,7 +101,7 @@ const ServiceSection = ({
                 >
                   {service.image ? (
                     <img
-                      src={service.image}
+                      src={getImageUrl(service.image)}
                       alt={service.name}
                       className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
                     />

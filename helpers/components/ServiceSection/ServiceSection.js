@@ -10,7 +10,7 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { useRouter } from "next/router";  // Import useRouter for navigation
+import { useRouter } from "next/router";
 
 const ServiceSection = ({
   hclass = "",
@@ -21,12 +21,11 @@ const ServiceSection = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();
-  const router = useRouter();  // Hook to use programmatic navigation
+  const router = useRouter();
   const { services = [], loading = false, error = null } = useSelector(
     (state) => state.services || {}
   );
 
-  // Swiper nav refs
   const prevRef = useRef(null);
   const nextRef = useRef(null);
 
@@ -39,7 +38,6 @@ const ServiceSection = ({
     window.scrollTo(10, 0);
   };
 
-  // Branch name mapping
   const getBranchName = (branchCode) => {
     const branchMap = {
       alawali: "العوالي",
@@ -52,11 +50,10 @@ const ServiceSection = ({
     return branchMap[branchCode] || branchCode;
   };
 
-  const servicesToShow =
-    services.length === 0 ? [] : services.slice(sliceStart, sliceEnd);
+  const servicesToShow = services.length === 0 ? [] : services.slice(sliceStart, sliceEnd);
 
   const handleSlideClick = (id) => {
-    router.push(`/services/${id}`); // Programmatically navigate to the service detail page
+    router.push(`/services/${id}`);
   };
 
   if (!mounted) return null;
@@ -67,10 +64,7 @@ const ServiceSection = ({
         {showSectionTitle && (
           <div className="flex justify-center mb-12">
             <div className="w-full max-w-3xl text-center mx-auto">
-              <SectionTitle
-                title="خدمات الأقسام الطبية"
-                subtitle="خدماتنا الصحية"
-              />
+              <SectionTitle title="خدمات الأقسام الطبية" subtitle="خدماتنا الصحية" />
             </div>
           </div>
         )}
@@ -138,74 +132,76 @@ const ServiceSection = ({
               loop={true}
               className="w-full p-5"
             >
-              {servicesToShow.map((service, index) => (
-                <SwiperSlide key={index}>
-                  <div
-                    className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group"
-                    onClick={() => handleSlideClick(service.id)} // Click handler to navigate
-                  >
-                    {/* Service Image or Icon */}
+              {servicesToShow.map((service, index) => {
+                // Parse branches safely
+                let parsedBranches = [];
+                try {
+                  parsedBranches = Array.isArray(service.branches)
+                    ? service.branches
+                    : JSON.parse(service.branches || "[]");
+                } catch (e) {
+                  parsedBranches = [];
+                }
+
+                return (
+                  <SwiperSlide key={index}>
                     <div
-                      className="mb-4 flex justify-center items-center w-full"
-                      style={{ minHeight: 120 }}
+                      className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group"
+                      onClick={() => handleSlideClick(service.id)}
                     >
-                      {service.image ? (
-                        <img
-                          src={service.image}
-                          alt={service.name}
-                          className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
-                        />
-                      ) : (
-                        <i
-                          className={`text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a] ${service.icon}`}
-                        ></i>
-                      )}
-                    </div>
+                      <div className="mb-4 flex justify-center items-center w-full" style={{ minHeight: 120 }}>
+                        {service.image ? (
+                          <img
+                            src={service.image}
+                            alt={service.name}
+                            className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
+                          />
+                        ) : (
+                          <i
+                            className={`text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a] ${service.icon}`}
+                          ></i>
+                        )}
+                      </div>
 
-                    <div className="flex-grow">
-                      <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
-                        {service.name}
-                      </h2>
-                      <p className="text-[#dec06a] mb-4 group-hover:text-[#c0a84a] transition-colors duration-300">
-                        {service.description}
-                      </p>
+                      <div className="flex-grow">
+                        <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
+                          {service.name}
+                        </h2>
+                        <p className="text-[#dec06a] mb-4 group-hover:text-[#c0a84a] transition-colors duration-300">
+                          {service.description}
+                        </p>
 
-                      {service.branches && service.branches.length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-xs text-gray-500 mb-2">متوفر في:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {service.branches.map((branch, branchIndex) => (
-                              <span
-                                key={branchIndex}
-                                className="inline-block bg-gradient-to-r from-[#dec06a]/10 to-[#d4b45c]/10 text-[#dec06a] text-xs px-2 py-1 rounded-full border border-[#dec06a]/20"
-                              >
-                                {getBranchName(branch)}
-                              </span>
-                            ))}
+                        {parsedBranches.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-xs text-gray-500 mb-2">متوفر في:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {parsedBranches.map((branch, branchIndex) => (
+                                <span
+                                  key={branchIndex}
+                                  className="inline-block bg-gradient-to-r from-[#dec06a]/10 to-[#d4b45c]/10 text-[#dec06a] text-xs px-2 py-1 rounded-full border border-[#dec06a]/20"
+                                >
+                                  {getBranchName(branch)}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    {/* Interactive progress indicator */}
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-auto">
-                      <div
-                        className="bg-[#dec06a] h-1.5 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: "0%" }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.width = "100%")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.width = "0%")
-                        }
-                      ></div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-auto">
+                        <div
+                          className="bg-[#dec06a] h-1.5 rounded-full transition-all duration-500 ease-out"
+                          style={{ width: "0%" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.width = "100%")}
+                          onMouseLeave={(e) => (e.currentTarget.style.width = "0%")}
+                        ></div>
+                      </div>
                     </div>
-                  </div>
-                </SwiperSlide>
-              ))}
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
 
-            {/* Pagination Dots */}
             <div className="swiper-pagination-gradient flex justify-center mt-6"></div>
           </div>
         )}
@@ -213,11 +209,7 @@ const ServiceSection = ({
         {AllServices && (
           <div className="col-12">
             <div className="btn">
-              <Link
-                href="/services"
-                onClick={ClickHandler}
-                className="theme-btn"
-              >
+              <Link href="/services" onClick={ClickHandler} className="theme-btn">
                 See All Services
               </Link>
             </div>
@@ -257,18 +249,6 @@ const ServiceSection = ({
         }
         .swiper-button-prev:hover,
         .swiper-button-next:hover {
-          background-color: #d4b45c;
-          border-color: #d4b45c;
-        }
-        .swiper-button-prev-gradient,
-        .swiper-button-next-gradient {
-          color: #dec06a;
-          background-color: #dec06a;
-          border: 2px solid #dec06a;
-          box-shadow: 0 4px 16px rgba(222, 192, 106, 0.2);
-        }
-        .swiper-button-prev-gradient:hover,
-        .swiper-button-next-gradient:hover {
           background-color: #d4b45c;
           border-color: #d4b45c;
         }
