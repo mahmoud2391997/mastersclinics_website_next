@@ -62,7 +62,7 @@ const Hero = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full lg:w-1/2 flex content justify-center items-center flex-col px-5 lg:px-12 xl:px-20 text-right lg:mr-[50px] mt-10 lg:mt-0"
+        className="w-full lg:w-1/2 flex content justify-center items-center flex-col px-5 lg:px-12 xl:px-20 text-right mt-10 lg:mt-0"
       >
         {/* Logo & Tagline Container */}
         <motion.div 

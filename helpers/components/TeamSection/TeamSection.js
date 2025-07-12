@@ -4,6 +4,10 @@ import SectionTitle from "../SectionTitle/SectionTitle";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchTeams } from "@/store/slices/doctor";
 import Link from "next/link";
+import { getImageUrl } from "@/helpers/hooks/imageUrl";
+
+// Image URL utility function
+
 
 const TeamSection = ({
   hclass = "",
@@ -69,12 +73,8 @@ const TeamSection = ({
                     <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
                       <div className="relative overflow-hidden rounded-[20px]">
                         <img
-                          src={
-                            team.image && team.image.trim() !== ""
-                              ? team.image
-                              : placeholder
-                          }
-                          alt={"Team Member"}
+                          src={getImageUrl(team.image)}
+                          alt={team.name || "Team Member"}
                           className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
                           loading="lazy"
                           onError={(e) => {

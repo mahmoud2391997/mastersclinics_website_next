@@ -17,13 +17,13 @@ const Header = (props) => {
         <ContactBar />
         <header id="header" dir="rtl" className="relative">
             <div className={props.hclass}>
-                <nav className="navigation navbar navbar-expand-lg navbar-light w-[99%] md:mr-[45px] lg:mr-[95px]">
+                <nav className="navigation navbar navbar-expand-lg navbar-light w-[99%] md:mr-[45px] ">
                     <div className="container-fluid">
-                        <div className="row flex :flex-row items-center lg:items-start justify-between m-auto">
+                        <div className="row flex  items-center justify-between m-auto">
                             {/* Logo */}
                             <div className="col-lg-2 col-md-6 col-6 text-center">
                                 <div className="navbar-header">
-                                    <Link href="/" className={"navbar-brand flex justify-center items-center " + (!props.nav ? "h-[170px]" : "") } >
+                                    <Link href="/" className={"navbar-brand flex justify-center items-center " + (!props.nav ? "h-[150px]" : "") } >
                                         <img 
                                             src={props.nav ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png" : getImageUrl("/uploads/Artboard ٨ copy.png")}
                                             alt="logo" 
@@ -59,6 +59,13 @@ const Header = (props) => {
                                         <li className="menu-item-has-children">
                                             <Link href="/branches" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
                                                 الفروع  
+                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
+                                            </Link>
+                                        
+                                        </li>
+                                        <li className="menu-item-has-children">
+                                            <Link href="/departments" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
+                                                الاقسام  
                                                 <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
                                             </Link>
                                         

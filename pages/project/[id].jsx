@@ -10,6 +10,7 @@ import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
 import logo from '../../helpers/images/logo-2.svg';
 import Psing1 from '../../helpers/images/project-single/img-1.jpg';
 import Psing2 from '../../helpers/images/project-single/img-2.jpg';
+import getImageUrl from '../../utilies/getImageUrl';
 
 const ClickHandler = () => {
   window.scrollTo(10, 0);
@@ -102,7 +103,7 @@ const ProjectSinglePage = () => {
       
       <section className="project_single section-padding">
         <div className="container">
-          <img src={displayData.image || Psing1} alt={displayData.name} className="w-full rounded-lg shadow-lg mb-8" />
+          <img src={getImageUrl(displayData.image) || Psing1} alt={displayData.name} className="w-full rounded-lg shadow-lg mb-8" />
           
           <div className="row">
             <div className="col-lg-7 col-12">

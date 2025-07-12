@@ -1,185 +1,142 @@
+"use client";
 import React from 'react';
-import { useRouter } from 'next/router'; // useRouter is useful for programmatic navigation
-import about from '../../images/blog/about-widget.jpg';
+import { useRouter } from 'next/navigation';
 import blogs from '../../api/blogs';
-
-const SubmitHandler = (e) => {
-    e.preventDefault();
-};
-
-const ClickHandler = () => {
-    window.scrollTo(10, 0);
-};
+import Link from 'next/link';
 
 const BlogSidebar = (props) => {
-    const router = useRouter(); // Initialize useRouter hook for programmatic navigation
+  const router = useRouter();
+  const imageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s";
 
-    // Function to handle navigation programmatically
-    const handleNavigation = (slug) => {
-        router.push(`/blog-single/${slug}`);
-        ClickHandler(); // Scroll to the top after navigation
-    };
+  const handleNavigation = (slug) => {
+    router.push(`/blog-single/${slug}`);
+  };
 
-    return (
-        <div className={`col col-lg-4 col-12 ${props.blLeft}`}>
-            <div className="blog-sidebar">
-                <div className="widget about-widget">
-                    <div className="img-holder">
-                        <img src={about} alt="" />
-                    </div>
-                    <h4>Linda Johns</h4>
-                    <p>Hi! beautiful people. I`m an author of this blog. Read our post - stay with us</p>
-                    <div className="social">
-                        <ul className="clearfix">
-                            <li>
-                                <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                    <i className="ti-facebook"></i>
-                                </span>
-                            </li>
-                            <li>
-                                <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                    <i className="ti-twitter-alt"></i>
-                                </span>
-                            </li>
-                            <li>
-                                <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                    <i className="ti-linkedin"></i>
-                                </span>
-                            </li>
-                            <li>
-                                <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                    <i className="ti-pinterest"></i>
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+  const SubmitHandler = (e) => {
+    e.preventDefault();
+    const searchQuery = e.target.search.value;
+    if (searchQuery) {
+      router.push(`/blog-search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
-                <div className="widget search-widget">
-                    <h3>Search Here</h3>
-                    <form onSubmit={SubmitHandler}>
-                        <div>
-                            <input type="text" className="form-control" placeholder="Search Post.." />
-                            <button type="submit"><i className="ti-search"></i></button>
-                        </div>
-                    </form>
-                </div>
-
-                <div className="widget category-widget">
-                    <h3>Post Categories</h3>
-                    <ul>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Neurology <span>5</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Urology <span>7</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Bags <span>3</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                HIV/AIDS <span>6</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Gestrology <span>2</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Dermatology <span>8</span>
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Otolaryngology <span>7</span>
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div className="widget recent-post-widget">
-                    <h3>Related Posts</h3>
-                    <div className="posts">
-                        {blogs.slice(0, 3).map((blog, bl) => (
-                            <div className="post" key={bl}>
-                                <div className="img-holder">
-                                    <img src={blog.screens} alt="" />
-                                </div>
-                                <div className="details">
-                                    <h4>
-                                        <span onClick={() => handleNavigation(blog.slug)}>
-                                            {blog.title2}
-                                        </span>
-                                    </h4>
-                                    <span className="date">{blog.create_at}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="widget tag-widget">
-                    <h3>Tags</h3>
-                    <ul>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Health
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Beauty
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Heart
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Doctor
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Hospital
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Nurocare
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Dental
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Dermatologist
-                            </span>
-                        </li>
-                        <li>
-                            <span onClick={() => handleNavigation('Why-Industry-Are-A-Juicy-Target-For-Cyberattack')}>
-                                Pediatrician
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+  return (
+    <div className={`col col-lg-4 col-12 ${props.blLeft}`}>
+      <div className="blog-sidebar space-y-8">
+        <div className="widget about-widget bg-white p-6 rounded-lg shadow-sm">
+          <div className="img-holder mb-4">
+            <img 
+              src={imageUrl} 
+              alt="صورة الكاتب"
+              className="w-full h-48 object-cover rounded-lg"
+            />
+          </div>
+          <h4 className="text-xl font-bold mb-2">ليندا جونز</h4>
+          <p className="text-gray-600 mb-4">
+            مرحبًا! أنا كاتبة هذه المدونة. اقرأ مقالاتنا وابقَ معنا.
+          </p>
+          <div className="social">
+            <ul className="flex gap-3">
+              {['facebook', 'twitter-alt', 'linkedin', 'pinterest'].map((icon, idx) => (
+                <li key={idx}>
+                  <Link 
+                    href="#" 
+                    className="text-gray-500 hover:text-primary text-lg"
+                    aria-label={icon}
+                  >
+                    <i className={`ti-${icon}`}></i>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-    );
+
+        <div className="widget search-widget bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-bold mb-4">ابحث هنا</h3>
+          <form onSubmit={SubmitHandler}>
+            <div className="relative">
+              <input
+                type="text"
+                name="search"
+                className="w-full p-3 border border-gray-300 rounded-lg pr-12 focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="ابحث في المقالات.."
+              />
+              <button
+                type="submit"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary"
+              >
+                <i className="ti-search"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="widget category-widget bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-bold mb-4">تصنيفات المقالات</h3>
+          <ul className="space-y-2">
+            {['الأعصاب', 'المسالك', 'الحقائب', 'الإيدز', 'الجهاز الهضمي', 'الجلدية', 'الأنف والأذن'].map((cat, idx) => (
+              <li key={idx}>
+                <button
+                  onClick={() => handleNavigation(`category-${idx}`)}
+                  className="w-full text-right flex justify-between items-center py-2 px-3 hover:bg-gray-50 rounded-lg transition"
+                >
+                  <span>{cat}</span>
+                  <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                    {idx + 2}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="widget recent-post-widget bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-bold mb-4">مقالات ذات صلة</h3>
+          <div className="posts space-y-4">
+            {blogs.slice(0, 3).map((blog) => (
+              <div className="post flex gap-3" key={blog.slug}>
+                <div className="img-holder flex-shrink-0">
+                  <img
+                    src={blog.image || imageUrl}
+                    alt={blog.title2}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                </div>
+                <div className="details">
+                  <h4 className="font-medium mb-1">
+                    <button
+                      onClick={() => handleNavigation(blog.slug)}
+                      className="text-left hover:text-primary transition"
+                    >
+                      {blog.title2}
+                    </button>
+                  </h4>
+                  <span className="date text-sm text-gray-500">{blog.create_at}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="widget tag-widget bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-bold mb-4">الوسوم</h3>
+          <ul className="flex flex-wrap gap-2">
+            {['الصحة', 'الجمال', 'القلب', 'الطبيب', 'المستشفى', 'العناية العصبية', 'الأسنان', 'الجلدية', 'طب الأطفال'].map((tag, idx) => (
+              <li key={idx}>
+                <button
+                  onClick={() => handleNavigation(`tag-${tag}`)}
+                  className="text-sm px-3 py-1 bg-gray-100 hover:bg-primary hover:text-white rounded-full transition"
+                >
+                  {tag}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default BlogSidebar;

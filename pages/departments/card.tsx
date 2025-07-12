@@ -46,7 +46,7 @@ function DepartmentCard({ department, branches }: DepartmentCardProps) {
   const branchInfo = branches.filter(b => departmentBranches.includes(b.id));
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow" dir='rtl'>
       {department.image && (
         <div className="h-48 overflow-hidden">
           <img 

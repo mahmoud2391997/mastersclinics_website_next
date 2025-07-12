@@ -3,179 +3,169 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/List";
 import Collapse from "@mui/material/Collapse";
 import Link from 'next/link';
-
 const menus = [
     {
         id: 1,
-        title: 'Home',
+        title: 'الرئيسية',
         link: '/home',
         submenu: [
             {
                 id: 11,
-                title: 'Home style 1',
+                title: 'الرئيسية النمط 1',
                 link: '/home'
             },
             {
                 id: 12,
-                title: 'Home style 2',
+                title: 'الرئيسية النمط 2',
                 link: '/home-2'
             },
             {
                 id: 13,
-                title: 'Home style 3',
+                title: 'الرئيسية النمط 3',
                 link: '/home-3'
             },
-          
-          
         ]
     },
     {
-        id: 88,
-        title: 'About',
+        id: 2,
+        title: 'من نحن',
         link: '/about',
     },
     {
         id: 3,
-        title: 'Pages',
+        title: 'الصفحات',
         link: '/',
         submenu: [
             {
                 id: 31,
-                title: 'Doctor',
+                title: 'الأطباء',
                 link: '/team'
             },
             {
                 id: 32,
-                title: 'Doctor single',
+                title: 'صفحة الطبيب',
                 link: '/team-single/Marlene-Henry'
             },
             {
                 id: 33,
-                title: 'Shop',
+                title: 'المتجر',
                 link: '/shop'
             },
             {
                 id: 34,
-                title: 'Shop Single',
+                title: 'صفحة المنتج',
                 link: '/shop-single/prayer-mat'
             },
             {
                 id: 35,
-                title: 'Cart',
+                title: 'عربة التسوق',
                 link: '/cart'
             },
             {
                 id: 36,
-                title: 'Checkout',
+                title: 'الدفع',
                 link: '/checkout'
             },
             {
                 id: 37,
-                title: '404 Error',
+                title: 'خطأ 404',
                 link: '/404'
             },
             {
                 id: 38,
-                title: 'Faq',
+                title: 'الأسئلة الشائعة',
                 link: '/faq'
             },
         ]
     },
     {
-        id: 7,
-        title: 'Service',
+        id: 4,
+        title: 'الخدمات',
         link: '#',
         submenu: [
             {
-                id: 71,
-                title: 'Services',
-                link: '/services',
-            },
-           
-            {
-                id: 74,
-                title: 'Service Single',
-                link: '/service-single/Dental-Care',
-            },
-
-
-        ]
-    },
-    {
-        id: 44,
-        title: 'Portfolio',
-        link: '/',
-        submenu: [
-            {
                 id: 41,
-                title: 'Portfolio',
-                link: '/project',
+                title: 'الخدمات',
+                link: '/services',
             },
             {
                 id: 42,
-                title: 'Portfolio Single',
-                link: '/project-single/Heart-Institure'
+                title: 'خدمة مفردة',
+                link: '/service-single/Dental-Care',
             },
         ]
     },
     {
         id: 5,
-        title: 'Blog',
-        link: '/blog',
+        title: 'الأجهزة',
+        link: '/',
         submenu: [
             {
                 id: 51,
-                title: 'Blog',
-                link: '/blog'
+                title: 'الأجهزة',
+                link: '/project',
             },
             {
                 id: 52,
-                title: 'Blog Left sidebar',
+                title: 'صفحة الجهاز',
+                link: '/project-single/Heart-Institure'
+            },
+        ]
+    },
+    {
+        id: 6,
+        title: 'المدونة',
+        link: '/blog',
+        submenu: [
+            {
+                id: 61,
+                title: 'المدونة',
+                link: '/blog'
+            },
+            {
+                id: 62,
+                title: 'المدونة مع الشريط الجانبي الأيسر',
                 link: '/blog-left-sidebar'
             },
             {
-                id: 53,
-                title: 'Blog full width',
+                id: 63,
+                title: 'المدونة بعرض كامل',
                 link: '/blog-fullwidth'
             },
             {
-                id: 54,
-                title: 'Blog single',
+                id: 64,
+                title: 'مقال مفرد',
                 link: '/blog-single/Why-Industry-Are-A-Juicy-Target-For'
             },
             {
-                id: 55,
-                title: 'Blog single Left sidebar',
+                id: 65,
+                title: 'مقال مفرد مع الشريط الجانبي الأيسر',
                 link: '/blog-single-left-sidebar/Why-Industry-Are-A-Juicy-Target-For'
             },
             {
-                id: 56,
-                title: 'Blog single Left sidebar',
+                id: 66,
+                title: 'مقال مفرد بعرض كامل',
                 link: '/blog-single-fullwidth/Why-Industry-Are-A-Juicy-Target-For'
             },
         ]
     },
     {
-        id: 88,
-        title: 'Contact',
+        id: 7,
+        title: 'اتصل بنا',
         link: '/contact',
     }
-
-
-]
-
+];
 
 const MobileMenu = () => {
-
     const [openId, setOpenId] = useState(0);
     const [menuActive, setMenuState] = useState(false);
 
     const ClickHandler = () => {
         window.scrollTo(10, 0);
-    }
+    };
 
     return (
-        <div>
+        <div dir="rtl">
             <div className={`mobileMenu ${menuActive ? "show" : ""}`}>
                 <div className="menu-close">
                     <div className="clox" onClick={() => setMenuState(!menuActive)}><i className="ti-close"></i></div>
@@ -185,34 +175,33 @@ const MobileMenu = () => {
                     {menus.map((item, mn) => {
                         return (
                             <ListItem className={item.id === openId ? 'active' : null} key={mn}>
-                                {item.submenu ?
+                                {item.submenu ? (
                                     <Fragment>
-                                        <p onClick={() => setOpenId(item.id === openId ? 0 : item.id)}>{item.title}
-                                            <i className={item.id === openId ? 'fa fa-angle-up' : 'fa fa-angle-down'}></i>
+                                        <p onClick={() => setOpenId(item.id === openId ? 0 : item.id)}>
+                                            {item.title}
+                                            <i className={item.id === openId ? 'fa fa-angle-up' : 'fa fa-angle-down'} style={{ marginRight: 8 }}></i>
                                         </p>
                                         <Collapse in={item.id === openId} timeout="auto" unmountOnExit>
                                             <List className="subMenu">
-                                                <Fragment>
-                                                    {item.submenu.map((submenu, i) => {
-                                                        return (
-                                                            <ListItem key={i}>
-                                                                <Link onClick={ClickHandler} className="active"
-                                                                    href={submenu.link}>{submenu.title}</Link>
-                                                            </ListItem>
-                                                        )
-                                                    })}
-                                                </Fragment>
+                                                {item.submenu.map((submenu, i) => (
+                                                    <ListItem key={i}>
+                                                        <Link onClick={ClickHandler} className="active" href={submenu.link}>
+                                                            {submenu.title}
+                                                        </Link>
+                                                    </ListItem>
+                                                ))}
                                             </List>
                                         </Collapse>
                                     </Fragment>
-                                    : <Link className="active"
-                                        href={item.link}>{item.title}</Link>
-                                }
+                                ) : (
+                                    <Link className="active" onClick={ClickHandler} href={item.link}>
+                                        {item.title}
+                                    </Link>
+                                )}
                             </ListItem>
-                        )
+                        );
                     })}
                 </ul>
-
             </div>
 
             <div className="showmenu mobail-menu" onClick={() => setMenuState(!menuActive)}>
@@ -223,7 +212,7 @@ const MobileMenu = () => {
                 </button>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default MobileMenu;

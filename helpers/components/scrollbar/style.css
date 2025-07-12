@@ -1,34 +1,37 @@
 ul.smothscroll {
     position: fixed;
     bottom: 25px;
-    right:30px;
+    right: 30px;
     list-style: none;
     z-index: 99;
 }
 
-
 ul.smothscroll a {
-    background-color:rgb(0, 128, 210,0.7);
+    background-color: rgba(222, 192, 106, 0.7); /* لو تبي الخلفية */
     width: 45px;
     height: 45px;
-    line-height: 45px;
-    border-radius:50%;
-    display: block;
+    display: flex; /* يضمن التمركز الكامل */
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     text-align: center;
-    color: #fff;
-    background-size: 200%,1px;
-    background-position: 0;
-    border: 2px solid #0080D2;
-}
-ul.smothscroll a:hover {
-    background-color: #0080D2;
-    color: #fff;
+    color: #fff !important;
+    border: 2px solid #f6eecd;
+    transition: all 0.3s ease;
 }
 
-@media(max-width:767px){
+ul.smothscroll a:hover {
+    background-color: #f6eecd;
+    color: #fff !important;
+}
+
+ul.smothscroll a svg {
+    fill: white !important; /* يؤثر فقط على svg داخل a */
+}
+
+@media(max-width: 767px) {
     ul.smothscroll a {
         width: 30px;
         height: 30px;
-        line-height: 25px;
     }
 }

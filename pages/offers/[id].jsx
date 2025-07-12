@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
-import { getImageUrl } from "@/helpers/hooks/imageUrl"
+import { getImageUrl } from "@/helpers/hooks/imageUrl";
 
 import Navbar from '../../helpers/components/Navbar/Navbar';
 import PageTitle from '../../helpers/components/pagetitle/PageTitle';
@@ -57,11 +57,11 @@ const OfferSinglePage = () => {
   );
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
       <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض" />
-      
-      <main className="container mx-auto px-4 py-8"  dir="rtl">
+
+      <main className="container mx-auto px-4 py-8" dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
           {/* Image */}
           <div className="lg:w-1/2">
@@ -85,82 +85,70 @@ const OfferSinglePage = () => {
           <div className="lg:w-1/2">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{offer.title}</h1>
             <p className="text-gray-700 mb-6 leading-relaxed">{offer.description}</p>
+{/* Pricing */}
+<div className="bg-gray-100 p-4 rounded-lg mb-6">
+  {offer.priceBefore > offer.priceAfter && (
+    <div className="flex items-center mb-2">
+      <span className="text-gray-500 line-through ml-2">{offer.priceBefore} ر.س</span>
+      <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
+        وفر {offer.priceBefore - offer.priceAfter} ر.س
+      </span>
+    </div>
+  )}
+  <div className="flex items-center">
+    <span className="text-3xl font-bold text-[#dec06a]">{offer.priceAfter} ر.س</span>
+    {offer.priceBefore > offer.priceAfter && (
+      <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
+    )}
+  </div>
+</div>
 
-            {/* Pricing */}
-            <div className="bg-gray-100 p-4 rounded-lg mb-6">
-              {offer.priceBefore > offer.priceAfter && (
-                <div className="flex items-center mb-2">
-                  <span className="text-gray-500 line-through ml-2">
-                    {offer.priceBefore} ر.س
-                  </span>
-                  <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
-                    وفر {offer.priceBefore - offer.priceAfter} ر.س
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center">
-                <span className="text-3xl font-bold text-[#000B47]">
-                  {offer.priceAfter} ر.س
-                </span>
-                {offer.priceBefore > offer.priceAfter && (
-                  <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
-                )}
-              </div>
-            </div>
+{/* Booking Button */}
+<button
+  className="w-full bg-[#dec06a] hover:bg-[#e8cf8c] text-white py-3 px-6 rounded-lg font-medium transition-colors mb-6"
+  onClick={() => router.push('/book-appointment')}
+>
+  حجز موعد
+</button>
 
-            {/* Booking Button */}
-            <button
-              className="w-full bg-[#000B47] hover:bg-[#1A237E] text-white py-3 px-6 rounded-lg font-medium transition-colors mb-6"
-              onClick={() => router.push('/book-appointment')}
-            >
-              حجز موعد
-            </button>
 
             {/* Offer details */}
-            <div className="border-t border-gray-200 pt-6">
+            <div className="border-t border-gray-200 pt-6 text-right">
               <h3 className="text-lg font-semibold mb-3">تفاصيل العرض</h3>
               <ul className="space-y-2 text-gray-700">
                 <li className="flex">
-                  <span className="font-medium w-32">الفروع:</span>
+                  <span className="font-medium w-32 shrink-0">الفروع:</span>
                   <span>
-                    {Array.isArray(offer.branches)
-                      ? offer.branches.join('، ')
-                      : offer.branches
-                      ? offer.branches
+                    {offer.branches && offer.branches.length > 0
+                      ? offer.branches.map(b => b.name).join('، ')
                       : "غير محدد"}
                   </span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-32">السعر الأصلي:</span>
+                  <span className="font-medium w-32 shrink-0">السعر الأصلي:</span>
                   <span>{offer.priceBefore} ر.س</span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-32">السعر بعد الخصم:</span>
+                  <span className="font-medium w-32 shrink-0">السعر بعد الخصم:</span>
                   <span>{offer.priceAfter} ر.س</span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-32">نسبة الخصم:</span>
+                  <span className="font-medium w-32 shrink-0">نسبة الخصم:</span>
                   <span>{discountPercentage}%</span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-32">الخدمات:</span>
+                  <span className="font-medium w-32 shrink-0">الخدمات:</span>
                   <span>
-                    {Array.isArray(offer.services_ids) && offer.services_ids.length > 0
-                      ? offer.services_ids
-                          .flatMap(item => item.split(','))
-                          .filter(Boolean)
-                          .join('، ')
+                    {offer.services_ids && offer.services_ids.length > 0
+                      ? offer.services_ids.map(service => service.title).join('، ')
                       : "غير محدد"}
                   </span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-32">الأطباء:</span>
+                  <span className="font-medium w-32 shrink-0">الأطباء:</span>
                   <span>
-                    {Array.isArray(offer.doctors_ids) && offer.doctors_ids.length > 0
-                      ? offer.doctors_ids
-                          .flatMap(item => item.split(','))
-                          .filter(Boolean)
-                          .join('، ')
+                    {offer.doctors_ids && offer.doctors_ids.length > 0
+                      ? offer.doctors_ids.map(doctor => doctor.name).join('، ')
                       : "غير محدد"}
                   </span>
                 </li>
@@ -173,10 +161,11 @@ const OfferSinglePage = () => {
       <div className="AppointmentFrom">
         <div className="container">
           <div className="cta_form_s2">
-            <div className="title s2">
-              <h3>Make An Appointment</h3>
-              <p>Get in touch with us to see how we can help you with your Problems.</p>
-            </div>
+       <div className="title s2">
+  <h3>حجز موعد</h3>
+  <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
+</div>
+
             <ContactForm />
           </div>
         </div>
