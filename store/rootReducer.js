@@ -4,6 +4,7 @@ import teamReducer from "./slices/doctor";
 import devicesReducer from "./slices/devices";
 import branchesReducer from "./slices/branches";
 import offersReducer from "./slices/offers";
+import departmentsReducer from "./slices/departments";
 
 const rootReducer = combineReducers({
   services: serviceReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
     devices: devicesReducer,
     branches:branchesReducer,
             offers: offersReducer,
+            departments: departmentsReducer,
 
   // add more slices here
 });

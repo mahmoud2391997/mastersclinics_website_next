@@ -2,8 +2,10 @@
 
 import React, { memo } from "react"
 import { useRouter } from "next/navigation"
-const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, branches = [], onSelect }) => {
-  const getBranchName = (branchCode) => {
+import { getImageUrl } from "@/helpers/hooks/imageUrl"
+
+const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, branches = [], onSelect }) => {
+  const getBranchName = (branchName) => {
     const branchMap = {
       "فرع العوالي": "فرع العوالي",
       "فرع الخالدية": "فرع الخالدية",
@@ -12,11 +14,11 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, b
       "ابحر الشمالية": "ابحر الشمالية",
       "فرع الطائف": "فرع الطائف",
     }
-    return branchMap[branchCode] || branchCode
+    return branchMap[branchName] || branchName
   }
-  console.log(id);
-  
-  const router = useRouter()  
+
+  const router = useRouter()
+
   const handleOfferSelect = () => {
     if (onSelect) {
       onSelect({
@@ -29,9 +31,11 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, b
       })
     }
   }
+
   const handleCardClick = () => {
     router.push(`/offers/${id}`)
   }
+
   const imageUrl = typeof image === "string" ? image : "/placeholder.svg"
 
   return (
@@ -40,7 +44,7 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, b
       <div className="relative overflow-hidden">
         <div className="aspect-w-4 aspect-h-3 w-full">
           <img
-            src={imageUrl || "/download.png"}
+            src={getImageUrl(imageUrl) || "/download.png"}
             alt={name}
             className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
             style={{ aspectRatio: "3/4", objectFit: "cover" }}
@@ -52,7 +56,9 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, b
         </div>
         {branches.length > 0 && (
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
-            {branches.length === 1 ? getBranchName(branches[0]) : `${branches.length} فروع`}
+            {branches.length === 1
+              ? getBranchName(branches[0].name)
+              : `${branches.length} فروع`}
           </div>
         )}
       </div>
@@ -86,7 +92,7 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter,id, description, b
                   key={index}
                   className="inline-block bg-gradient-to-r from-[#dec06a]/10 to-[#d4b45c]/10 text-[#dec06a] text-xs px-2 py-1 rounded-full border border-[#dec06a]/20"
                 >
-                  {getBranchName(branch)}
+                  {getBranchName(branch.name)}
                 </span>
               ))}
             </div>

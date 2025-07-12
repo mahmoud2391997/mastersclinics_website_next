@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      'cdn.salla.sa',
-      'storage.googleapis.com',
-      'www.ss.mastersclinics.com' // ✅ added
-    ],
+    domains: ['cdn.salla.sa', 'storage.googleapis.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -20,14 +16,8 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'www.ss.mastersclinics.com',
-        port: '',
-        pathname: '/**',
-      },
     ],
-    // Optional
+    // Optional: if you need to use unoptimized images
     // unoptimized: true
   },
   reactStrictMode: true,

@@ -1,20 +1,20 @@
 "use client";
-
+import { getImageUrl } from "../../helpers/hooks/imageUrl";
 import { useEffect } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { fetchBranchById } from "../../store/slices/branches";
 import { FaMapMarkerAlt, FaClock, FaArrowLeft, FaPhone, FaEnvelope } from "react-icons/fa";
-import { Nav } from "reactstrap";
 import Navbar from "../../helpers/components/Navbar/Navbar";
 import PageTitle from "../../helpers/components/pagetitle/PageTitle";
+import Image from "next/image";
+import TeamSection from "../../helpers/components/TeamSection/TeamSection";
 
 const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
-console.log(id);
 
   const { selectedBranch: branch, loading, error } = useSelector((state) => state.branches);
 
@@ -44,25 +44,25 @@ console.log(id);
       </div>
     );
   }
+
   return (
-    <div dir="rtl" className="bg-gray-50">
+    <div className="bg-gray-50">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع" />
-      {/* Full-width hero image */}
-      <div className="relative  py-12 px-4
-       max-w-7xl m-auto mt-5 md:h-screen/2">
-        <img
-          className="w-full h-full object-cover"
-          helpers={branch.imageUrl}
+      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع" bgImage={getImageUrl(branch.image_url)} />
+      
+      {/* Hero Image */}
+
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" dir="rtl">
+      <div className="relative max-w-7xl m-auto w-full h-64 md:h-96  mb-10 bg-gray-200">
+        <Image
+          src={getImageUrl(branch.image_url)}
           alt={branch.name}
+          fill
+          className="object-cover"
+          priority
         />
-   
       </div>
-
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-       
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-10">
           {/* Branch Info */}
           <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">معلومات الفرع</h2>
@@ -78,14 +78,13 @@ console.log(id);
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block mt-3 text-[#dec06a] hover:underline text-lg"
-                    style={{ color: "#dec06a"}}
                   >
                     عرض على الخريطة
                   </a>
                 </div>
               </div>
               
-              {branch.working_hours && (
+              {branch.working_hours && branch.working_hours.length > 0 && (
                 <div className="flex items-start">
                   <FaClock className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
                   <div>
@@ -105,7 +104,9 @@ console.log(id);
                 <FaPhone className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold text-gray-700 text-xl mb-2">الهاتف</h3>
-                  <p className="text-gray-600 text-lg">+966 12 345 6789</p>
+                  <p className="text-gray-600 text-lg">
+                    {branch.phone || "غير متوفر"}
+                  </p>
                 </div>
               </div>
               
@@ -113,7 +114,9 @@ console.log(id);
                 <FaEnvelope className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold text-gray-700 text-xl mb-2">البريد الإلكتروني</h3>
-                  <p className="text-gray-600 text-lg">info@branch{branch.id}.com</p>
+                  <p className="text-gray-600 text-lg">
+                    {branch.email || `info@branch${branch.id}.com`}
+                  </p>
                 </div>
               </div>
             </div>
@@ -123,13 +126,13 @@ console.log(id);
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="h-full">
               <iframe
-                helpers={`https://maps.google.com/maps?q=${branch.coordinates.latitude},${branch.coordinates.longitude}&z=15&output=embed`}
+                src={`https://maps.google.com/maps?q=${branch.latitude},${branch.longitude}&z=15&output=embed`}
                 width="100%"
                 height="100%"
                 className="min-h-[400px] lg:min-h-[500px]"
                 frameBorder="0"
                 style={{ border: 0 }}
-                allowFullScreen=""
+                allowFullScreen
                 aria-hidden="false"
                 tabIndex="0"
               ></iframe>
@@ -137,22 +140,27 @@ console.log(id);
           </div>
         </div>
 
-        {/* Full-width Gallery */}
-        <div className="mt-16">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">معرض الصور</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((img) => (
-              <div key={img} className="overflow-hidden rounded-xl shadow-md">
-                <img
-                  className="w-full  object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                  helpers={branch.imageUrl}
-                  alt={`${branch.name} - صورة ${img}`}
-                />
-              </div>
-            ))}
+        {/* Gallery Section - Only show if we have actual images */}
+        {branch.gallery_images && branch.gallery_images.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-3xl font-bold text-gray-800 mb-8">معرض الصور</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {branch.gallery_images.map((image, index) => (
+                <div key={index} className="overflow-hidden rounded-xl shadow-md h-64">
+                  <Image
+                    src={getImageUrl(image)}
+                    alt={`${branch.name} - صورة ${index + 1}`}
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
+      <TeamSection />
     </div>
   );
 };

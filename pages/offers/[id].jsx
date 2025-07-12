@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
+import { getImageUrl } from "@/helpers/hooks/imageUrl"
 
 import Navbar from '../../helpers/components/Navbar/Navbar';
 import PageTitle from '../../helpers/components/pagetitle/PageTitle';
@@ -56,17 +57,17 @@ const OfferSinglePage = () => {
   );
 
   return (
-    <div className="min-h-screen" dir="rtl">
+    <div className="min-h-screen ">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
       <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض" />
-
-      <main className="container mx-auto px-4 py-8">
+      
+      <main className="container mx-auto px-4 py-8"  dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
           {/* Image */}
           <div className="lg:w-1/2">
             <div className="relative w-full h-full bg-white rounded-xl shadow-md overflow-hidden">
               <Image
-                src={images[activeImage]}
+                src={getImageUrl(images[activeImage])}
                 alt={offer.title}
                 fill
                 className="object-cover"

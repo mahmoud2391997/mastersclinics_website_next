@@ -75,16 +75,17 @@ console.log(offers);
         {offers.length > 0 ? (
           offers.map((offer, index) => (
             <SwiperSlide key={index} className="px-2 py-4">
-              <TourCard
-                image={offer.image}
-                name={offer.title}
-                id={offer.id} // Assuming each offer has a unique ID
-                priceAfter={offer.priceAfter}
-                priceBefore={offer.priceBefore}
-                description={offer.description}
-                branches={offer.branches}
-                onSelect={(data) => console.log("Selected offer:", data)}
-              />
+             <TourCard
+  image={offer.image}
+  name={offer.title}
+  id={offer.id}
+  priceAfter={offer.priceAfter}
+  priceBefore={offer.priceBefore}
+  description={offer.description}
+  branches={offer.branches}
+  onSelect={(data) => console.log("Selected offer:", data)}
+/>
+
             </SwiperSlide>
           ))
         ) : (

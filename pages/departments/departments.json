@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Cardiology",
+    "description": "Our cardiology department provides comprehensive heart care with state-of-the-art diagnostic tools and treatment options.",
+    "image": "/images/departments/cardiology.jpg",
+    "branch_ids": [1, 2, 3]
+  },
+  {
+    "id": 2,
+    "name": "Neurology",
+    "description": "Specialized care for disorders of the nervous system, including stroke, epilepsy, and Parkinson's disease.",
+    "image": "/images/departments/neurology.jpg",
+    "branch_ids": [1, 3]
+  },
+  {
+    "id": 3,
+    "name": "Orthopedics",
+    "description": "Expert treatment for musculoskeletal issues, from sports injuries to joint replacements.",
+    "image": "/images/departments/orthopedics.jpg",
+    "branch_ids": [2, 3]
+  },
+  {
+    "id": 4,
+    "name": "Pediatrics",
+    "description": "Compassionate healthcare for infants, children, and adolescents in a child-friendly environment.",
+    "image": "/images/departments/pediatrics.jpg",
+    "branch_ids": [1]
+  },
+  {
+    "id": 5,
+    "name": "Dermatology",
+    "description": "Diagnosis and treatment of skin conditions, with cosmetic and medical dermatology services.",
+    "image": "/images/departments/dermatology.jpg",
+    "branch_ids": "2,3" 
+  },
+  {
+    "id": 6,
+    "name": "Oncology",
+    "description": "Comprehensive cancer care including chemotherapy, radiation therapy, and supportive services.",
+    "image": "/images/departments/oncology.jpg",
+    "branch_ids": [1, 2, 3]
+  }
+]

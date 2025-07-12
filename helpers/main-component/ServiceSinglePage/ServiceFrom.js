@@ -28,28 +28,28 @@ const ContactForm = () => {
         };
 
         if (formData.name.trim() === '') {
-            errors.nameError = 'Please enter your name';
+            errors.nameError = 'الرجاء إدخال الاسم';
             isValid = false;
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(formData.email)) {
-            errors.emailError = 'Please enter a valid email';
+            errors.emailError = 'الرجاء إدخال بريد إلكتروني صحيح';
             isValid = false;
         }
 
         if (formData.department.trim() === '') {
-            errors.departmentError = 'Please select a department';
+            errors.departmentError = 'الرجاء اختيار القسم';
             isValid = false;
         }
 
         if (formData.doctor.trim() === '') {
-            errors.doctorError = 'Please choose a doctor';
+            errors.doctorError = 'الرجاء اختيار الطبيب';
             isValid = false;
         }
 
         if (formData.message.trim() === '') {
-            errors.messageError = 'Please describe your problem';
+            errors.messageError = 'الرجاء وصف المشكلة';
             isValid = false;
         }
 
@@ -66,7 +66,7 @@ const ContactForm = () => {
         const isValid = validateForm();
         if (isValid) {
             // Handle form submission logic here
-            console.log('Form submitted:', formData);
+            console.log('تم إرسال النموذج:', formData);
             // Reset form after submission if needed
             setFormData({
                 name: '',
@@ -79,75 +79,75 @@ const ContactForm = () => {
     };
 
     return (
-        <form id="myForm" onSubmit={handleSubmit}>
+        <form id="myForm" onSubmit={handleSubmit} dir="rtl">
             <div className="row">
                 <div className="col-lg-6 col-md-6 col-12 form_item">
-                    <label>Your Name</label>
+                    <label>الاسم الكامل</label>
                     <input
                         className="input-fild"
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        placeholder="Name"
+                        placeholder="الاسم"
                     />
                     <span className="error">{formErrors.nameError}</span>
                 </div>
                 <div className="col-lg-6 col-md-6 col-12 form_item">
-                    <label>Your Email</label>
+                    <label>البريد الإلكتروني</label>
                     <input
                         className="input-fild"
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        placeholder="Email"
+                        placeholder="البريد الإلكتروني"
                     />
                     <span className="error">{formErrors.emailError}</span>
                 </div>
                 <div className="col-lg-6 col-md-6 col-12 form_item">
-                    <label>Select Department</label>
+                    <label>اختر القسم</label>
                     <select
                         name="department"
                         value={formData.department}
                         onChange={handleInputChange}
                         className="input-fild"
                     >
-                        <option value="">Department</option>
-                        <option value="Subject 1">Subject 1</option>
-                        <option value="Subject 2">Subject 2</option>
-                        <option value="Subject 3">Subject 3</option>
+                        <option value="">القسم</option>
+                        <option value="القسم 1">القسم 1</option>
+                        <option value="القسم 2">القسم 2</option>
+                        <option value="القسم 3">القسم 3</option>
                     </select>
                     <span className="error">{formErrors.departmentError}</span>
                 </div>
                 <div className="col-lg-6 col-md-6 col-12 form_item">
-                    <label>Choose Doctor</label>
+                    <label>اختر الطبيب</label>
                     <select
                         name="doctor"
                         value={formData.doctor}
                         onChange={handleInputChange}
                         className="input-fild"
                     >
-                        <option value="">Choose Doctor</option>
-                        <option value="Doctor 1">Doctor 1</option>
-                        <option value="Doctor 2">Doctor 2</option>
-                        <option value="Doctor 3">Doctor 3</option>
+                        <option value="">اختر الطبيب</option>
+                        <option value="الطبيب 1">الطبيب 1</option>
+                        <option value="الطبيب 2">الطبيب 2</option>
+                        <option value="الطبيب 3">الطبيب 3</option>
                     </select>
                     <span className="error">{formErrors.doctorError}</span>
                 </div>
                 <div className="col-12 form_item">
-                    <label>Say Details About Your Problem</label>
+                    <label>صف مشكلتك بالتفصيل</label>
                     <textarea
                         name="message"
                         value={formData.message}
                         onChange={handleInputChange}
                         className="input-fild"
-                        placeholder="Message.."
+                        placeholder="الرسالة..."
                     ></textarea>
                     <span className="error s2">{formErrors.messageError}</span>
                 </div>
                 <div className="col-12">
-                    <input type="submit" className="theme-btn" value="Send Message" />
+                    <input type="submit" className="theme-btn" value="إرسال الرسالة" />
                 </div>
             </div>
         </form>
