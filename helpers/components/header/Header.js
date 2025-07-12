@@ -1,7 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import MobileMenu from '../MobileMenu/MobileMenu'
-
+import { getImageUrl } from '@/helpers/hooks/imageUrl'
+import ContactBar from './socialMedia'
 const Header = (props) => {
 
     const ClickHandler = () => {
@@ -12,6 +13,8 @@ const Header = (props) => {
 
 
     return (
+        <>
+        <ContactBar />
         <header id="header" dir="rtl" className="relative">
             <div className={props.hclass}>
                 <nav className="navigation navbar navbar-expand-lg navbar-light w-[99%] md:mr-[45px] lg:mr-[95px]">
@@ -20,13 +23,13 @@ const Header = (props) => {
                             {/* Logo */}
                             <div className="col-lg-2 col-md-6 col-6 text-center">
                                 <div className="navbar-header">
-                                    <Link href="/" className="navbar-brand flex justify-center items-center">
+                                    <Link href="/" className={"navbar-brand flex justify-center items-center " + (!props.nav ? "h-[170px]" : "") } >
                                         <img 
-                                            src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png" 
+                                            src={props.nav ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png" : getImageUrl("/uploads/Artboard ٨ copy.png")}
                                             alt="logo" 
                                             onClick={ClickHandler} 
                                             className="max-w-[147px] md:max-w-[200px]"
-                                        />
+                                            />
                                     </Link>
                                 </div>
                             </div>
@@ -113,6 +116,7 @@ const Header = (props) => {
                 </nav>
             </div>
         </header>
+                                            </>
     )
 }
 

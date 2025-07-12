@@ -25,6 +25,7 @@ const ServiceSection = ({
   const { services = [], loading = false, error = null } = useSelector(
     (state) => state.services || {}
   );
+console.log(services);
 
   // Swiper nav refs
   const prevRef = useRef(null);
@@ -170,21 +171,22 @@ const ServiceSection = ({
                         {service.description}
                       </p>
 
-                      {service.branches && service.branches.length > 0 && (
-                        <div className="mb-4">
-                          <p className="text-xs text-gray-500 mb-2">متوفر في:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {service.branches.map((branch, branchIndex) => (
-                              <span
-                                key={branchIndex}
-                                className="inline-block bg-gradient-to-r from-[#dec06a]/10 to-[#d4b45c]/10 text-[#dec06a] text-xs px-2 py-1 rounded-full border border-[#dec06a]/20"
-                              >
-                                {getBranchName(branch)}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                   {service.branches && service.branches.length > 0 && (
+  <div className="mb-4">
+    <p className="text-xs text-gray-500 mb-2">متوفر في:</p>
+    <div className="flex flex-wrap gap-1">
+      {service.branches.map((branch, branchIndex) => (
+        <span
+          key={branchIndex}
+          className="inline-block bg-gradient-to-r from-[#dec06a]/10 to-[#d4b45c]/10 text-[#dec06a] text-xs px-2 py-1 rounded-full border border-[#dec06a]/20"
+        >
+          {branch.name}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
+
                     </div>
 
                     {/* Interactive progress indicator */}

@@ -9,37 +9,22 @@ import Link from "next/link";
 const TeamSection = ({
   hclass = "",
   sliceStart = 0,
-  sliceEnd = null, // Changed to null to show all by default
+  sliceEnd = null, // show all by default
   showSectionTitle = true,
 }) => {
   const dispatch = useDispatch();
   const { teams = [], loading = false, error = null } = useSelector(
     (state) => state.teams || {}
   );
-  const placeholder = "/download.png"; // or your preferred placeholder path
+  const placeholder = "/download.png";
 
-  // Determine which teams to show based on props
-  const displayedTeams = sliceEnd 
+  const displayedTeams = sliceEnd
     ? teams.slice(sliceStart, sliceEnd)
     : teams.slice(sliceStart);
 
   useEffect(() => {
     dispatch(fetchTeams());
   }, [dispatch]);
-
-
-
-  const getBranchName = (branchCode) => {
-    const branchMap = {
-      alawali: "فرع العوالي",
-      alkhalidiyah: "فرع الخالدية",
-      alshatee: "فرع الشاطئ",
-      albasateen: "فرع البساتين",
-      abhur: "ابحر الشمالية",
-      altaif: "فرع الطائف",
-    };
-    return branchMap[branchCode] || branchCode;
-  };
 
   return (
     <section className={hclass}>
@@ -100,7 +85,7 @@ const TeamSection = ({
                       {team.branches && team.branches.length > 0 && (
                         <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
                           {team.branches.length === 1
-                            ? getBranchName(team.branches[0])
+                            ? team.branches[0].name
                             : `${team.branches.length} فروع`}
                         </div>
                       )}
@@ -112,10 +97,10 @@ const TeamSection = ({
                       {team.name}
                     </h3>
                     <span className="text-[#dec06a] mb-4 block font-medium">
-                      {team.specialization}
+                      {team.title}
                     </span>
 
-                    {team.branches.length > 0 && (
+                    {team.branches && team.branches.length > 0 && (
                       <div className="mb-4">
                         <p className="text-xs text-gray-500 mb-2 font-medium">
                           متوفر في:
@@ -126,7 +111,7 @@ const TeamSection = ({
                               key={branchIndex}
                               className="inline-block bg-gradient-to-r from-[#dec06a]/15 to-[#d4b45c]/15 text-[#dec06a] text-xs px-3 py-1.5 rounded-full border border-[#dec06a]/30 font-medium"
                             >
-                              {getBranchName(branch)}
+                              {branch.name}
                             </span>
                           ))}
                         </div>

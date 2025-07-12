@@ -7,6 +7,7 @@ import { fetchBranches } from "../../store/slices/branches"; // adjust import pa
 import { FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import Navbar from "../../helpers/components/Navbar/Navbar";
 import PageTitle from "../../helpers/components/pagetitle/PageTitle";
+import { getImageUrl } from "../../helpers/hooks/imageUrl";
 
 export const metadata = {
   title: "فروعنا",
@@ -23,18 +24,18 @@ console.log(branches);
   }, [dispatch]);
 
   const branchesByRegion = branches.reduce((acc, branch) => {
-    if (!acc[branch.region]) acc[branch.region] = [];
-    acc[branch.region].push(branch);
+    if (!acc[branch.region_name]) acc[branch.region_name] = [];
+    acc[branch.region_name].push(branch);
     return acc;
   }, {});
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50">
+    <div  className="min-h-screen bg-gray-50">
       {/* Hero Section */}
   <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={"فروعنا"} pagesub="اكتشف جميع فروعنا ومواعيد العمل" />
+      <PageTitle pageTitle={"فروعنا"} pagesub="اكتشف جميع فروعنا ومواعيد العمل" bgImage={"https://cdn.salla.sa/dEYvd/LgUfWipbId1zQL4vAXAdXtPnedinmGRFunfGfZzN.jpg"} />
 
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" dir="rtl">
         {loading && <p className="text-center text-lg">جاري التحميل...</p>}
         {error && <p className="text-center text-red-500">حدث خطأ: {error}</p>}
         {!loading && !error && Object.entries(branchesByRegion).map(([region, regionBranches]) => (
@@ -49,7 +50,7 @@ console.log(branches);
                   <div className="w-full ">
                     <img
                       className="w-full h-full object-cover"
-                      helpers={branch.imageUrl || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
+                      src={getImageUrl(branch.image_url) || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
                       alt={branch.name}
                     />
                   </div>

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDevices } from '../../../store/slices/devices'; // Adjust the path as needed
 import SectionTitle from "../SectionTitle/SectionTitle";
+import { getImageUrl } from "@/helpers/hooks/imageUrl";
 
 const ClickHandler = () => {
     window.scrollTo(10, 0);
@@ -57,7 +58,7 @@ console.log("Devices:", devices);
                         {devices.slice(sliceStart, sliceEnd).map((device, pitem) => (
                             <div className="col-lg-4 col-md-6 col-12" key={pitem}>
                                 <div className="project_card">
-                                    <img src={device.image} alt={device.name} />
+                                    <img src={getImageUrl(device.image)} alt={device.name} />
                                     <div className="text">
                                         {device._id ? (
                                             <h2>
