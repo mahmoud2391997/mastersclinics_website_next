@@ -2582,7 +2582,7 @@ Version:        1.0.0
 
 @media (max-width: 991px) {
   .wpo-site-header .navigation {
-    padding: 20px 0;
+    padding: 0px 0;
   }
 }
 .wpo-site-header #navbar {

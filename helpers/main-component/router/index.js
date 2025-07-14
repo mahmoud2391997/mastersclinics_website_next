@@ -24,7 +24,7 @@ import BlogDetailsLeftSiide from '../BlogDetailsLeftSiide/BlogDetailsLeftSiide'
 import BlogDetailsFull from '../BlogDetailsFull/BlogDetailsFull'
 import ContactPage from '../../../pages/contact';
 import ErrorPage from '../ErrorPage/ErrorPage';
-
+import BlogSingle from '../../../pages/blog/[id]';
 
 const AllRoute = () => {
 
@@ -50,6 +50,7 @@ const AllRoute = () => {
           <Route path="project" element={<ProjectPage/>} />
           <Route path="project-single/:slug" element={<ProjectSingle />} />
           <Route path='blog' element={<BlogPage/>} />
+          <Route path='blog/:id' element={<BlogSingle/>} />
           <Route path='blog-left-sidebar' element={<BlogPageLeft />} />
           <Route path='blog-fullwidth' element={<BlogPageFullwidth />} />
           <Route path='blog-single/:slug' element={<BlogDetails />} />

@@ -1,130 +1,129 @@
-import React from 'react'
-import Link from 'next/link'
-import MobileMenu from '../MobileMenu/MobileMenu'
-import { getImageUrl } from '@/helpers/hooks/imageUrl'
-import ContactBar from './socialMedia'
+"use client";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import MobileMenu from "../MobileMenu/MobileMenu";
+import { getImageUrl } from "@/helpers/hooks/imageUrl";
+import ContactBar from "./socialMedia";
+import { FaChevronDown } from "react-icons/fa";
+
 const Header = (props) => {
+  const [menuData, setMenuData] = useState({
+    branches: [],
+    departments: [],
+    devices: [],
+    doctors: [],
+    offers: [],
+    blogs: [],
+    services: [],
+  });
 
-    const ClickHandler = () => {
-        window.scrollTo(10, 0);
-    }
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/navbar-data");
+        const data = await res.json();
+        setMenuData(data);
+      } catch (error) {
+        console.error("Failed to fetch navbar data", error);
+      }
+    };
 
+    fetchMenuData();
+  }, []);
 
+  const ClickHandler = () => {
+    window.scrollTo(10, 0);
+  };
 
+  const renderDropdown = (items, basePath) => (
+    <ul className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 w-48 hidden group-hover:block z-50 border-t-2 border-[#CBA853]">
+      {items.map((item) => (
+        <li key={item.id}>
+          <Link
+            href={`/${basePath}/${item.id}`}
+            className="block px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300"
+            onClick={ClickHandler}
+          >
+            {item.name}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
 
-    return (
-        <>
-        <ContactBar />
-        <header id="header" dir="rtl" className="relative">
-            <div className={props.hclass}>
-                <nav className="navigation navbar navbar-expand-lg navbar-light w-[99%] md:mr-[45px] ">
-                    <div className="container-fluid">
-                        <div className="row flex  items-center justify-between m-auto">
-                            {/* Logo */}
-                            <div className="col-lg-2 col-md-6 col-6 text-center">
-                                <div className="navbar-header">
-                                    <Link href="/" className={"navbar-brand flex justify-center items-center " + (!props.nav ? "h-[150px]" : "") } >
-                                        <img 
-                                            src={props.nav ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png" : getImageUrl("/uploads/Artboard ٨ copy.png")}
-                                            alt="logo" 
-                                            onClick={ClickHandler} 
-                                            className="max-w-[147px] md:max-w-[200px]"
-                                            />
-                                    </Link>
-                                </div>
-                            </div>
-                            
-                            <div className="col-lg-3 col-md-3 col-6 flex justify-center items-center d-lg-none dl-block text-end">
-                                <MobileMenu />
-                            </div>
-                            
-                            {/* Navigation menu */}
-                            <div className="col-lg-10 col-md-1 col-1">
-                                <div id="navbar" className="navbar-collapse navigation-holder mr-[10px]">
-                                    <button className="menu-close absolute right-0 top-0 z-50 p-2 text-white"><i className="ti-close"></i></button>
-                                    <ul className="nav navbar-nav">
-                                        <li className="menu-item-has-children">
-                                            <Link href="/" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الرئيسية
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                          
-                                        </li>
-                                        <li>
-                                            <Link href="/about" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                من نحن
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/branches" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الفروع  
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                        
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/departments" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الاقسام  
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                        
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/services" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الخدمات
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                              
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/project" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الاجهزة
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                          
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/team" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                الاطباء
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                          
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/offers" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                العروض
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                          
-                                        </li>
-                                        <li className="menu-item-has-children">
-                                            <Link href="/blog" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                المدونة
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                          
-                                        </li>
-                                        <li>
-                                            <Link href="/contact" className="block px-4 lg:px-5 text-[#000B47] text-xl font-medium hover:text-[#CBA853] transition-colors duration-300 relative">
-                                                اتصل بنا
-                                                <span className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#A58532] to-[#f0db83] opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            {/* Empty column */}
-                            <div className="col-lg-3 col-md-2 col-2">
-                            </div>
-                        </div>
-                    </div>
-                </nav>
+  return (
+    <div className="relative">
+      <ContactBar />
+
+      <header id="header" dir="rtl" className="relative mr-10 z-[1111] m-auto">
+        <div className={props.hclass}>
+          <nav className="navigation navbar navbar-expand-lg navbar-light">
+            <div className="container-fluid flex flex-col-reverse gap-4 md:flex-row justify-between mr-10">
+              {/* Logo */}
+              <div className="col-lg-2">
+                <Link href="/" className="navbar-brand flex justify-center items-center">
+                  <img
+                    src={
+                      props.nav
+                        ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
+                        : getImageUrl("/uploads/Artboard ٨ copy.png")
+                    }
+                    alt="logo"
+                    className="max-w-[147px] mt-2"
+                    onClick={ClickHandler}
+                  />
+                </Link>
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="col-lg-10 hidden lg:block">
+                <ul className="nav navbar-nav flex gap-3 text-xl font-medium w-full">
+                  {[
+                    { label: "الرئيسية", href: "/" },
+                    { label: "من نحن", href: "/about" },
+                    { label: "اتصل بنا", href: "/contact" },
+                  ].map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="px-4 lg:px-5 text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-4"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+
+                  {[
+                    { label: "الفروع", path: "branches", items: menuData.branches },
+                    { label: "الاقسام", path: "departments", items: menuData.departments },
+                    { label: "الخدمات", path: "services", items: menuData.services },
+                    { label: "الاطباء", path: "team", items: menuData.doctors },
+                    { label: "العروض", path: "offers", items: menuData.offers },
+                    { label: "المقالات", path: "blog", items: menuData.blogs },
+                  ].map((menu) => (
+                    <li key={menu.path} className="relative group">
+                      <Link
+                        href={`/${menu.path}`}
+                        className="flex items-center px-4 lg:px-5 text-black hover:text-[#CBA853] transition-colors duration-300 relative py-4"
+                      >
+                        {menu.label} <FaChevronDown className="mr-1" />
+                      </Link>
+                      {renderDropdown(menu.items, menu.path)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Mobile Menu Toggle */}
+              <div className="col-lg-3 col-md-3 col-6 flex lg:hidden justify-center items-center">
+                <MobileMenu />
+              </div>
             </div>
-        </header>
-                                            </>
-    )
-}
+          </nav>
+        </div>
+      </header>
+    </div>
+  );
+};
 
 export default Header;

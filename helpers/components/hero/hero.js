@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
+import CtafromSection from '../Form';
 
 const Hero = ({
   tagline = "ماسترز خبراء لجمالك وصحتك",
@@ -37,12 +38,13 @@ const Hero = ({
   };
 
   return (
+     <div className='flex flex-col w-full items-center bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]'>
     <motion.section 
       ref={ref}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={containerVariants}
-      className="relative z-[111] hero_section flex flex-col md:flex-row-reverse items-center justify-between overflow-hidden min-h-[100vh] bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]"
+      className="relative z-[111] hero_section flex flex-col md:flex-row-reverse items-center justify-between overflow-hidden min-h-[100vh] "
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden z-[-2]">
@@ -62,7 +64,7 @@ const Hero = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full lg:w-1/2 flex content justify-center items-center flex-col px-5 lg:px-12 xl:px-20 text-right mt-10 lg:mt-0"
+        className="w-full lg:w-1/2 flex content justify-center items-center flex-col px-5 lg:px-12 xl:px-20 text-right  lg:mt-0 2xl:mr-30"
       >
         {/* Logo & Tagline Container */}
         <motion.div 
@@ -72,7 +74,7 @@ const Hero = ({
           transition={{ delay: 0.2 }}
         >
           <motion.h2 
-            className="inline-block text-[20px]  sm:text-[22px] lg:text-[24px] text-[16px] sm:text-[18px] lg:text-[20px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]  px-6 py-3 rounded-[24px] mb-6 shadow-lg"
+            className="inline-block text-[20px]  sm:text-[22px] lg:text-[20px] text-[16px] sm:text-[18px] lg:text-[20px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]  px-6 py-3 rounded-[24px] mb-6 shadow-lg"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
@@ -101,22 +103,7 @@ const Hero = ({
         </motion.p>
 
         {/* CTA Buttons - Larger */}
-        <motion.div 
-          className="flex flex-col sm:flex-row gap-6 justify-center md:justify-end w-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <motion.button
-            className="bg-gradient-to-br from-[#A58532] to-[#CBA853] theme-btn text-white   rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-xl font-medium"
-            whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(165, 133, 50, 0.4)" }}
-            whileTap={{ scale: 0.95 }}
-          >
-            احجز موعدك الآن
-          </motion.button>
-          
-
-        </motion.div>
+   
       </motion.div>
 
       {/* Image with animation - Left Side */}
@@ -166,6 +153,8 @@ const Hero = ({
       
       </motion.div>
     </motion.section>
+            <CtafromSection />
+           </div>
   )
 }
 

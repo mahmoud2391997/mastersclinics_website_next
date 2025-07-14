@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   FaFacebook,
   FaYoutube,
@@ -10,11 +11,83 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { useRouter } from "next/navigation";
 
 const ContactBar = () => {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef();
+  const router = useRouter();
+  const debounceRef = useRef();
+
+  // Mapping entity keys to Arabic titles
+  const entityNames = {
+    branches: "الفروع",
+    departments: "الأقسام",
+    devices: "الأجهزة",
+    doctors: "الأطباء",
+    offers: "العروض",
+    blogs: "المقالات",
+  };
+
+  const handleSearch = async (searchQuery) => {
+    if (!searchQuery.trim()) {
+      setResults(null);
+      setShowDropdown(false);
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      setResults(data);
+      setShowDropdown(true);
+    } catch (err) {
+      console.error("Search failed", err);
+    }
+  };
+
+  // Debounced version
+  const debouncedSearch = useCallback((value) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 500);
+  }, []);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    debouncedSearch(value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      handleSearch(query);
+    }
+  };
+
+  const handleItemClick = (entity, id) => {
+    const route = entity === "doctors" ? `/teams/${id}` : `/${entity}/${id}`;
+    router.push(route);
+    setShowDropdown(false);
+    setQuery("");
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="flex flex-col items-center gap-4 p-4 md:flex-row md:justify-between bg-white shadow" dir="rtl">
-      
+    <div className="flex flex-col items-center gap-4 p-4 md:flex-row md:justify-between bg-white shadow relative" dir="rtl">
       {/* Social Icons */}
       <div className="flex flex-wrap justify-center gap-3">
         {[
@@ -38,16 +111,48 @@ const ContactBar = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="w-full md:w-1/3 relative">
+      <div className="w-full md:w-1/3 relative" ref={dropdownRef}>
         <input
           type="text"
           placeholder="ابحث هنا..."
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
           className="w-full px-4 py-2 border border-[#dec06a] rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition"
         />
         <FaSearch
-          className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
+          onClick={() => handleSearch(query)}
+          className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a] cursor-pointer"
           size={18}
         />
+
+        {/* Dropdown results */}
+        {showDropdown && results && (
+          <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
+            {Object.entries(results).some(([, items]) => items.length > 0) ? (
+              Object.entries(results).map(([entity, items]) =>
+                items.length > 0 && (
+                  <div key={entity} className="border-b last:border-b-0">
+                    <div className="font-semibold text-[#dec06a] px-4 py-2">
+                      {entityNames[entity] || entity}
+                    </div>
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleItemClick(entity, item.id)}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      >
+                        {item.title || item.name || item.position || item.author || item.content}
+                      </div>
+                    ))}
+                  </div>
+                )
+              )
+            ) : (
+              <div className="px-4 py-2 text-sm">لا توجد نتائج</div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Contact Info */}

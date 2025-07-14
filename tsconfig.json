@@ -17,6 +17,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/adsSlider/OfferCard.jsx", "pages/departments/grid.jsx", "pages/departments/index.jsx", "pages/departments/[id].jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/adsSlider/OfferCard.jsx", "pages/departments/grid.jsx", "pages/departments/index.jsx", "pages/departments/[id].jsx", "helpers/components/FormDetails.jsx"],
   "exclude": ["node_modules"]
 }

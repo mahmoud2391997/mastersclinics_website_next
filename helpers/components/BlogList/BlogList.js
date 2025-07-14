@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/router'; // Import useRouter hook for navigation
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchBlogs } from '../../../store/slices/blogs'; // <-- adjust path if different
 import BlogSidebar from '../BlogSidebar/BlogSidebar';
 import VideoModal from '../ModalVideo/VideoModal';
-import blogs from '../../api/blogs';
 
 const ClickHandler = () => {
   if (typeof window !== 'undefined') {
@@ -13,14 +14,36 @@ const ClickHandler = () => {
 };
 
 const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-class' }) => {
-  const router = useRouter(); // Initialize useRouter hook to navigate programmatically
-  const validBlogs = blogs.filter(blog => blog?.slug && blog?.title2);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
-  const handleNavigation = (slug) => {
-    // Use router.push to navigate to the blog's individual page
-    router.push(`/blog-single/${slug}`);
-    ClickHandler(); // Scroll to the top after navigation
+  // 🔥 Get blogs from Redux store
+  const blogs = useSelector((state) => state.blogs.items);
+  console.log(blogs);
+  
+  const loading = useSelector((state) => state.blogs.loading);
+  const error = useSelector((state) => state.blogs.error);
+
+  // 🚀 Fetch blogs on mount
+  useEffect(() => {
+    dispatch(fetchBlogs());
+  }, [dispatch]);
+
+  // ✅ Filter valid blogs only
+  const validBlogs = blogs.filter((blog) => blog?.slug && blog?.title2);
+
+  const handleNavigation = (id) => {
+    router.push(`/blog/${id}`);
+    ClickHandler();
   };
+
+  if (loading) {
+    return <p style={{ textAlign: 'center' }}>Loading blogs...</p>;
+  }
+
+  if (error) {
+    return <p style={{ textAlign: 'center', color: 'red' }}>Error: {error}</p>;
+  }
 
   return (
     <section className="wpo-blog-pg-section section-padding">
@@ -29,7 +52,7 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
           <div className={`col col-lg-8 col-12 ${blRight}`}>
             <div className="wpo-blog-content">
               {validBlogs.slice(0, 3).map((blog, bitem) => (
-                <div className={`post ${blog.blClass || ''}`} key={bitem}>
+                <div className={`post ${blog.blClass || ''}`} key={blog.id || bitem}>
                   <div className="entry-media video-holder">
                     <img src={blog.blogSingleImg} alt="" />
                     <VideoModal />
@@ -39,7 +62,7 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                       <li>
                         <i className="fi flaticon-user"></i> By{' '}
                         <span
-                          onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for author
+                          onClick={() => handleNavigation(blog.id)}
                           style={{ cursor: 'pointer', color: '#3498db' }}
                         >
                           {blog.author}
@@ -56,19 +79,18 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                   <div className="entry-details">
                     <h3>
                       <span
-                        onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for title click
+                        onClick={() => handleNavigation(blog.id)}
                         style={{ cursor: 'pointer', color: '#3498db' }}
                       >
                         {blog.title2}
                       </span>
                     </h3>
                     <p>
-                      Law is a great career path if you want to build a broad skill set that includes
-                      everything from critical thinking and strategic planning to communications. If you
-                      love rising to a challenge.
+                      {blog.shortDescription ||
+                        'Law is a great career path if you want to build a broad skill set that includes everything from critical thinking and strategic planning to communications. If you love rising to a challenge.'}
                     </p>
                     <span
-                      onClick={() => handleNavigation(blog.slug)} // Use handleNavigation for "Read More" click
+                      onClick={() => handleNavigation(blog.id)}
                       className="read-more"
                       style={{ cursor: 'pointer', color: '#3498db' }}
                     >
@@ -82,7 +104,7 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                 <ul className="pg-pagination">
                   <li>
                     <span
-                      onClick={() => router.push('/blog-left-sidebar')} // Programmatic navigation for pagination
+                      onClick={() => router.push('/blog-left-sidebar')}
                       aria-label="Previous"
                       style={{ cursor: 'pointer' }}
                     >
@@ -90,26 +112,17 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
                     </span>
                   </li>
                   <li className="active">
-                    <span
-                      onClick={() => router.push('/blog-left-sidebar')}
-                      style={{ cursor: 'pointer' }}
-                    >
+                    <span onClick={() => router.push('/blog-left-sidebar')} style={{ cursor: 'pointer' }}>
                       1
                     </span>
                   </li>
                   <li>
-                    <span
-                      onClick={() => router.push('/blog-left-sidebar')}
-                      style={{ cursor: 'pointer' }}
-                    >
+                    <span onClick={() => router.push('/blog-left-sidebar')} style={{ cursor: 'pointer' }}>
                       2
                     </span>
                   </li>
                   <li>
-                    <span
-                      onClick={() => router.push('/blog-left-sidebar')}
-                      style={{ cursor: 'pointer' }}
-                    >
+                    <span onClick={() => router.push('/blog-left-sidebar')} style={{ cursor: 'pointer' }}>
                       3
                     </span>
                   </li>
@@ -127,7 +140,6 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
             </div>
           </div>
 
-          {/* Sidebar using default value as well */}
           <BlogSidebar blLeft={blLeft} />
         </div>
       </div>

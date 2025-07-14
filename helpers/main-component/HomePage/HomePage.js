@@ -9,7 +9,7 @@ import Testimonial from '../../components/Testimonial/Testimonial';
 import TeamSection from '../../components/TeamSection/TeamSection';
 import FunFact from '../../components/FunFact/FunFact';
 import BlogSection from '../../components/BlogSection/BlogSection';
-import CtafromSection from '../../components/CtafromSection/CtafromSection';
+import CtafromSection from '../../components/Form';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
 import ImageSlider from '../../components/adsSlider/index';
