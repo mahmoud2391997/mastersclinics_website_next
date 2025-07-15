@@ -118,7 +118,7 @@ const TeamSection = ({
                     )}
 
                     <Link
-                      href={`/team/${team.id}`}
+                      href={`/teams/${team.id}`}
                       className="theme-btn w-full py-3 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg"
                     >
                       احجز موعد
