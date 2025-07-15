@@ -89,3 +89,4 @@ function DepartmentCard({ department, branches }: DepartmentCardProps) {
     </div>
   );
 }
+export default DepartmentCard;
