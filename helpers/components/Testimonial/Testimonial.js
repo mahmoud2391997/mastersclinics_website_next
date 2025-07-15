@@ -14,11 +14,11 @@ const TestimonialArabic = (props) => {
     const testimonials = useSelector((state) => state.reviews.items);
     const loading = useSelector((state) => state.reviews.loading);
     const error = useSelector((state) => state.reviews.error);
-console.log(testimonials);
 
     useEffect(() => {
         dispatch(fetchReviews());
     }, [dispatch]);
+console.log(testimonials);
 
     const settings = {
         dots: false,
@@ -45,7 +45,7 @@ console.log(testimonials);
     if (!testimonials || testimonials.length === 0) return <p className="text-center mt-10">لا توجد تقييمات متاحة حاليًا.</p>;
 
     return (
-        <section dir="rtl" className={"" + props.tClass}>
+        <section dir="rtl" className={props.tClass || ""}>
             <div className="container">
                 <div className="row justify-content-right">
                     <div className="col-12">
@@ -69,7 +69,7 @@ console.log(testimonials);
                                     <li><i className="flaticon-star"></i></li>
                                     <li><i className="flaticon-star"></i></li>
                                 </ul>
-                                <p>{testitem.Des}</p>
+                                <p>{testitem.des}</p>
                                 <div className="ath">
                                     <div className="image">
                                         <img src={getImageUrl(testitem.img)} alt={testitem.title} />
@@ -86,6 +86,6 @@ console.log(testimonials);
             </div>
         </section>
     );
-}
+};
 
 export default TestimonialArabic;

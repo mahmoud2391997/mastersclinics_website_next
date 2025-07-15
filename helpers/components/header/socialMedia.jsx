@@ -38,7 +38,7 @@ const ContactBar = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       setResults(data);
       setShowDropdown(true);

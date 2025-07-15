@@ -9,6 +9,7 @@ import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 import Footer from "../../helpers/components/footer/Footer";
 import BlogSidebar from "../../helpers/components/BlogSidebar/BlogSidebar";
 import { fetchBlogById } from "../../store/slices/blogs"; // Adjust path if needed
+import { getImageUrl } from "../../helpers/hooks/imageUrl";
 
 const imageUrlFallback = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s";
 
@@ -39,7 +40,7 @@ const BlogSingle = (props) => {
     return <p className="text-center mt-10">لم يتم العثور على المقال.</p>;
   }
 
-  const blogImage = blog.blogSingleImg || imageUrlFallback;
+  const blogImage = getImageUrl(blog.image) || imageUrlFallback;
 
   return (
     <section className="wpo-blog-single-section section-padding" dir="rtl">

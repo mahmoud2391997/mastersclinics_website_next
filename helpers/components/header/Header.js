@@ -20,7 +20,7 @@ const Header = (props) => {
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const res = await fetch("http://localhost:3000/navbar-data");
+        const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
         setMenuData(data);
       } catch (error) {
@@ -116,7 +116,7 @@ const Header = (props) => {
 
               {/* Mobile Menu Toggle */}
               <div className="col-lg-3 col-md-3 col-6 flex lg:hidden justify-center items-center">
-                <MobileMenu />
+                <MobileMenu menuData={menuData} />
               </div>
             </div>
           </nav>

@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchBlogs } from '../../../store/slices/blogs'; // <-- adjust path if different
 import BlogSidebar from '../BlogSidebar/BlogSidebar';
 import VideoModal from '../ModalVideo/VideoModal';
+import { getImageUrl } from "../../hooks/imageUrl";
 
 const ClickHandler = () => {
   if (typeof window !== 'undefined') {
@@ -44,6 +45,7 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
   if (error) {
     return <p style={{ textAlign: 'center', color: 'red' }}>Error: {error}</p>;
   }
+console.log(blogs);
 
   return (
     <section className="wpo-blog-pg-section section-padding">
@@ -54,7 +56,7 @@ const BlogList = ({ blRight = 'default-blRight-class', blLeft = 'default-blLeft-
               {validBlogs.slice(0, 3).map((blog, bitem) => (
                 <div className={`post ${blog.blClass || ''}`} key={blog.id || bitem}>
                   <div className="entry-media video-holder">
-                    <img src={blog.blogSingleImg} alt="" />
+                    <img src={getImageUrl(blog.image)} alt="" />
                     <VideoModal />
                   </div>
                   <div className="entry-meta">
