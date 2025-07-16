@@ -38,19 +38,31 @@ const TeamSinglePage = () => {
 console.log(currentMember);
 
     // Parse JSON fields safely
-    let education = [];
-    let skills = [];
-    let achievements = [];
-    let workingHours = [];
+ let education = [];
+let skills = [];
+let achievements = [];
+let workingHours = [];
 
-    try {
-        education = JSON.parse(currentMember.education || "[]");
-        skills = JSON.parse(currentMember.skills || "[]");
-        achievements = JSON.parse(currentMember.achievements || "[]");
-        workingHours = JSON.parse(currentMember.working_hours || "[]");
-    } catch (e) {
-        console.error("Error parsing JSON fields", e);
-    }
+try {
+    education = Array.isArray(currentMember.education)
+        ? currentMember.education
+        : JSON.parse(currentMember.education || "[]");
+
+    skills = Array.isArray(currentMember.skills)
+        ? currentMember.skills
+        : JSON.parse(currentMember.skills || "[]");
+
+    achievements = Array.isArray(currentMember.achievements)
+        ? currentMember.achievements
+        : JSON.parse(currentMember.achievements || "[]");
+
+    workingHours = Array.isArray(currentMember.working_hours)
+        ? currentMember.working_hours
+        : JSON.parse(currentMember.working_hours || "[]");
+} catch (e) {
+    console.error("Error parsing JSON fields", e);
+}
+
 
     return (
         <Fragment>

@@ -19,7 +19,7 @@ const HomePage = () => {
         <Fragment>
             <div className='bg-[#f6eecd] pb-5' id='scrool'>
 
-            <Navbar hclass={'wpo-site-header'}  nav={true} />
+            <Navbar hclass={'wpo-site-header '}  nav={true} />
             </div>
             <Hero hclass={'static-hero'} />
             <ImageSlider />

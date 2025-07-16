@@ -87,7 +87,7 @@ const ContactBar = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4 md:flex-row md:justify-between bg-white shadow relative" dir="rtl">
+    <div className="flex flex-col items-center gap-4 p-2 md:flex-row md:justify-between bg-white shadow relative" dir="rtl">
       {/* Social Icons */}
       <div className="flex flex-wrap justify-center gap-3">
         {[
