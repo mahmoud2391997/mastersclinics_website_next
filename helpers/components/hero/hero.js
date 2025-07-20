@@ -38,7 +38,7 @@ const Hero = ({
   };
 
   return (
-    <div className='flex flex-col w-full mt-42 md:mt-0  items-center bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]'>
+    <div className='flex flex-col w-full mt-52 md:mt-0  items-center bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]'>
       <motion.section 
         ref={ref}
         initial="hidden"
@@ -54,7 +54,7 @@ const Hero = ({
 
         {/* Text Content */}
         <motion.div 
-          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8"
+          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8 mt-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}

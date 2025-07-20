@@ -110,8 +110,8 @@ const ContactBar = () => {
         ))}
       </div>
 
-      {/* Search Bar */}
-      <div className="w-full md:w-1/3 relative" ref={dropdownRef}>
+      {/* Search Bar with min-width of 300px */}
+      <div className="w-full min-w-[300px] md:w-1/3 relative" ref={dropdownRef}>
         <input
           type="text"
           placeholder="ابحث هنا..."
@@ -128,7 +128,7 @@ const ContactBar = () => {
 
         {/* Dropdown results */}
         {showDropdown && results && (
-          <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
+          <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right min-w-[300px]">
             {Object.entries(results).some(([, items]) => items.length > 0) ? (
               Object.entries(results).map(([entity, items]) =>
                 items.length > 0 && (
@@ -155,15 +155,17 @@ const ContactBar = () => {
         )}
       </div>
 
-      {/* Contact Info */}
-      <div className="flex flex-col items-center gap-2 text-center md:flex-row md:items-center md:text-right">
-        <div className="flex items-center gap-2 text-gray-800 md:ml-5">
-          <FaEnvelope size={20} />
-          <a href="mailto:info@masters.clinic" className="text-base text-black">info@masters.clinic</a>
-        </div>
-        <div className="flex items-center gap-2 text-gray-800 md:ml-5">
-          <FaPhone size={20} />
-          <a href="tel:8002440181" className="text-base text-black">8002440181</a>
+      {/* Contact Info - Stacked on mobile, horizontal on md+ */}
+      <div className="flex flex-col items-center gap-2 md:flex-row md:items-center">
+        <div className="flex flex-col items-center gap-2 sm:gap-4 md:flex-row">
+          <div className="flex items-center gap-2 text-gray-800">
+            <FaEnvelope size={20} />
+            <a href="mailto:info@masters.clinic" className="text-base text-black">info@masters.clinic</a>
+          </div>
+          <div className="flex items-center gap-2 text-gray-800 md:ml-4">
+            <FaPhone size={20} />
+            <a href="tel:8002440181" className="text-base text-black">8002440181</a>
+          </div>
         </div>
       </div>
     </div>
