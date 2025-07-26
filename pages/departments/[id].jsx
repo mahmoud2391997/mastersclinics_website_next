@@ -1,6 +1,5 @@
 import Head from 'next/head';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import { fetchDepartmentById } from '../../store/slices/departments';
@@ -8,6 +7,8 @@ import { fetchBranches } from '../../store/slices/branches';
 import getImageUrl from '@/utilies/getImageUrl';
 import Navbar from '@/helpers/components/Navbar/Navbar';
 import PageTitle from '@/helpers/components/pagetitle/PageTitle';
+import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import TeamSection from '@/helpers/components/TeamSection/TeamSection';
 
 export default function DepartmentPage() {
   const router = useRouter();
@@ -26,146 +27,127 @@ export default function DepartmentPage() {
     error: branchesError,
   } = useSelector((state) => state.branches);
 
-  const [branchInfo, setBranchInfo] = useState([]);
-
   useEffect(() => {
     if (id) {
       dispatch(fetchDepartmentById(id));
       dispatch(fetchBranches());
     }
-  }, [dispatch, id]);
+  }, [id, dispatch]);
 
-  useEffect(() => {
-    if (department) {
-      try {
-        if (department.branches && Array.isArray(department.branches) && department.branches.length > 0) {
-          setBranchInfo(department.branches);
-          return;
-        }
-
-        let branchIds = [];
-
-        if (department.branches_ids && Array.isArray(department.branches_ids)) {
-          branchIds = department.branches_ids.map((id) => Number(id));
-        } else if (department.branch_ids && typeof department.branch_ids === 'string') {
-          try {
-            const parsed = JSON.parse(department.branch_ids);
-            if (Array.isArray(parsed)) {
-              branchIds = parsed.map((id) => Number(id));
-            }
-          } catch (error) {
-            console.error('Failed to parse branch_ids JSON:', error);
-          }
-        }
-
-        const filteredBranches = allBranches.filter((b) => branchIds.includes(b.id));
-        setBranchInfo(filteredBranches);
-      } catch (error) {
-        console.error('Error processing branch data:', error);
-        setBranchInfo([]);
-      }
-    }
-  }, [department, allBranches]);
-
-  if (deptLoading || branchesLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8 text-lg font-medium">جاري تحميل تفاصيل القسم...</div>
-      </div>
-    );
-  }
-
-  if (deptError || branchesError) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8 text-red-500">
-          Error: {deptError || branchesError}
-        </div>
-      </div>
-    );
-  }
-
-  if (!department) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center py-8">لم يتم العثور على القسم</div>
-      </div>
-    );
-  }
+  const departmentImage = getImageUrl(department?.image) || '/placeholder.png';
 
   return (
     <>
-      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle
-        pageTitle={"فروعنا"}
-        pagesub="اكتشف جميع فروعنا ومواعيد العمل"
-        bgImage={"https://cdn.salla.sa/dEYvd/LgUfWipbId1zQL4vAXAdXtPnedinmGRFunfGfZzN.jpg"}
-      />
+      <Head>
+        <title>{department?.name || 'Department'} | Clinic</title>
+      </Head>
 
-      <div className="max-w-7xl mx-auto px-4 py-12" dir="rtl">
-        {/* Department Header */}
-        <div className="flex flex-col md:flex-row-reverse gap-8 mb-12 bg-white rounded-xl shadow-md p-6 text-right">
-          {department.image && (
-            <div className="md:w-1/3">
-              <img
-                src={getImageUrl(department.image)}
-                alt={department.name}
-                className="w-full h-64 object-cover rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.src = '/images/default-department.jpg';
-                  e.currentTarget.onerror = null;
-                }}
-              />
-            </div>
-          )}
-          <div className={department.image ? 'md:w-2/3' : 'w-full'}>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{department.name}</h1>
-            <p className="text-gray-600 text-base leading-relaxed">{department.description}</p>
+      <Navbar />
+      <PageTitle title={department?.name || 'Department'} />
+
+      <section className="py-12">
+        <div className="container mx-auto">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-bold">{department?.name}</h2>
+            <p className="mt-4 text-gray-600">{department?.description}</p>
+          </div>
+
+          <div className="flex justify-center mb-10">
+            <img
+              src={departmentImage}
+              alt={department?.name}
+              className="max-w-md rounded-lg shadow-md"
+            />
           </div>
         </div>
+      </section>
 
-        {/* Branches Section */}
-        {branchInfo.length > 0 ? (
-          <>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">الفروع المتاحة</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {branchInfo.map((branch) => (
-                <div
-                  key={branch.id}
-                  className="bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-5 border border-gray-100 flex flex-col justify-between text-right"
-                >
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{branch.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{branch.address}</p>
+      {/* ✅ Use TeamSection for doctors */}
+      <TeamSection
+        departmentId={id}
+        showSectionTitle={true}
+        hclass="py-12 bg-gray-50"
+      />
+
+      {/* ✅ Render branches like BranchesPage */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4" dir="rtl">
+          <h3 className="text-2xl font-bold mb-8 text-center border-b-2 border-[#dec06a] inline-block pb-2">
+            فروعنا
+          </h3>
+
+          {branchesLoading && <p className="text-center">جاري التحميل...</p>}
+          {branchesError && (
+            <p className="text-center text-red-500">حدث خطأ: {branchesError}</p>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {allBranches?.map((branch) => (
+              <div
+                key={branch.id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
+              >
+                {/* Branch Image */}
+                <div className="w-full h-48">
+                  <img
+                    className="w-full h-full object-cover"
+                    src={getImageUrl(branch.image_url) || "/placeholder.png"}
+                    alt={branch.name}
+                  />
+                </div>
+
+                <div className="p-6 flex-grow">
+                  <h4 className="text-xl font-bold mb-3">{branch.name}</h4>
+
+                  <div className="flex items-start mt-4">
+                    <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2" />
+                    <p className="text-gray-600">{branch.address}</p>
                   </div>
-                  <div className="mt-auto space-y-2">
+
+                  <div className="flex items-start mt-4">
+                    <FaClock className="text-[#dec06a] mt-1 ml-2" />
+                    <div>
+                      <h5 className="font-medium text-gray-700">مواعيد العمل:</h5>
+                      {branch.working_hours ? (
+                        <ul className="mt-1 space-y-1">
+                          {branch.working_hours.map((hours, idx) => (
+                            <li key={idx} className="text-sm text-gray-600">
+                              <strong>{hours.days}:</strong> {hours.time}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500 text-sm">غير متاح</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 pt-0">
+                  <div className="flex flex-col gap-3">
+                    <a
+                      href={`/branches/${branch.id}`}
+                      className="px-4 py-2 border border-[#dec06a] text-[#dec06a] font-medium rounded-lg text-sm text-center"
+                    >
+                      المزيد من التفاصيل
+                    </a>
                     {branch.location_link && (
-                      <Link
+                      <a
                         href={branch.location_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block w-full text-center px-4 py-2 border border-[#dec06a] text-[#dec06a] rounded-lg font-medium transition-colors hover:bg-[#dec06a] hover:text-white"
+                        className="px-4 py-2 bg-[#dec06a] text-white font-medium rounded-lg text-sm text-center"
                       >
                         عرض على الخريطة
-                      </Link>
+                      </a>
                     )}
-                    <Link
-                      href={`/branches/${branch.id}`}
-                      className="inline-block w-full text-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg font-medium transition-colors hover:bg-blue-600 hover:text-white"
-                    >
-                      تفاصيل الفرع
-                    </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg text-center">
-            <p className="text-yellow-700 text-base">هذا القسم غير متاح حاليًا في أي فرع.</p>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
     </>
   );
 }

@@ -10,13 +10,15 @@ import Navbar from "../../helpers/components/Navbar/Navbar";
 import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 import Image from "next/image";
 import TeamSection from "../../helpers/components/TeamSection/TeamSection";
-
+import DepartmentsGrid from "../departments/grid"
+import ProjectSection from "../../helpers/components/ProjectSection/ProjectSection";
 const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
 
   const { selectedBranch: branch, loading, error } = useSelector((state) => state.branches);
+console.log(branch);
 
   useEffect(() => {
     if (id) {
@@ -160,7 +162,10 @@ const BranchPage = () => {
           </div>
         )}
       </div>
-      <TeamSection />
+      <DepartmentsGrid branchId={id} />
+      <TeamSection branchId={id} />
+      <ProjectSection branchId={id} hclass="project-section" />
+
     </div>
   );
 };

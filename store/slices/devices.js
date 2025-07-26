@@ -3,23 +3,25 @@ import { get, getById } from "../../pages/api/fetching";
 import localDevices from "../../helpers/api/projects"; // Import the static data
 
 export const fetchDevices = createAsyncThunk(
-    'devices/fetchDevices',
-    async (_, thunkAPI) => {
-        try {
-            const devices = await get('/devices');
-            console.log("Fetched devices:", devices);
-            
-            // If API returns no data or empty array, use local devices data
-            if (!devices || devices.length === 0) {
-                return localDevices;
-            }
-            return devices;
-        } catch (error) {
-            // If API fails, return local devices data
-            return localDevices;
-        }
+  'devices/fetchDevices',
+  async (branchId = null, thunkAPI) => {
+    try {
+      const url = branchId ? `/devices?branch_id=${branchId}` : '/devices';
+      const devices = await get(url);
+      console.log("Fetched devices:", devices);
+
+      if (!devices || devices.length === 0) {
+        return localDevices.filter(d => branchId ? d.branch_id === parseInt(branchId) : true);
+      }
+
+      return devices;
+    } catch (error) {
+      // Fall back to local data
+      return localDevices.filter(d => branchId ? d.branch_id === parseInt(branchId) : true);
     }
+  }
 );
+
 
 export const fetchDeviceById = createAsyncThunk(
     'devices/fetchDeviceById',

@@ -43,19 +43,29 @@ const teamReducer = (state = initialState, action) => {
 export default teamReducer;
 
 // Thunk: Fetch all teams
-export const fetchTeams = () => async (dispatch) => {
+export const fetchTeams = ({ branchId = null, departmentId = null } = {}) => async (dispatch) => {
   dispatch({ type: FETCH_TEAMS_START });
+
   try {
-    let data = await get("/doctors"); // Try to fetch from API
-    
-    // If API returns no data or empty array, use local Teams data
+    // Build query string
+    const query = new URLSearchParams();
+    if (branchId) query.append("branchId", branchId);
+    if (departmentId) query.append("departmentId", departmentId);
+
+    const endpoint = query.toString() ? `/doctors?${query}` : `/doctors`;
+    let data = await get(endpoint);
+
+    // Fallback if empty response
     if (!data || data.length === 0) {
       data = Teams;
     }
-    
+
     dispatch({ type: FETCH_TEAMS_SUCCESS, payload: data });
   } catch (error) {
-    // If API fails, use local Teams data as fallback
+    console.error("fetchTeams error:", error);
+    dispatch({ type: FETCH_TEAMS_FAILURE, payload: error.message || "Failed to fetch teams" });
+
+    // Fallback to local data
     dispatch({ type: FETCH_TEAMS_SUCCESS, payload: Teams });
   }
 };

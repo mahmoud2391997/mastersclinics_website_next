@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { fetchDepartments } from '../../store/slices/departments';
 import { getImageUrl } from '@/helpers/hooks/imageUrl';
 
-export default function DepartmentsGrid() {
+// Accept branchId as a prop
+export default function DepartmentsGrid({ branchId }) {
   const dispatch = useDispatch();
   const { items: departments = [], loading, error } = useSelector(state => state.departments);
 
@@ -20,18 +21,22 @@ export default function DepartmentsGrid() {
     return <div className="text-center py-8 text-red-500">Error: {error}</div>;
   }
 
+  // Filter departments based on the branchId
+  const filteredDepartments = branchId
+    ? departments.filter(dept =>
+        Array.isArray(dept.branches) &&
+        dept.branches.some(branch => branch.id === parseInt(branchId))
+      )
+    : departments;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-      {departments.map(department => (
-        <DepartmentCard 
-          key={department.id}
-          department={department}
-        />
+      {filteredDepartments.map(department => (
+        <DepartmentCard key={department.id} department={department} />
       ))}
     </div>
   );
 }
-
 
 function DepartmentCard({ department }) {
   const branchInfo = department.branches || [];
@@ -48,7 +53,7 @@ function DepartmentCard({ department }) {
             alt={department.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
-              e.currentTarget.src = '/images/default-department.jpg'; // fallback
+              e.currentTarget.src = '/images/default-department.jpg';
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -82,7 +87,8 @@ function DepartmentCard({ department }) {
 
         <Link
           href={`/departments/${department.id}`}
-          className="block w-full text-center px-6 py-3 border-2 border-[#dec06a] text-lg font-bold rounded-full text-[#dec06a] bg-white hover:bg-[#dec06a] hover:text-white transition-all duration-300" style={{ color: "#dec06a" }}
+          className="block w-full text-center px-6 py-3 border-2 border-[#dec06a] text-lg font-bold rounded-full text-[#dec06a] bg-white hover:bg-[#dec06a] hover:text-white transition-all duration-300"
+          style={{ color: "#dec06a" }}
         >
           عرض التفاصيل ←
         </Link>
@@ -90,5 +96,3 @@ function DepartmentCard({ department }) {
     </div>
   );
 }
-
-

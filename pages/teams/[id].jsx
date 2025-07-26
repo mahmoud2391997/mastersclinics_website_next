@@ -62,6 +62,7 @@ try {
 } catch (e) {
     console.error("Error parsing JSON fields", e);
 }
+console.log(currentMember);
 
 
     return (

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchDevices } from '../../../store/slices/devices'; // Adjust the path as needed
+import { fetchDevices } from '../../../store/slices/devices';
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
 
@@ -9,28 +9,26 @@ const ClickHandler = () => {
     window.scrollTo(10, 0);
 }
 
-const ProjectSection = (props) => {
-    const { hclass, ShowSectionTitle = true, sliceStart = 0, sliceEnd = 3 } = props;
-
+const ProjectSection = ({
+    hclass,
+    ShowSectionTitle = true,
+    sliceStart = 0,
+    sliceEnd = 3,
+    branchId = null // ✅ Accept branchId as prop
+}) => {
     const dispatch = useDispatch();
 
-    // Fetch devices on mount
+    // ✅ Fetch devices on mount with optional branchId
     useEffect(() => {
-        dispatch(fetchDevices());
-    }, [dispatch]);
-    
-    // Get devices from Redux store
-    const { items : devices = [], loading = false, error = null } = useSelector(state => state.devices || {});
-    console.log(devices);
+        dispatch(fetchDevices(branchId));
+    }, [dispatch, branchId]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const { items: devices = [], loading = false, error = null } = useSelector(state => state.devices || {});
+    console.log("Devices:", devices);
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-console.log("Devices:", devices);
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
     return (
         <section className={hclass}>
             <div className="container">
@@ -58,12 +56,15 @@ console.log("Devices:", devices);
                         {devices.slice(sliceStart, sliceEnd).map((device, pitem) => (
                             <div className="col-lg-4 col-md-6 col-12" key={pitem}>
                                 <div className="project_card">
-                                    <img src={getImageUrl(device.image)} alt={device.name} />
+                                    <img 
+                                        src={device.image_url ? getImageUrl(device.image_url) : "/download.png"} 
+                                        alt={device.name || "Device"} 
+                                    />
                                     <div className="text">
                                         {device._id ? (
                                             <h2>
                                                 <Link 
-                                                    href={`/project/${device._id}`} // Navigate to the new URL
+                                                    href={`/project/${device._id}`} 
                                                     onClick={ClickHandler}
                                                 >
                                                     {device.name}
@@ -72,7 +73,7 @@ console.log("Devices:", devices);
                                         ) : (
                                             <h2>{device.name}</h2>
                                         )}
-                                        <span>{device.subtitle}</span>
+                                        <span>{device.subtitle || device.type}</span>
                                     </div>
                                 </div>
                             </div>
@@ -82,6 +83,6 @@ console.log("Devices:", devices);
             </div>
         </section>
     );
-}
+};
 
 export default ProjectSection;

@@ -10,7 +10,7 @@ import PageTitle from '../../helpers/components/pagetitle/PageTitle';
 import Footer from '../../helpers/components/footer/Footer';
 import SectionTitle from '../../helpers/components/SectionTitle/SectionTitle';
 import OffersSlider from '../../helpers/components/adsSlider/index';
-import ContactForm from '../../helpers/main-component/ServiceSinglePage/ServiceFrom';
+import CtafromSection from '../../helpers/components/Form';
 
 const OfferSinglePage = () => {
   const router = useRouter();
@@ -85,32 +85,37 @@ const OfferSinglePage = () => {
           <div className="lg:w-1/2">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">{offer.title}</h1>
             <p className="text-gray-700 mb-6 leading-relaxed">{offer.description}</p>
-{/* Pricing */}
-<div className="bg-gray-100 p-4 rounded-lg mb-6">
-  {offer.priceBefore > offer.priceAfter && (
-    <div className="flex items-center mb-2">
-      <span className="text-gray-500 line-through ml-2">{offer.priceBefore} ر.س</span>
-      <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
-        وفر {offer.priceBefore - offer.priceAfter} ر.س
-      </span>
-    </div>
-  )}
-  <div className="flex items-center">
-    <span className="text-3xl font-bold text-[#dec06a]">{offer.priceAfter} ر.س</span>
-    {offer.priceBefore > offer.priceAfter && (
-      <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
-    )}
-  </div>
-</div>
+            
+            {/* Pricing */}
+            <div className="bg-gray-100 p-4 rounded-lg mb-6">
+              {offer.priceBefore > offer.priceAfter && (
+                <div className="flex items-center mb-2">
+                  <span className="text-gray-500 line-through ml-2">{offer.priceBefore} ر.س</span>
+                  <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
+                    وفر {offer.priceBefore - offer.priceAfter} ر.س
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center">
+                <span className="text-3xl font-bold text-[#dec06a]">{offer.priceAfter} ر.س</span>
+                {offer.priceBefore > offer.priceAfter && (
+                  <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
+                )}
+              </div>
+            </div>
 
-{/* Booking Button */}
-<button
-  className="w-full bg-[#dec06a] hover:bg-[#e8cf8c] text-white py-3 px-6 rounded-lg font-medium transition-colors mb-6"
-  onClick={() => router.push('/book-appointment')}
->
-  حجز موعد
-</button>
-
+            {/* Booking Button */}
+            <button
+              className="w-full bg-[#dec06a] hover:bg-[#e8cf8c] text-white py-3 px-6 rounded-lg font-medium transition-colors mb-6"
+              onClick={() => {
+                const formSection = document.getElementById('appointment-form');
+                if (formSection) {
+                  formSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              حجز موعد
+            </button>
 
             {/* Offer details */}
             <div className="border-t border-gray-200 pt-6 text-right">
@@ -154,19 +159,48 @@ const OfferSinglePage = () => {
                 </li>
               </ul>
             </div>
+            {/* Branches Section */}
+<div className="mt-8 border-t border-gray-200 pt-6">
+  <h3 className="text-lg font-semibold mb-4 text-right">الفروع المتاحة لهذا العرض</h3>
+  {offer.branches && offer.branches.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {offer.branches.map((branch) => (
+        <div key={branch.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <h4 className="font-medium text-lg">{branch.name}</h4>
+          <p className="text-gray-600 mt-1">{branch.address}</p>
+          {branch.location_link && (
+            <a
+              href={branch.location_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-[#dec06a] hover:underline mt-2"
+            >
+              <span>عرض الموقع</span>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-500 text-right">لا توجد فروع متاحة لهذا العرض</p>
+  )}
+</div>
           </div>
         </div>
       </main>
 
-      <div className="AppointmentFrom">
+      <div id="appointment-form" className="AppointmentFrom">
         <div className="container">
           <div className="cta_form_s2">
-       <div className="title s2">
-  <h3>حجز موعد</h3>
-  <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
-</div>
-
-            <ContactForm />
+            <div className="title s2">
+              <h3>حجز موعد</h3>
+              <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
+            </div>
+            <CtafromSection />
           </div>
         </div>
       </div>

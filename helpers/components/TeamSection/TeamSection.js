@@ -6,14 +6,13 @@ import { fetchTeams } from "@/store/slices/doctor";
 import Link from "next/link";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
 
-// Image URL utility function
-
-
 const TeamSection = ({
   hclass = "",
   sliceStart = 0,
   sliceEnd = null,
   showSectionTitle = true,
+  branchId = null,
+  departmentId = null,
 }) => {
   const dispatch = useDispatch();
   const { teams = [], loading = false, error = null } = useSelector(
@@ -27,8 +26,8 @@ const TeamSection = ({
     : teams.slice(sliceStart);
 
   useEffect(() => {
-    dispatch(fetchTeams());
-  }, [dispatch]);
+    dispatch(fetchTeams({ branchId, departmentId }));
+  }, [dispatch, branchId, departmentId]);
 
   return (
     <section className={hclass}>
@@ -72,15 +71,16 @@ const TeamSection = ({
                   <div className="relative p-4">
                     <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
                       <div className="relative overflow-hidden rounded-[20px]">
-                        <img
-                          src={getImageUrl(team.image)}
-                          alt={team.name || "Team Member"}
-                          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.src = placeholder;
-                          }}
-                        />
+                   <img
+  src={team.image ? getImageUrl(team.image) : placeholder}
+  alt={team.name || "Team Member"}
+  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+  loading="lazy"
+  onError={(e) => {
+    e.target.src = placeholder;
+  }}
+/>
+
                       </div>
 
                       {team.branches && team.branches.length > 0 && (

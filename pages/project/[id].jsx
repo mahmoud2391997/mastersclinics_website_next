@@ -16,58 +16,6 @@ const ClickHandler = () => {
   window.scrollTo(10, 0);
 };
 
-// Dummy data matching your schema
-const dummyDeviceData = {
-  _id: '1',
-  id: '1',
-  name: 'MRI Scanner',
-  description: 'High-resolution MRI scanner for detailed diagnostic imaging',
-  department_id: [1, 2],
-  branches: [1, 3],
-  working_time_slots: [
-    {
-      type: 'dateRange',
-      startDay: 'Monday',
-      endDay: 'Friday',
-      recurringTime: {
-        startTime: '08:00',
-        endTime: '18:00'
-      }
-    }
-  ],
-  sessionPeriod: '45 minutes',
-  imageUrl: '/images/mri-scanner.jpg',
-  image: '/images/mri-scanner.jpg',
-  // Additional fields for UI
-  location: 'Main Radiology Department, Floor 2',
-  client: 'City General Hospital',
-  surgeon: 'Dr. Ahmed Mahmoud',
-  category: 'Diagnostic Imaging',
-  tags: ['Radiology', 'Non-invasive', 'Diagnostic'],
-  date: 'Installed: 15 Jan 2023',
-  quote: 'This MRI scanner has revolutionized our diagnostic capabilities',
-  quoteSource: 'Chief Radiologist',
-  strategies: 'We employ advanced imaging protocols for accurate diagnosis',
-  strategiesList: [
-    'T1 and T2 weighted imaging',
-    'Diffusion-weighted imaging',
-    'Functional MRI when needed'
-  ],
-  approach: 'Patient-centered imaging with minimal discomfort',
-  goals: 'Provide accurate diagnostics with 99.5% accuracy',
-  goalsList: [
-    'Reduce scan time by 20%',
-    'Improve image resolution',
-    'Enhance patient comfort'
-  ],
-  result: 'Diagnostic accuracy improved by 35% since installation',
-  resultList: [
-    'Faster diagnosis',
-    'Reduced need for repeat scans',
-    'Better treatment planning'
-  ]
-};
-
 const ProjectSinglePage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -85,41 +33,48 @@ const ProjectSinglePage = () => {
     }
   }, [dispatch, id]);
 
-  // Use dummy data if no data from API
-  const displayData = currentService || dummyDeviceData;
-
   if (loading) {
-    return <div className="text-center py-5">Loading device details...</div>;
+    return <div className="text-center py-5">جارٍ تحميل تفاصيل الجهاز...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-5 text-danger">Error loading device: {error}</div>;
+    return <div className="text-center py-5 text-danger">خطأ في تحميل الجهاز: {error}</div>;
+  }
+
+  if (!currentService) {
+    return <div className="text-center py-5">لا توجد بيانات متاحة</div>;
   }
 
   return (
     <Fragment>
       <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
-      <PageTitle pageTitle={displayData.name} pagesub={'Medical Device'} />
+      <PageTitle pageTitle={currentService.name} pagesub={'جهاز إزالة الشعر'} />
       
-      <section className="project_single section-padding">
+      <section className="project_single section-padding" dir="rtl">
         <div className="container">
-          <img src={getImageUrl(displayData.image) || Psing1} alt={displayData.name} className="w-full rounded-lg shadow-lg mb-8" />
+          <img 
+            src={getImageUrl(currentService.image_url) || "/download.png"} 
+            alt={currentService.name} 
+            className="w-full rounded-lg shadow-lg mb-8" 
+          />
           
           <div className="row">
             <div className="col-lg-7 col-12">
-              <h2 className="text-3xl font-bold mb-4">{displayData.name}</h2>
-              <p className="text-gray-700 leading-relaxed mb-6">{displayData.description}</p>
+              <h2 className="text-3xl font-bold mb-4 text-right">{currentService.name}</h2>
+              <p className="text-gray-700 leading-relaxed mb-6 text-right">
+                {currentService.type} - جهاز متطور لإزالة الشعر باستخدام تقنية الليزر الآمنة والفعالة
+              </p>
               
               <div className="device-specs mb-8">
-                <h3 className="text-2xl font-bold mb-3">Technical Specifications</h3>
-                <ul className="space-y-2">
-                  <li><strong>Session Period:</strong> {displayData.sessionPeriod}</li>
-                  {displayData.working_time_slots?.map((slot, index) => (
-                    <li key={index}>
-                      <strong>Availability:</strong> {slot.startDay} to {slot.endDay}, {slot.recurringTime?.startTime} - {slot.recurringTime?.endTime}
-                    </li>
-                  ))}
-                </ul>
+                <h3 className="text-2xl font-bold mb-3 text-right">مواعيد العمل</h3>
+                <div className="bg-gray-50 p-4 rounded-lg text-right">
+                  <p className="whitespace-pre-line">{currentService.available_times}</p>
+                </div>
+              </div>
+
+              <div className="quote bg-gray-50 p-6 rounded-lg my-8 text-right">
+                <h4 className="text-xl italic mb-2">"جهاز جنتل برو يوفر حلًا طويل الأمد لإزالة الشعر مع الحد الأدنى من الانزعاج"</h4>
+                <p className="text-left">— أخصائية التجميل د. سارة</p>
               </div>
             </div>
             
@@ -127,92 +82,154 @@ const ProjectSinglePage = () => {
               <table className="w-full border-collapse">
                 <tbody className="divide-y divide-gray-200">
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Location:</th>
-                    <td className="py-3 px-4">{displayData.location}</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">الفرع:</td>
+                    <td className="py-3 px-4 text-right">{currentService.branch_name}</td>
                   </tr>
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Department:</th>
-                    <td className="py-3 px-4">Radiology</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">نوع الجهاز:</td>
+                    <td className="py-3 px-4 text-right">{currentService.type}</td>
                   </tr>
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Responsible:</th>
-                    <td className="py-3 px-4">{displayData.surgeon}</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">متاح في:</td>
+                    <td className="py-3 px-4 text-right">
+                      {currentService.available_times.split('&')[0].trim()}
+                    </td>
                   </tr>
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Category:</th>
-                    <td className="py-3 px-4">{displayData.category}</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">مدة الجلسة:</td>
+                    <td className="py-3 px-4 text-right">تختلف حسب المنطقة المعالجة</td>
                   </tr>
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Tags:</th>
-                    <td className="py-3 px-4">{displayData.tags?.join(', ')}</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">عدد الجلسات المطلوبة:</td>
+                    <td className="py-3 px-4 text-right">6-8 جلسات في المتوسط</td>
                   </tr>
                   <tr>
-                    <th className="text-left py-3 px-4 bg-gray-50">Installed:</th>
-                    <td className="py-3 px-4">{displayData.date}</td>
+                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">ملاحظات:</td>
+                    <td className="py-3 px-4 text-right">يجب استشارة الطبيب قبل الجلسة</td>
                   </tr>
                 </tbody>
               </table>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg text-right">
+                <h4 className="font-bold mb-2">نصائح مهمة:</h4>
+                <ul className="list-disc pr-4 space-y-1">
+                  <li>حافظي على ترطيب البشرة قبل الجلسة</li>
+                  <li>تجنبي التعرض للشمس قبل الجلسة</li>
+                  <li>احضري بدون مكياج للمنطقة المراد علاجها</li>
+                </ul>
+              </div>
             </div>
-          </div>
-          
-          <div className="quote bg-gray-50 p-6 rounded-lg my-8">
-            <h4 className="text-xl italic mb-2">"{displayData.quote}"</h4>
-            <p className="text-right">— {displayData.quoteSource}</p>
           </div>
           
           <div className="row my-8">
             <div className="col-lg-6 col-12">
-              <h3 className="text-2xl font-bold mb-3">Capabilities</h3>
-              <p className="text-gray-700 mb-4">{displayData.strategies}</p>
-              <ul className="space-y-2">
-                {displayData.strategiesList?.map((item, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
+              <h3 className="text-2xl font-bold mb-3 text-right">مميزات الجهاز</h3>
+              <p className="text-gray-700 mb-4 text-right">
+                يتميز جهاز جنتل برو بتقنية متطورة تجعله مناسبًا لجميع أنواع البشرة تقريبًا، مع تقليل الآثار الجانبية.
+              </p>
+              <ul className="space-y-2 pr-4 text-right">
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>مناسب لمعظم أنواع البشرة</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>ألم أقل مقارنة بالطرق التقليدية</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>نتائج طويلة الأمد</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>تقنية تبريد لتقليل الانزعاج</span>
+                </li>
               </ul>
             </div>
             
             <div className="col-lg-6 col-12">
-              <h3 className="text-2xl font-bold mb-3">Usage Protocol</h3>
-              <p className="text-gray-700 mb-4">{displayData.approach}</p>
+              <h3 className="text-2xl font-bold mb-3 text-right">المناطق المعالجة</h3>
+              <p className="text-gray-700 mb-4 text-right">يمكن استخدام الجهاز على معظم مناطق الجسم بما في ذلك:</p>
+              <ul className="space-y-2 pr-4 text-right">
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>الوجه (الشفاه، الذقن)</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>الإبطين</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>خط البيكيني</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>الساقين والذراعين</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>الظهر والصدر</span>
+                </li>
+              </ul>
             </div>
           </div>
           
           <div className="row my-8">
             <div className="col-lg-6 col-12 mb-4">
-              <img src={Psing1} alt="Device in use" className="w-full rounded-lg" />
+              <img src={Psing1} alt="الجهاز في الاستخدام" className="w-full rounded-lg" />
             </div>
             <div className="col-lg-6 col-12 mb-4">
-              <img src={Psing2} alt="Device close-up" className="w-full rounded-lg" />
+              <img src={Psing2} alt="نتائج الجهاز" className="w-full rounded-lg" />
             </div>
           </div>
           
           <div className="row my-8">
             <div className="col-lg-6 col-12">
-              <h3 className="text-2xl font-bold mb-3">Performance Metrics</h3>
-              <p className="text-gray-700 mb-4">{displayData.goals}</p>
-              <ul className="space-y-2">
-                {displayData.goalsList?.map((goal, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>{goal}</span>
-                  </li>
-                ))}
+              <h3 className="text-2xl font-bold mb-3 text-right">إرشادات ما قبل الجلسة</h3>
+              <ul className="space-y-2 pr-4 text-right">
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>تجنب التعرض للشمس قبل الجلسة بأسبوعين</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>لا تستخدمي أي وسيلة لإزالة الشعر قبل الجلسة بـ4 أسابيع</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>حلق المنطقة المراد علاجها قبل الجلسة بيوم</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>تجنب الكريمات المرطبة يوم الجلسة</span>
+                </li>
               </ul>
             </div>
             
             <div className="col-lg-6 col-12">
-              <h3 className="text-2xl font-bold mb-3">Outcomes</h3>
-              <p className="text-gray-700 mb-4">{displayData.result}</p>
-              <ul className="space-y-2">
-                {displayData.resultList?.map((result, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>{result}</span>
-                  </li>
-                ))}
+              <h3 className="text-2xl font-bold mb-3 text-right">إرشادات ما بعد الجلسة</h3>
+              <ul className="space-y-2 pr-4 text-right">
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>تجنب التعرض للشمس واستخدمي واقي شمسي</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>لا تستخدمي مستحضرات تحتوي على كحول</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>يمكنك استخدام مرطبات خفيفة</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>تجنب الحمام الساخن لمدة 48 ساعة</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="ml-2">•</span>
+                  <span>لا تزلي الشعر بعد الجلسة إلا بالحلاقة</span>
+                </li>
               </ul>
             </div>
           </div>
@@ -220,10 +237,10 @@ const ProjectSinglePage = () => {
         
         <div className="AppointmentFrom bg-gray-100 py-12">
           <div className="container">
-            <div className="cta_form_s2 bg-white p-8 rounded-lg shadow-md">
+            <div className="cta_form_s2 bg-white p-8 rounded-lg shadow-md" dir="rtl">
               <div className="title s2 text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">Schedule This Device</h3>
-                <p className="text-gray-600">Contact us to book this medical device for your needs</p>
+                <h3 className="text-2xl font-bold mb-2">حجز موعد</h3>
+                <p className="text-gray-600">يمكنك حجز موعد لإزالة الشعر بالليزر باستخدام هذا الجهاز</p>
               </div>
               <ContactForm />
             </div>
