@@ -30,11 +30,26 @@ const BlogSection = (props) => {
                                     <h3>{bloge.title}</h3>
                                     {/* Only render the Link if the slug exists */}
                                     {bloge.slug ? (
-                                        <Link href={`/blog-single/${bloge.slug}`} onClick={ClickHandler}>
-                                            <i className="flaticon-right-arrow"></i>
+                                        <Link href={`/blog-single/${bloge.slug}`} onClick={ClickHandler} className=" items-center justify-center" style={{display:"flex"}}>
+                                            <svg 
+                                                xmlns="http://www.w3.org/2000/svg" 
+                                                width="40" 
+                                                height="40" 
+                                                viewBox="0 0 24 24" 
+                                                fill="white" 
+                                                stroke="white" 
+                                                strokeWidth="2" 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round"
+                                                className="ml-1"
+                                                                          style={{ color: "white", fill: "white", stroke: "white" }}
+
+                                            >
+                                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                                            </svg>
                                         </Link>
                                     ) : (
-                                        <span>No Link Available</span>  // Fallback if no slug
+                                        <span>No Link Available</span>
                                     )}
                                 </div>
                             </div>

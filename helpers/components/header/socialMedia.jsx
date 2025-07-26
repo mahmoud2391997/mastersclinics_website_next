@@ -91,12 +91,12 @@ const ContactBar = () => {
       {/* Social Icons */}
       <div className="flex flex-wrap justify-center gap-3">
         {[
-          { icon: <FaFacebook size={20} />, href: "https://www.facebook.com/masters.clinicn/" },
-          { icon: <FaYoutube size={20} />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },
-          { icon: <FaXTwitter size={20} />, href: "https://x.com/i/flow/login?redirect_after_login=%2Fmasters_clinic" },
-          { icon: <FaInstagram size={20} />, href: "https://www.instagram.com/masters.clinics/" },
-          { icon: <FaSnapchat size={20} />, href: "https://www.snapchat.com/add/masters.clinic" },
-          { icon: <FaTiktok size={20} />, href: "https://www.tiktok.com/@mastersclinics" },
+          { icon: <FaFacebook size={20} fill="#dec06a" />, href: "https://www.facebook.com/masters.clinicn/" },
+          { icon: <FaYoutube size={20} fill="#dec06a" />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },
+          { icon: <FaXTwitter size={20} fill="#dec06a" />, href: "https://x.com/i/flow/login?redirect_after_login=%2Fmasters_clinic" },
+          { icon: <FaInstagram size={20} fill="#dec06a" />, href: "https://www.instagram.com/masters.clinics/" },
+          { icon: <FaSnapchat size={20} fill="#dec06a" />, href: "https://www.snapchat.com/add/masters.clinic" },
+          { icon: <FaTiktok size={20} fill="#dec06a" />, href: "https://www.tiktok.com/@mastersclinics" },
         ].map(({ icon, href }, idx) => (
           <a
             key={idx}
@@ -124,6 +124,7 @@ const ContactBar = () => {
           onClick={() => handleSearch(query)}
           className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a] cursor-pointer"
           size={18}
+          fill="#dec06a"
         />
 
         {/* Dropdown results */}
@@ -159,11 +160,11 @@ const ContactBar = () => {
       <div className="flex flex-col items-center gap-2 md:flex-row md:items-center">
         <div className="flex flex-col items-center gap-2 sm:gap-4 md:flex-row">
           <div className="flex items-center gap-2 text-gray-800">
-            <FaEnvelope size={20} />
+            <FaEnvelope size={20} fill="#dec06a" />
             <a href="mailto:info@masters.clinic" className="text-base text-black">info@masters.clinic</a>
           </div>
           <div className="flex items-center gap-2 text-gray-800 md:ml-4">
-            <FaPhone size={20} />
+            <FaPhone size={20} fill="#dec06a" />
             <a href="tel:8002440181" className="text-base text-black">8002440181</a>
           </div>
         </div>

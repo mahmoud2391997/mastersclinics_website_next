@@ -92,24 +92,25 @@ const Footer = (props) => {
                 </div>
                 <p>ماسترز خبراء لجمالك وصحتك، نقدم أفضل الخدمات الطبية بمعايير عالمية.</p>
    <div className="flex flex-wrap justify-center gap-3">
-        {[
-          { icon: <FaFacebook size={20} />, href: "https://www.facebook.com/masters.clinicn/" },
-          { icon: <FaYoutube size={20} />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },
-          { icon: <FaXTwitter size={20} />, href: "https://x.com/i/flow/login?redirect_after_login=%2Fmasters_clinic" },
-          { icon: <FaInstagram size={20} />, href: "https://www.instagram.com/masters.clinics/" },
-          { icon: <FaSnapchat size={20} />, href: "https://www.snapchat.com/add/masters.clinic" },
-          { icon: <FaTiktok size={20} />, href: "https://www.tiktok.com/@mastersclinics" },
-        ].map(({ icon, href }, idx) => (
-          <a
-            key={idx}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white text-[#dec06a] border border-[#dec06a] p-2 rounded-full hover:text-black hover:scale-110 transition-transform duration-200"
-          >
-            {icon}
-          </a>
-        ))}
+      {[
+  { icon: <FaFacebook />, href: "https://www.facebook.com/masters.clinicn/" },
+  { icon: <FaYoutube />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },
+  { icon: <FaXTwitter />, href: "https://x.com/i/flow/login?redirect_after_login=%2Fmasters_clinic" },
+  { icon: <FaInstagram />, href: "https://www.instagram.com/masters.clinics/" },
+  { icon: <FaSnapchat />, href: "https://www.snapchat.com/add/masters.clinic" },
+  { icon: <FaTiktok />, href: "https://www.tiktok.com/@mastersclinics" },
+].map(({ icon, href }, idx) => (
+  <a
+    key={idx}
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="bg-white text-[#dec06a] border border-[#dec06a] p-2 rounded-full hover:text-black hover:scale-110 transition-transform duration-200"
+  >
+    {React.cloneElement(icon, { size: 20, color: "#dec06a" })}
+  </a>
+))}
+
       </div>
 
 
