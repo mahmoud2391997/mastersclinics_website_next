@@ -6,6 +6,13 @@ import { fetchBranches } from '../../../store/slices/branches';
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
 
+// Import Swiper React components and styles
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
 const ClickHandler = () => {
     window.scrollTo(10, 0);
 }
@@ -21,6 +28,7 @@ const ProjectSection = ({
     const dispatch = useDispatch();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedBranch, setSelectedBranch] = useState("all");
+    const [swiperInitialized, setSwiperInitialized] = useState(false);
     
     useEffect(() => {
         dispatch(fetchDevices(branchId));
@@ -54,7 +62,7 @@ const ProjectSection = ({
         
         return matchesSearch && matchesBranch;
     });
-
+if(devices.length === 0) return null
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
     if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
 
@@ -146,22 +154,53 @@ const ProjectSection = ({
                     </div>
                 )}
 
-                <div className="project_wrapper">
-                    <div className="row">
+                <div className="project_wrapper relative">
+                    <Swiper
+                        modules={[Navigation, Pagination, Autoplay]}
+                        spaceBetween={30}
+                        slidesPerView={1}
+                        breakpoints={{
+                            640: {
+                                slidesPerView: 1,
+                            },
+                            768: {
+                                slidesPerView: 2,
+                            },
+                            1024: {
+                                slidesPerView: 3,
+                            },
+                        }}
+                        navigation={{
+                            nextEl: '.swiper-button-next',
+                            prevEl: '.swiper-button-prev',
+                        }}
+                        pagination={{
+                            clickable: true,
+                            el: '.swiper-pagination',
+                            type: 'bullets',
+                        }}
+                        autoplay={{
+                            delay: 5000,
+                            disableOnInteraction: false,
+                        }}
+                        loop={true}
+                        onInit={() => setSwiperInitialized(true)}
+                        className="pb-12"
+                    >
                         {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
-                            <div className="col-lg-4 col-md-6 col-12" key={pitem}>
-                                <div className="project_card text-right">
+                            <SwiperSlide key={pitem}>
+                                <div className="project_card text-right h-full mx-2">
                                     <img 
                                         src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
                                         alt={device.name || "Device"} 
-                                        className="w-full"
+                                        className="w-full h-48 object-cover"
                                         onError={(e) => {
                                             e.target.src = "/download.png";
                                         }}
                                     />
-                                    <div className="text">
+                                    <div className="text p-4">
                                         {device._id ? (
-                                            <h2>
+                                            <h2 className="text-lg font-bold">
                                                 <Link 
                                                     href={`/devices/${device._id}`} 
                                                     onClick={ClickHandler}
@@ -171,9 +210,9 @@ const ProjectSection = ({
                                                 </Link>
                                             </h2>
                                         ) : (
-                                            <h2>{device.name}</h2>
+                                            <h2 className="text-lg font-bold">{device.name}</h2>
                                         )}
-                                        <span className="text-[#777]">{device.subtitle || device.type}</span>
+                                        <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
                                         {device.branch_name && (
                                             <div className="mt-2 text-sm text-gray-500">
                                                 <span>الفرع: </span>
@@ -182,9 +221,18 @@ const ProjectSection = ({
                                         )}
                                     </div>
                                 </div>
-                            </div>
+                            </SwiperSlide>
                         ))}
-                    </div>
+                    </Swiper>
+
+                    {/* Navigation buttons */}
+                    {swiperInitialized && (
+                        <>
+                            <div className="swiper-button-prev !text-[#CBA853] !left-0 after:!text-xl"></div>
+                            <div className="swiper-button-next !text-[#CBA853] !right-0 after:!text-xl"></div>
+                            <div className="swiper-pagination !relative !bottom-0 !mt-6"></div>
+                        </>
+                    )}
                 </div>
             </div>
         </section>

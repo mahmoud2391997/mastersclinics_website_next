@@ -365,40 +365,37 @@ useEffect(() => {
       )}
 
             {/* Available Branches */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-right mb-6">الفروع المتاحة</h2>
-              {relatedBranches.length > 0 ? (
-                <div className="flex flex-wrap -mx-4">
-                  {relatedBranches.map(branch => (
-                    <BranchCard key={branch.id} branch={branch} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  لا تتوفر هذه الخدمة في أي فرع حالياً
-                </div>
-              )}
-            </div>
+     {/* Branches Section */}
+{relatedBranches.length > 0 && (
+  <div className="mb-12">
+    <h2 className="text-2xl font-bold text-right mb-6">الفروع المتاحة</h2>
+    <div className="flex flex-wrap -mx-4">
+      {relatedBranches.map(branch => (
+        <BranchCard key={branch.id} branch={branch} />
+      ))}
+    </div>
+  </div>
+)}
 
-            {/* Teams Section */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-right mb-6">الفريق المتخصص</h2>
-              {relatedTeams.length > 0 ? (
-                <div className="flex flex-wrap -mx-4">
-                  {relatedTeams.map(team => (
-                    <TeamCard key={team.id} team={team} />
-                  ))}
-                </div>
-              ) : serviceData?.teams_ids?.length > 0 ? (
-                <div className="text-center py-8">
-                  <LoadingSpinner text="جاري تحميل بيانات الفريق..." />
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  لا يوجد فريق متاح حاليًا لهذه الخدمة
-                </div>
-              )}
-            </div>
+{/* Teams Section */}
+{relatedTeams.length > 0 ? (
+  <div className="mb-12">
+    <h2 className="text-2xl font-bold text-right mb-6">الفريق المتخصص</h2>
+    <div className="flex flex-wrap -mx-4">
+      {relatedTeams.map(team => (
+        <TeamCard key={team.id} team={team} />
+      ))}
+    </div>
+  </div>
+) : serviceData?.teams_ids?.length > 0 ? (
+  <div className="mb-12">
+    <h2 className="text-2xl font-bold text-right mb-6">الفريق المتخصص</h2>
+    <div className="text-center py-8">
+      <LoadingSpinner text="جاري تحميل بيانات الفريق..." />
+    </div>
+  </div>
+) : null}
+
 
             {/* Appointment Form */}
             {/* <div className="cta_form_s2 bg-white p-8 rounded-xl shadow-lg border border-gray-100">

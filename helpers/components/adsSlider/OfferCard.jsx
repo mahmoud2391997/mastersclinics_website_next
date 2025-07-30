@@ -4,7 +4,7 @@ import React, { memo } from "react"
 import { useRouter } from "next/navigation"
 import { getImageUrl } from "@/helpers/hooks/imageUrl"
 
-const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, branches = [], onSelect }) => {
+const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, branches = [], doctors = [], onSelect }) => {
   const getBranchName = (branchName) => {
     const branchMap = {
       "فرع العوالي": "فرع العوالي",
@@ -28,6 +28,7 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
         description,
         image,
         branches,
+        doctors,
       })
     }
   }
@@ -78,9 +79,27 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
           {/* Name and description block */}
           <div className="flex-1 text-right">
             <h3 className="font-bold text-xl text-gray-900 mb-1 line-clamp-2">{name}</h3>
-            <p className="text-gray-600 text-sm line-clamp-3 mb-1">{description || "لا يوجد وصف"}</p>
+            <p className="text-gray-600 text-sm line-clamp-3 mb-2">{description || null}</p>
           </div>
         </div>
+
+        {/* Doctor Information */}
+        {doctors.length > 0 && (
+          <div className="mb-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <p className="text-xs text-gray-500 mb-1">الطبيب المختص:</p>
+            <div className="flex items-center gap-2">
+              <div className="bg-[#dec06a]/10 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#dec06a]" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-800">{doctors[0].name}</h4>
+                <p className="text-xs text-gray-500">{doctors[0].specialty}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Branches */}
         {branches.length > 0 && (

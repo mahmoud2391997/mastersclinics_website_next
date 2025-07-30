@@ -126,7 +126,7 @@ const BlogList = ({ blRight = "", blLeft = "" }) => {
                       <h3>
                         <button
                           onClick={() => router.push(`/blog/${blog.id}`)}
-                          className="hover:text-blue-600 transition-colors"
+                          className="hover:text-[#dec06a] transition-colors"
                         >
                           {blog.title2 || blog.title}
                         </button>

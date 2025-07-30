@@ -12,7 +12,7 @@ export const makeAppointment = async (data) => {
 const SimpleCtaForm = () => {
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState("idle"); // "idle" | "success" | "error"
+  const [submitStatus, setSubmitStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
@@ -34,10 +34,7 @@ const SimpleCtaForm = () => {
         createdAt: new Date().toISOString(),
       };
 
-      console.log("Submitting simple form:", submissionData);
-
       await makeAppointment(submissionData);
-
       setSubmitStatus("success");
 
       setTimeout(() => {
@@ -46,7 +43,6 @@ const SimpleCtaForm = () => {
 
       setFormData({ name: "", phone: "" });
     } catch (error) {
-      console.error("Error submitting form:", error);
       setSubmitStatus("error");
       setErrorMessage(error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.");
     } finally {
@@ -60,10 +56,10 @@ const SimpleCtaForm = () => {
         onSubmit={handleSubmit}
         className="flex flex-col items-center gap-4 w-full justify-center"
       >
-        {/* Form Fields Row */}
-        <div className="w-full flex flex-col md:flex-row-reverse gap-4">
+        {/* Form Fields - Stacked on mobile */}
+        <div className="w-full flex flex-col gap-4">
           {/* Name */}
-          <div className="w-full md:w-1/2 relative group">
+          <div className="w-full relative group">
             <label
               htmlFor="name"
               className="block text-white text-sm font-medium mb-1 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200"
@@ -80,12 +76,12 @@ const SimpleCtaForm = () => {
               placeholder="الاسم الكامل*"
               required
               disabled={isSubmitting}
-              className="w-full text-white text-lg font-normal rounded-xl bg-white/20 py-4 px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white text-base md:text-lg font-normal rounded-xl bg-white/20 py-3 px-4 md:py-4 md:px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
           {/* Phone */}
-          <div className="w-full md:w-1/2 relative group">
+          <div className="w-full relative group">
             <label
               htmlFor="phone"
               className="block text-white text-sm font-medium mb-1 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200"
@@ -102,17 +98,17 @@ const SimpleCtaForm = () => {
               placeholder="رقم الهاتف*"
               required
               disabled={isSubmitting}
-              className="w-full text-white text-lg font-normal rounded-xl bg-white/20 py-4 px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white text-base md:text-lg font-normal rounded-xl bg-white/20 py-3 px-4 md:py-4 md:px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
 
-        {/* Submit Button - now below the fields */}
-        <div className="w-full md:w-full">
+        {/* Submit Button */}
+        <div className="w-full">
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full px-8 h-[56px] rounded-full text-lg font-semibold text-center leading-normal border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 transform shadow-lg ${
+            className={`w-full px-6 h-[48px] md:h-[56px] rounded-full text-base md:text-lg font-semibold text-center leading-normal border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 transform shadow-lg ${
               isSubmitting
                 ? "bg-white/50 text-gray-500 cursor-not-allowed"
                 : submitStatus === "success"
@@ -152,13 +148,13 @@ const SimpleCtaForm = () => {
       </form>
 
       {submitStatus === "success" && (
-        <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center">
+        <div className="mt-4 p-3 md:p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-sm md:text-base">
           تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
         </div>
       )}
 
       {submitStatus === "error" && (
-        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center">
+        <div className="mt-4 p-3 md:p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-sm md:text-base">
           {errorMessage}
         </div>
       )}

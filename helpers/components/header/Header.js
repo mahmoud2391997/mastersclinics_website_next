@@ -61,10 +61,10 @@ const Header = (props) => {
     <div className="relative">
       <ContactBar />
 
-      <header id="header" dir="rtl" className="relative z-[1111] w-full">
+      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[290px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
           <nav className="navigation w-full">
-            <div className="container-fluid flex flex-wrap flex-col md:flex-row-reverse justify-end items-center px-4 lg:px-8 py-2 w-full max-w-[1290px] mx-auto">
+            <div className="container-fluid flex flex-wrap flex-col-reverse md:flex-row-reverse justify-end items-center px-4 gap-4 lg:px-8 py-2 w-full max-w-[1290px] mx-auto">
               {/* Logo */}
           
 

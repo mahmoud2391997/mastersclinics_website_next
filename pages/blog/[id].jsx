@@ -69,7 +69,7 @@ const BlogSingle = (props) => {
                 <h2 className="text-2xl font-bold my-4">{blog.title2}</h2>
                 <p className="mb-4">{blog.content || "لا يوجد محتوى متاح لهذا المقال."}</p>
 
-                <blockquote className="border-r-4 border-primary bg-gray-50 p-4 my-6">
+                <blockquote className="border-r-4 border-[#dec06a] bg-gray-50 p-4 my-6">
                   هذا اقتباس تجريبي يمكن استبداله بمحتوى خاص بالمدونة.
                 </blockquote>
 
@@ -85,7 +85,7 @@ const BlogSingle = (props) => {
                     <ul className="inline-flex gap-2">
                       {['تخطيط', 'صحة', 'جمال'].map((tag, index) => (
                         <li key={index}>
-                          <Link href="#" className="text-primary hover:underline">{tag}</Link>
+                          <Link href="#" className="text-[#dec06a] hover:underline">{tag}</Link>
                         </li>
                       ))}
                     </ul>

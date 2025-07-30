@@ -21,6 +21,7 @@ export default function OffersSection({ isOfferPage = false }) {
   useEffect(() => {
     dispatch(fetchOffers());
   }, [dispatch]);
+console.log(offers);
 
   useEffect(() => {
     if (offers.length > 0) {

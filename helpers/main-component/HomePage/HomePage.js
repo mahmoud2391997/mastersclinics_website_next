@@ -28,9 +28,9 @@ const HomePage = () => {
             {/* <ProcessSection hclass={"work_section section-padding"}/> */}
             <ProjectSection hclass={'project_section section-padding'}/>
             <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
-            <TeamSection hclass={'team_section section-padding'} sliceEnd={3}/>
+            <TeamSection hclass={'team_section section-padding'} sliceEnd={3} slider={true}/>
             <FunFact hclass={'funfact_section'} />
-            <BlogSection tClass={'blog_section section-padding'}/>
+            <BlogSection tClass={'blog_section section-padding'} slider={true}/>
             <Footer hclass={'wpo-site-footer'}/>
             <Scrollbar />
         </Fragment>

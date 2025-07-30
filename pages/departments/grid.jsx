@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { fetchDepartments } from '../../store/slices/departments';
 import { getImageUrl } from '@/helpers/hooks/imageUrl';
+import SectionTitle from '@/helpers/components/SectionTitle/SectionTitle';
 
 export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) {
   const dispatch = useDispatch();
@@ -64,6 +65,13 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
 
   return (
     <div>
+    {
+      branchId ?
+      
+      <div className='m-auto mt-5'>
+<SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقيام التالية"}/>
+      </div> : null
+    }  
       {/* Search and Filter Section - Only shown if isDepartmentPage is true */}
       {isDepartmentPage && (
         <div className="flex flex-col md:flex-row gap-4 mb-8 px-8 mt-3" dir="rtl">

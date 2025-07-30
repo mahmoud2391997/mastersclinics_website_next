@@ -22,7 +22,7 @@ const ThankYouPage: React.FC = () => {
   const [referenceNumber] = useState(() => `MC${Date.now().toString().slice(-6)}`)
 
   // Snap Pixel
-  const [pixelReady, setPixelReady] = useState(false)
+  const [pixelReady] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)

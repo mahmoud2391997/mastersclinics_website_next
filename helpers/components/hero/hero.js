@@ -38,7 +38,7 @@ const Hero = ({
   };
 
   return (
-    <div className='flex flex-col w-full mt-52 md:mt-0  items-center bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]'>
+    <div className='flex flex-col w-full  md:mt-0  items-center bg-gradient-to-b from-[#f6eecd] to-[#f9f3e0]'>
       <motion.section 
         ref={ref}
         initial="hidden"

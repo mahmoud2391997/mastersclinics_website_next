@@ -13,6 +13,7 @@ import Psing1 from '../../helpers/images/project-single/img-1.jpg';
 import Psing2 from '../../helpers/images/project-single/img-2.jpg';
 import getImageUrl from '../../utilies/getImageUrl';
 import Link from 'next/link';
+import CtafromSection from '../../helpers/components/Form';
 
 const ProjectSinglePage = () => {
   const router = useRouter();
@@ -34,6 +35,7 @@ const ProjectSinglePage = () => {
   if (loading) {
     return <div className="text-center py-5">جارٍ تحميل تفاصيل الجهاز...</div>;
   }
+console.log(currentDevice);
 
   if (error) {
     return <div className="text-center py-5 text-danger">خطأ في تحميل الجهاز: {error}</div>;
@@ -57,14 +59,14 @@ const ProjectSinglePage = () => {
                 {currentDevice.type} - جهاز متطور يوفر حلولاً متكاملة للعناية بالجسم والبشرة
               </p>
               
-              <div className="device-specs mb-8">
+              {/* <div className="device-specs mb-8">
                 <h3 className="text-2xl font-bold mb-3 text-right">تفاصيل الجهاز</h3>
                 <div className="bg-gray-50 p-4 rounded-lg text-right">
                   <p className="whitespace-pre-line">
                     {currentDevice.description || "لا يوجد وصف متوفر حاليًا لهذا الجهاز."}
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               <div className="quote bg-gray-50 p-6 rounded-lg my-8 text-right">
                 <h4 className="text-xl italic mb-2">"أحدث التقنيات في مجال العناية بالجسم والبشرة"</h4>
@@ -95,12 +97,7 @@ const ProjectSinglePage = () => {
                       </td>
                     </tr>
                   )}
-                  <tr>
-                    <td className="text-right py-3 px-4 bg-gray-50 font-bold">تاريخ الإضافة:</td>
-                    <td className="py-3 px-4 text-right">
-                      {new Date(currentDevice.created_at).toLocaleDateString('ar-EG')}
-                    </td>
-                  </tr>
+             
                 </tbody>
               </table>
 
@@ -217,27 +214,22 @@ const ProjectSinglePage = () => {
             </div>
           </div>
           
-          <div className="row my-8">
-            <div className="col-lg-6 col-12 mb-4">
-              <img src={Psing1} alt="الجهاز في الاستخدام" className="w-full rounded-lg" />
-            </div>
-            <div className="col-lg-6 col-12 mb-4">
-              <img src={Psing2} alt="نتائج الجهاز" className="w-full rounded-lg" />
-            </div>
-          </div>
+  
         </div>
         
-        <div className="AppointmentFrom bg-gray-100 py-12">
-          <div className="container">
-            <div className="cta_form_s2 bg-white p-8 rounded-lg shadow-md" dir="rtl">
-              <div className="title s2 text-center mb-6">
-                <h3 className="text-2xl font-bold mb-2">حجز موعد</h3>
-                <p className="text-gray-600">يمكنك حجز موعد للاستفادة من هذا الجهاز</p>
+        <div id="appointment-form" className="AppointmentFrom bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="cta_form_s2">
+                  <div className="title s2 p-6 bg-[#f9f5e9] border-b border-[#e8d9a8]">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">حجز موعد</h3>
+                    <p className="text-gray-600">
+                      تواصل معنا لحجز موعد جلسة بالجهاز 
+                    </p>
+                  </div>
+                  <div className="p-6">
+                    <CtafromSection  />
+                  </div>
+                </div>
               </div>
-              <ContactForm />
-            </div>
-          </div>
-        </div>
       </section>
       
       <Footer hclass={'wpo-site-footer_s2'} />

@@ -64,14 +64,18 @@ const OfferSinglePage = () => {
       <main className="container mx-auto px-4 py-8" dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
           {/* Image */}
-          <div className="lg:w-1/2">
-            <div className="relative w-full h-full bg-white rounded-xl shadow-md overflow-hidden">
+ <div className="w-full lg:w-1/2">
+            <div className="relative w-full h-64 lg:h-full bg-white rounded-xl shadow-md overflow-hidden">
               <Image
-                src={getImageUrl(images[activeImage])}
+                src={getImageUrl(images[activeImage]) || '/default-image.jpg'}
                 alt={offer.title}
                 fill
                 className="object-cover"
                 priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                onError={(e) => {
+                  e.target.src = '/default-image.jpg';
+                }}
               />
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
