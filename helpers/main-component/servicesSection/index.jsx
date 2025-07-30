@@ -93,10 +93,10 @@ const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = n
                       {service.name_ar}
                     </h2>
                     <div className="flex gap-2">
-                      <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                      <span className="bg-[#dec06a] text-white text-xs px-2 py-1 rounded-full">
                         {service.doctors_ids?.length || 0} أطباء
                       </span>
-                      <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                      <span className="bg-[#dec06a] text-white text-xs px-2 py-1 rounded-full">
                         {service.branches?.length || 0} فروع
                       </span>
                     </div>

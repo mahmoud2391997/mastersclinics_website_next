@@ -5942,7 +5942,15 @@ Version:        1.0.0
 .project_card .text {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(140deg, rgba(14, 159, 255, 0.36) 13.65%, rgba(1, 118, 195, 0.18) 91.31%);
+  background: linear-gradient(358deg,
+  rgba(165, 133, 50, 0.5) 0%,     /* #A58532 */
+  rgba(203, 168, 83, 0.45) 20%,   /* #CBA853 */
+  rgba(181, 149, 66, 0.4) 40%,    /* #B59542 */
+  rgba(215, 183, 99, 0.35) 60%,   /* #D7B763 */
+  rgba(222, 191, 108, 0.3) 80%,   /* #DEBF6C */
+  rgba(240, 219, 131, 0.3) 100%   /* #f0db83 */
+);
+;
   box-shadow: 0px 20px 20px 0px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
   padding: 25px 35px;

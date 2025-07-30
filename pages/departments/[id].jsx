@@ -39,12 +39,10 @@ export default function DepartmentPage() {
 
   return (
     <>
-      <Head>
-        <title>{department?.name || 'Department'} | Clinic</title>
-      </Head>
+  
 
-      <Navbar />
-      <PageTitle title={department?.name || 'Department'} />
+      <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'}/>
+      <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={departmentImage}/>
 
       <section className="py-12">
         <div className="container mx-auto">

@@ -22,6 +22,8 @@ const Header = (props) => {
       try {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
+        console.log(data);
+        
         setMenuData(data);
       } catch (error) {
         console.error("Failed to fetch navbar data", error);

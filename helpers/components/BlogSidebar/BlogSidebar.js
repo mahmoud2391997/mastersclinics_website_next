@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { fetchBlogs } from "@/store/slices/blogs";
+import { getImageUrl } from "../../hooks/imageUrl";
 
 // Types
 
@@ -98,7 +99,7 @@ const BlogSidebar = ({ blLeft = "" }) => {
                 <div className="post flex gap-3" key={blog.id}>
                   <div className="img-holder flex-shrink-0">
                     <img
-                      src={blog.image || fallbackImage}
+                      src={getImageUrl(blog.image) || fallbackImage}
                       alt={blog.title2 || blog.title || "مدونة"}
                       onError={(e) => {
                         (e.target).src = fallbackImage;

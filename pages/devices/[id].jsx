@@ -46,7 +46,7 @@ const ProjectSinglePage = () => {
   return (
     <Fragment>
       <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
-      <PageTitle pageTitle={currentDevice.name} pagesub={currentDevice.type} />
+      <PageTitle pageTitle={currentDevice.name} pagesub={currentDevice.type} bgImage={"/devices.png"}/>
       
       <section className="project_single section-padding" dir="rtl">
         <div className="container">

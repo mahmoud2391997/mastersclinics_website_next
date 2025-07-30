@@ -9,7 +9,7 @@ export default function departments() {
     {/* Hero Section */}
 <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
     <PageTitle pageTitle={"اقسامنا"} pagesub="الاقسام" bgImage={"/departments.png"} />
-  <DepartmentsGrid />
+  <DepartmentsGrid isDepartmentPage={true}/>
         <Footer hclass={'wpo-site-footer'} />
 
     </>

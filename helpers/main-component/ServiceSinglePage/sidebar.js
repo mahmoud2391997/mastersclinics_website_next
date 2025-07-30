@@ -58,35 +58,17 @@ const ServiceSidebar = ({
             onChange={handleSearchChange}
             placeholder="ابحث عن الخدمات..."
           />
-          <button 
-            type="submit" 
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-5 w-5" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-              />
-            </svg>
-          </button>
+      
         </form>
       </div>
 
       {/* Departments Filter Widget */}
       <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-bold mb-4 text-primary">الأقسام الطبية</h2>
+        <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a] ">الأقسام الطبية</h2>
         <div className="space-y-2 max-h-60 overflow-y-auto">
           <button
             onClick={() => handleDepartmentChange(null)}
-            className={`w-full text-right py-2 px-3 rounded transition ${!currentDepartment ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+            className={`w-full text-right py-2 px-3 rounded transition ${!currentDepartment ? 'bg-[#dec06a] text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
           >
             جميع الأقسام
           </button>
@@ -94,7 +76,7 @@ const ServiceSidebar = ({
             <button
               key={department.id}
               onClick={() => handleDepartmentChange(department.id)}
-              className={`w-full text-right py-2 px-3 rounded transition ${currentDepartment === department.id ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+              className={`w-full text-right py-2 px-3 rounded transition ${currentDepartment === department.id ? 'bg-[#dec06a] text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
             >
               {department.name}
             </button>

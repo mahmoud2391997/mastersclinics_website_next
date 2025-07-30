@@ -11,8 +11,8 @@ const ServicePage = () => {
     return (
         <Fragment>
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'}  />
-            <PageTitle pageTitle={'Offers'} pagesub={'Offers'} />
-            <OffersSection />
+            <PageTitle pageTitle={'تصفح كافة العروض المتاحة'} pagesub={'العروض'} bgImage={"/offers.png"}/>
+            <OffersSection isOfferPage={true}/>
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar />
 

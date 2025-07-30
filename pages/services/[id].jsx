@@ -43,6 +43,8 @@ const LoadingSpinner = ({ text = 'جاري التحميل...', size = 'medium', 
 };
 
 const TeamCard = ({ team }) => {
+  console.log(team);
+  
   return (
     <div className="w-full md:w-1/2 lg:w-1/3 px-4 mb-8">
       <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
@@ -307,7 +309,7 @@ useEffect(() => {
       </Head>
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} />
+      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={"/service.png"}/>
 
       <section dir="rtl" className="service_single section-padding">
         <div className="container mx-auto px-4">

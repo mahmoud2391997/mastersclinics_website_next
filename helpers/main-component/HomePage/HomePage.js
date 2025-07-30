@@ -23,7 +23,7 @@ const HomePage = () => {
             </div>
             <Hero hclass={'static-hero'} />
             <ImageSlider />
-            <ServiceSection hclass={"service_section section-padding"} />
+            <ServiceSection hclass={"service_section section-padding"} sliceEnd={3}/>
             {/* <About hclass={'about_section section-padding'}/> */}
             {/* <ProcessSection hclass={"work_section section-padding"}/> */}
             <ProjectSection hclass={'project_section section-padding'}/>
@@ -31,7 +31,6 @@ const HomePage = () => {
             <TeamSection hclass={'team_section section-padding'} sliceEnd={3}/>
             <FunFact hclass={'funfact_section'} />
             <BlogSection tClass={'blog_section section-padding'}/>
-            <CtafromSection hclass={'ctafrom_section'}/>
             <Footer hclass={'wpo-site-footer'}/>
             <Scrollbar />
         </Fragment>

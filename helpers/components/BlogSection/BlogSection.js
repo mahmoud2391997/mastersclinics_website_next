@@ -67,26 +67,57 @@ const BlogSection = ({ tClass = '' }) => {
                     className="items-center justify-center"
                     style={{ display: "flex" }}
                   >
-    <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  className="stroke-white rotate-180 flex-shrink-0"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
->
-  <path d="M5 12h14M12 5l7 7-7 7" />
-</svg>
-
-
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="stroke-white rotate-180 flex-shrink-0"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                   </Link>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* View All Services Button - Centered */}
+        <div className="row justify-content-center mt-5">
+          <div className="col-12 text-center">
+            <Link
+              href="/blog"
+              className="relative pl-16 inline-flex items-center justify-between 
+                         bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
+                         text-white font-bold rounded-full py-3 px-8
+                         hover:-translate-y-1 hover:shadow-md transition-all duration-300 gap-4"
+            >
+              {/* Arrow on the left */}
+              <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#CBA853"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </span>
+
+              {/* Text on the right */}
+              <span className="flex-1 text-end">عرض جميع المقالات</span>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
