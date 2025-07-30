@@ -52,7 +52,7 @@ export const fetchTeams = ({ branchId = null, departmentId = null } = {}) => asy
     if (branchId) query.append("branchId", branchId);
     if (departmentId) query.append("departmentId", departmentId);
 
-    const endpoint = query.toString() ? `/doctors?${query}` : `/doctors`;
+    const endpoint = query.toString() ? `/doctors/active?${query}` : `/doctors/active`;
     let data = await get(endpoint);
 
     // Fallback if empty response
@@ -73,32 +73,45 @@ export const fetchTeams = ({ branchId = null, departmentId = null } = {}) => asy
 // Thunk: Fetch team member by ID
 export const fetchTeamById = (id) => async (dispatch) => {
   dispatch({ type: FETCH_TEAM_BY_ID_START });
+
   try {
     let data = await getById("/doctors", id);
-    
-    // If API returns no data, try to find in local Teams data
+
     if (!data) {
-      data = Teams.find(team => team.id === id);
+      data = Teams.find((team) => team.id === id);
     }
-    
+
     if (data) {
       dispatch({ type: FETCH_TEAM_BY_ID_SUCCESS, payload: data });
+      return data; // ✅ Return the fetched data
     } else {
-      dispatch({ 
-        type: FETCH_TEAM_BY_ID_ERROR, 
-        payload: `Team member with ID ${id} not found` 
-      });
+      const errorMsg = `Team member with ID ${id} not found`;
+      dispatch({ type: FETCH_TEAM_BY_ID_ERROR, payload: errorMsg });
+      return null;
     }
   } catch (error) {
-    // If API fails, try to find in local Teams data
-    const localData = Teams.find(team => team.id === id);
+    const localData = Teams.find((team) => team.id === id);
     if (localData) {
       dispatch({ type: FETCH_TEAM_BY_ID_SUCCESS, payload: localData });
+      return localData; // ✅ Return local data
     } else {
-      dispatch({ 
-        type: FETCH_TEAM_BY_ID_ERROR, 
-        payload: error.message || `Team member with ID ${id} not found` 
+      dispatch({
+        type: FETCH_TEAM_BY_ID_ERROR,
+        payload: error.message || `Team member with ID ${id} not found`,
       });
+      return null;
     }
   }
+};
+
+
+export const fetchMultipleTeamsByIds = (ids) => async (dispatch) => {
+  const fetchedTeams = [];
+
+  for (const id of ids) {
+    const team = await dispatch(fetchTeamById(id));
+    if (team) fetchedTeams.push(team);
+  }
+
+  return fetchedTeams;
 };

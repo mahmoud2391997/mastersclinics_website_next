@@ -1,125 +1,108 @@
-import React, { useState } from 'react';
-import Link from 'next/link'
-import ins1 from '../../images/instagram/1.jpg'
-import ins2 from '../../images/instagram/2.jpg'
-import ins3 from '../../images/instagram/3.jpg'
-import ins4 from '../../images/instagram/4.jpg'
-import ins5 from '../../images/instagram/5.jpg'
-import ins6 from '../../images/instagram/6.jpg'
+"use client";
 
-const insData = [
-    {
-        id: 1,
-        img: ins1,
-    },
-    {
-        id: 2,
-        img: ins2,
-    },
-    {
-        id: 3,
-        img: ins3,
-    },
-    {
-        id: 4,
-        img: ins4,
-    },
-    {
-        id: 5,
-        img: ins5,
-    },
-    {
-        id: 6,
-        img: ins6,
-    },
-]
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 
-const ServiceSidebar = () => {
+const ServiceSidebar = ({ 
+  services = [], 
+  onSearchChange, 
+  onDepartmentChange,
+  currentSearch = '',
+  currentDepartment = null
+}) => {
+  const [localSearchTerm, setLocalSearchTerm] = useState(currentSearch);
 
-
-
-    const ClickHandler = () => {
-        window.scrollTo(10, 0);
-    }
-
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showError, setShowError] = useState(false);
-
-    const handleInputChange = (event) => {
-        setSearchTerm(event.target.value);
-        if (showError) {
-            setShowError(false);
+  // Extract unique departments from services with proper names
+  const departments = useMemo(() => {
+    const deptMap = new Map();
+    services.forEach(service => {
+      if (service.department_id) {
+        // Use the department_name from the first service with this department_id
+        if (!deptMap.has(service.department_id)) {
+          deptMap.set(service.department_id, {
+            id: service.department_id,
+            name: service.department_name || `القسم ${service.department_id}`
+          });
         }
-    };
+      }
+    });
+    return Array.from(deptMap.values());
+  }, [services]);
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        if (searchTerm.trim() === '') {
-            setShowError(true);
-        } else {
-            setShowError(false);
-            console.log('Searching for:', searchTerm);
-        }
-    };
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      onSearchChange(localSearchTerm);
+    }, 300);
 
+    return () => clearTimeout(handler);
+  }, [localSearchTerm, onSearchChange]);
 
+  const handleSearchChange = useCallback((e) => {
+    setLocalSearchTerm(e.target.value);
+  }, []);
 
+  const handleDepartmentChange = useCallback((deptId) => {
+    onDepartmentChange(deptId);
+  }, [onDepartmentChange]);
 
+  return (
+    <div className="service_sidebar space-y-6 sticky top-4 rtl">
+      {/* Search Widget */}
+      <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
+        <form onSubmit={(e) => e.preventDefault()} className="relative">
+          <input
+            className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+            type="text"
+            value={localSearchTerm}
+            onChange={handleSearchChange}
+            placeholder="ابحث عن الخدمات..."
+          />
+          <button 
+            type="submit" 
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+              />
+            </svg>
+          </button>
+        </form>
+      </div>
 
-
-
-
-
-    return (
-        <div className="service_sidebar">
-            <div className="search_widget widget">
-                <form className="searchForm" onSubmit={handleSubmit}>
-                    <input
-                        className="fild"
-                        type="text"
-                        name="search"
-                        value={searchTerm}
-                        onChange={handleInputChange}
-                        placeholder="Search..."
-                    />
-                    <button type="submit">
-                        <i className="flaticon-search"></i>
-                    </button>
-                </form>
-                {showError && <p style={{ color: 'red' }}>Please enter a search term.</p>}
-            </div>
-            <div className="services_widget widget">
-                <h2>Services</h2>
-                <ul>
-                    <li><Link onClick={ClickHandler} href="/services">Dental Care <span>2</span></Link></li>
-                    <li><Link onClick={ClickHandler} href="/services">Orthopedic <span>5</span></Link></li>
-                    <li><Link onClick={ClickHandler} href="/services">Pharmacology <span>3</span></Link></li>
-                    <li><Link onClick={ClickHandler} href="/services">Genealogy <span>7</span></Link></li>
-                    <li><Link onClick={ClickHandler} href="/services">Rehabilitation <span>8</span></Link></li>
-                    <li><Link onClick={ClickHandler} href="/services">Heart Surgery <span>4</span></Link></li>
-                </ul>
-            </div>
-            <div className="newsletter_widget widget">
-                <h2>Newsletter</h2>
-                <span>Join 20,000 Sabscribers!</span>
-                <form className="emailForm" id="emailForm">
-                    <input className="fild" type="email" name="email" id="email2"
-                        placeholder="Email Address" />
-                    <button type="submit">Sign Up</button>
-                </form>
-                <p>By signing up you agree to our Privacy Policy</p>
-            </div>
-            <div className="instagram_widget widget">
-                <h2>Instagram</h2>
-                <ul>
-                    {insData.map((instag, iky) => (
-                        <li key={iky}><img src={instag.img} alt="" /></li>
-                    ))}
-                </ul>
-            </div>
+      {/* Departments Filter Widget */}
+      <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
+        <h2 className="text-xl font-bold mb-4 text-primary">الأقسام الطبية</h2>
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          <button
+            onClick={() => handleDepartmentChange(null)}
+            className={`w-full text-right py-2 px-3 rounded transition ${!currentDepartment ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          >
+            جميع الأقسام
+          </button>
+          {departments.map(department => (
+            <button
+              key={department.id}
+              onClick={() => handleDepartmentChange(department.id)}
+              className={`w-full text-right py-2 px-3 rounded transition ${currentDepartment === department.id ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+            >
+              {department.name}
+            </button>
+          ))}
         </div>
+      </div>
+    </div>
+  );
+};
 
-    )
-}
-
-export default ServiceSidebar;
+export default React.memo(ServiceSidebar);

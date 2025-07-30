@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchTeams } from "@/store/slices/doctor";
@@ -18,12 +18,47 @@ const TeamSection = ({
   const { teams = [], loading = false, error = null } = useSelector(
     (state) => state.teams || {}
   );
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState(branchId || "all");
+  const [branches, setBranches] = useState([]);
   const placeholder = "/download.png";
 
+  // Extract unique branches with names from teams data
+  useEffect(() => {
+    if (teams.length > 0) {
+      const branchMap = new Map();
+      
+      teams.forEach(doctor => {
+        if (doctor.branch_id && doctor.branch_name) { // Ensure both ID and name exist
+          if (!branchMap.has(doctor.branch_id)) {
+            branchMap.set(doctor.branch_id, {
+              id: doctor.branch_id,
+              name: doctor.branch_name
+            });
+          }
+        }
+      });
+
+      setBranches(Array.from(branchMap.values()));
+    }
+  }, [teams]);
+
+  // Filter teams based on search term and selected branch
+  const filteredTeams = teams.filter(team => {
+    const matchesSearch = 
+      team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      team.specialty?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesBranch = 
+      selectedBranch === "all" || 
+      team.branch_id?.toString() === selectedBranch;
+    
+    return matchesSearch && matchesBranch;
+  });
+
   const displayedTeams = sliceEnd
-    ? teams.slice(sliceStart, sliceEnd)
-    : teams.slice(sliceStart);
+    ? filteredTeams.slice(sliceStart, sliceEnd)
+    : filteredTeams.slice(sliceStart);
 
   useEffect(() => {
     dispatch(fetchTeams({ branchId, departmentId }));
@@ -39,6 +74,48 @@ const TeamSection = ({
             </div>
           </div>
         )}
+
+        {/* Search and Filter Section */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8" dir="rtl">
+          <div className="flex-1">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="ابحث عن طبيب أو تخصص..."
+                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <svg
+                className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+          
+          <div className="w-full md:w-64">
+            <select
+              className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
+              value={selectedBranch}
+              onChange={(e) => setSelectedBranch(e.target.value)}
+            >
+              <option value="all">جميع الفروع</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {loading && (
           <div className="flex justify-center items-center py-10">
@@ -61,73 +138,92 @@ const TeamSection = ({
         )}
 
         {!loading && !error && (
-          <div className="flex flex-wrap -mx-4">
-            {displayedTeams.map((team, index) => (
-              <div
-                className="w-full md:w-1/2 lg:w-1/3 px-4 mb-8"
-                key={index}
-              >
-                <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                  <div className="relative p-4">
-                    <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
-                      <div className="relative overflow-hidden rounded-[20px]">
-                   <img
-  src={team.image ? getImageUrl(team.image) : placeholder}
-  alt={team.name || "Team Member"}
-  className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-  loading="lazy"
-  onError={(e) => {
-    e.target.src = placeholder;
-  }}
-/>
+          <>
+            {filteredTeams.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap -mx-4">
+                {displayedTeams.map((team, index) => (
+                  <div className="w-full md:w-1/2 lg:w-1/3 px-4 mb-8" key={index}>
+                    <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                      <div className="relative p-4">
+                        <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
+                          <div className="relative overflow-hidden rounded-[20px]">
+                            <img
+                              src={team.image ? getImageUrl(team.image) : placeholder}
+                              alt={team.name || "Team Member"}
+                              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.target.src = placeholder;
+                              }}
+                            />
+                          </div>
 
+                          {team.branch_name && (
+                            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
+                              {team.branch_name}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {team.branches && team.branches.length > 0 && (
-                        <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
-                          {team.branches.length === 1
-                            ? team.branches[0].name
-                            : `${team.branches.length} فروع`}
-                        </div>
-                      )}
+                      <div className="content p-6 text-center">
+                        <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
+                          {team.name}
+                        </h3>
+                        <span className="text-[#dec06a] mb-4 block font-medium">
+                          {team.specialty || ""}
+                        </span>
+
+                        {team.branch_name && (
+                          <div className="mb-4">
+                            <p className="text-xs text-gray-500 mb-2 font-medium">الفرع:</p>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                              <span className="inline-block bg-gradient-to-r from-[#dec06a]/15 to-[#d4b45c]/15 text-[#dec06a] text-xs px-3 py-1.5 rounded-full border border-[#dec06a]/30 font-medium">
+                                {team.branch_name}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+  <Link
+  href={`/teams/${team.id}`}
+  className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
+>
+  {/* Left-positioned arrow */}
+  <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+  </span>
+
+  {/* Button Text */}
+  <span className="flex-1 text-end text-white">احجز موعد</span>
+</Link>
+
+
+
+
+                      </div>
                     </div>
                   </div>
-
-                  <div className="content p-6 text-center">
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
-                      {team.name}
-                    </h3>
-                    <span className="text-[#dec06a] mb-4 block font-medium">
-                      {team.specialization || team.title || ""}
-                    </span>
-
-                    {team.branches && team.branches.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">متوفر في:</p>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                          {team.branches.map((branch, branchIndex) => (
-                            <span
-                              key={branchIndex}
-                              className="inline-block bg-gradient-to-r from-[#dec06a]/15 to-[#d4b45c]/15 text-[#dec06a] text-xs px-3 py-1.5 rounded-full border border-[#dec06a]/30 font-medium"
-                            >
-                              {branch.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <Link
-                      href={`/teams/${team.id}`}
-                      className="theme-btn w-full py-3 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                    >
-                      احجز موعد
-                    </Link>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </section>

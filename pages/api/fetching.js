@@ -32,13 +32,21 @@ export const get = async (url) => {
 });
     return response.data;
   } catch (error) {
+    console.log(error);
+    
     throw handleApiError(error);
   }
 };
 
-// GET by ID (e.g., /services/123)
 export const getById = async (url, id, config = {}) => {
-  return get(`${url}/${id}`, config);
+  try {
+    const data = await get(`${url}/${id}`, config);
+    return data && data.id ? data : null;
+  } catch (error) {
+    console.warn("getById failed for:", `${url}/${id}`, error.message);
+    return null;
+  }
 };
+
 
 export default api;

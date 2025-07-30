@@ -6,7 +6,7 @@ export const fetchDevices = createAsyncThunk(
   'devices/fetchDevices',
   async (branchId = null, thunkAPI) => {
     try {
-      const url = branchId ? `/devices?branch_id=${branchId}` : '/devices';
+      const url = branchId ? `/devices/active?branch_id=${branchId}` : '/devices/active';
       const devices = await get(url);
       console.log("Fetched devices:", devices);
 

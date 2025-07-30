@@ -39,7 +39,7 @@ export const fetchOffers = createAsyncThunk(
   'offers/fetchOffers',
   async (_, thunkAPI) => {
     try {
-      const offers = await get('/offers');
+      const offers = await get('/offers/active');
       console.log("Fetched offers:", offers);
       
       // If API returns no data or empty array, use local offers data

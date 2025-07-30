@@ -80,7 +80,7 @@ const ClickHandler = () => {
 
 const Footer = (props) => {
   return (
-    <footer className={"rtl " + props.hclass} dir="rtl">
+    <footer className={"rtl  " + props.hclass} dir="rtl">
       <div className="wpo-upper-footer">
         <div className="container">
           <div className="row">

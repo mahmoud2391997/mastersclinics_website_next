@@ -20,10 +20,7 @@ const AboutPage = () => {
             <About hclass={'about_section section-padding s4'} />
             <ProcessSection hclass={"work_section_s2 section-padding"} />
             <FunFact hclass={'funfact_section'} />
-            <TeamSection hclass={'team_section_s2 section-padding'} />
-            <CtaSectionS2 />
             <BlogSection tClass={'blog_section section-padding'} />
-            <CtafromSection hclass={'ctafrom_section'} />
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar />
 

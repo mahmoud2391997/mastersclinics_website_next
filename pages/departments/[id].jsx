@@ -2,13 +2,14 @@ import Head from 'next/head';
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
-import { fetchDepartmentById } from '../../store/slices/departments';
 import { fetchBranches } from '../../store/slices/branches';
 import getImageUrl from '@/utilies/getImageUrl';
 import Navbar from '@/helpers/components/Navbar/Navbar';
 import PageTitle from '@/helpers/components/pagetitle/PageTitle';
 import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import TeamSection from '@/helpers/components/TeamSection/TeamSection';
+import Footer from '@/helpers/components/footer/Footer';
+import { fetchDepartmentById } from '@/store/slices/departments';
 
 export default function DepartmentPage() {
   const router = useRouter();
@@ -148,6 +149,8 @@ export default function DepartmentPage() {
           </div>
         </div>
       </section>
+            <Footer hclass={'wpo-site-footer'} />
+
     </>
   );
 }

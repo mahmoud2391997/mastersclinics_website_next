@@ -38,7 +38,7 @@ export default function DepartmentsGrid({ branchId }) {
   );
 }
 
-function DepartmentCard({ department }) {
+export  function DepartmentCard({ department }) {
   const branchInfo = department.branches || [];
 
   return (

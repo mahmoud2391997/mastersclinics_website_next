@@ -12,6 +12,7 @@ import Image from "next/image";
 import TeamSection from "../../helpers/components/TeamSection/TeamSection";
 import DepartmentsGrid from "../departments/grid"
 import ProjectSection from "../../helpers/components/ProjectSection/ProjectSection";
+import Footer from "../../helpers/components/footer/Footer";
 const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -28,7 +29,7 @@ console.log(branch);
 
   if (loading) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div dir="rtl" className="min-h-screen  flex items-center justify-center">
         <p className="text-xl">جاري التحميل...</p>
       </div>
     );
@@ -36,7 +37,7 @@ console.log(branch);
 
   if (error || !branch) {
     return (
-      <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div dir="rtl" className="min-h-screen  flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">الفرع غير موجود</h1>
           <Link href="/branches" className="text-[#dec06a] hover:underline mt-4 inline-block">
@@ -48,7 +49,7 @@ console.log(branch);
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
       <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع" bgImage={getImageUrl(branch.image_url)} />
       
@@ -165,6 +166,7 @@ console.log(branch);
       <DepartmentsGrid branchId={id} />
       <TeamSection branchId={id} />
       <ProjectSection branchId={id} hclass="project-section" />
+      <Footer hclass={'wpo-site-footer'} />
 
     </div>
   );
