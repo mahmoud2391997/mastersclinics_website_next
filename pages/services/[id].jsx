@@ -399,7 +399,7 @@ useEffect(() => {
             </div>
 
             {/* Appointment Form */}
-            <div className="cta_form_s2 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            {/* <div className="cta_form_s2 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
               <div className="title text-right mb-8">
                 <h3 className="text-2xl font-bold mb-2">احجز موعد الآن</h3>
                 <p className="text-gray-600">تواصل معنا لمعرفة كيف يمكننا مساعدتك في مشاكلك.</p>
@@ -409,7 +409,7 @@ useEffect(() => {
                 departmentId={serviceData?.department_id}
                 serviceName={serviceData?.name_ar}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

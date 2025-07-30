@@ -132,7 +132,7 @@ const Hero = ({
         </motion.div>
       </motion.section>
       
-      <CtafromSection />
+      {/* <CtafromSection /> */}
     </div>
   )
 }

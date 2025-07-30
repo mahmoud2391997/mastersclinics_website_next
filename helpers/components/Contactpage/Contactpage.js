@@ -1,40 +1,32 @@
-import React from 'react';
+"use client";
+import React, { useEffect, useState } from 'react';
 import ContactForm from '../ContactFrom/ContactForm';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBranches } from '../../../store/slices/branches';
 
 const ContactpageArabic = () => {
-    const branches = [
-        {
-            name: "فرع العوالي",
-            address: "حي العوالي، شارع ابراهيم الجفالي قبل بنك الراجحي",
-            english: "Al Awali District, Ibrahim Al Jifali Street"
-        },
-        {
-            name: "فرع الخالدية",
-            address: "طريق الدائري الثالث، حي الخالدية، برج المشارق، الدور الرابع",
-            english: "Al Khalidiyah District, Mashareq Tower, 4th Floor"
-        },
-        {
-            name: "فرع الشاطئ",
-            address: "حي الشاطئ، طريق الكورنيش، برج النخبة خلف برج الشاشة، الدور الثالث",
-            english: "Al Shate'a District, Corniche Road, Al Nokhba Tower, 3rd Floor"
-        },
-        {
-            name: "فرع البساتين",
-            address: "حي البساتين، شارع اسماعيل بن كثير",
-            english: "Al Basateen District, Ismail Bin Katheer Street"
-        },
-        {
-            name: "فرع ابحر الشمالية",
-            address: "ابحر الشمالية، شارع عبر القارات، برج الجوهرة (آخر الخدمات قبل بيت هنيه)",
-            english: "North Abhur, Across Continents Street, Al Jawhara Tower"
-        },
-        {
-            name: "فرع قريش",
-            address: "الدور الأرضي، شارع قريش (أسفل جو فالي Joi Valley)",
-            english: "Ground Floor, Qureish Street (below Joi Valley)"
+    const dispatch = useDispatch();
+    const { items: branches, loading, error } = useSelector((state) => state.branches);
+    const [activeRegion, setActiveRegion] = useState(null);
+
+    useEffect(() => {
+        dispatch(fetchBranches());
+    }, [dispatch]);
+
+    // Group branches by region
+    const branchesByRegion = branches.reduce((acc, branch) => {
+        if (!acc[branch.region_name]) acc[branch.region_name] = [];
+        acc[branch.region_name].push(branch);
+        return acc;
+    }, {});
+
+    // Set the first region as active by default when data is loaded
+    useEffect(() => {
+        if (!loading && !error && Object.keys(branchesByRegion).length > 0 && !activeRegion) {
+            setActiveRegion(Object.keys(branchesByRegion)[0]);
         }
-    ];
+    }, [loading, error, branchesByRegion, activeRegion]);
 
     return (
         <section className="wpo-contact-pg-section section-padding bg-gray-50" dir="rtl">
@@ -58,7 +50,6 @@ const ContactpageArabic = () => {
                                             <h2 className="text-xl font-bold mb-3 text-gray-800">اتصل بنا</h2>
                                             <p className="text-gray-600 mb-1">الخط الساخن: 8002440181</p>
                                             <p className="text-gray-600 mb-1">الطب الاتصالي: 966551996424</p>
-                                            <p className="text-gray-600">مواعيد العمل: من السبت إلى الأربعاء، 9:00 صباحًا - 10:00 مساءً</p>
                                         </div>
                                     </div>
                                 </div>
@@ -77,7 +68,6 @@ const ContactpageArabic = () => {
                                             <h2 className="text-xl font-bold mb-3 text-gray-800">البريد الإلكتروني</h2>
                                             <p className="text-gray-600 mb-1">العامة: info@masters.clinic</p>
                                             <p className="text-gray-600 mb-1">للتوظيف: info.hr@masters.clinic</p>
-                                            <p className="text-gray-600">الشعار: ماسترز خبراء لجمالك و صحتك</p>
                                         </div>
                                     </div>
                                 </div>
@@ -90,20 +80,68 @@ const ContactpageArabic = () => {
                             <p className="text-gray-600 max-w-2xl mx-auto">نحن موجودون في عدة مواقع لخدمتكم بشكل أفضل</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-                            {branches.map((branch, index) => (
-                                <div key={index} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex">
-                                    <div className="text-[#d9b755] text-2xl mt-1 ml-3">
-                                        <FaMapMarkerAlt />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{branch.name}</h3>
-                                        <p className="text-gray-600 mb-2">{branch.address}</p>
-                                        <p className="text-gray-500 text-sm">{branch.english}</p>
+                        {loading && <p className="text-center text-lg">جاري التحميل...</p>}
+                        {error && <p className="text-center text-red-500">حدث خطأ: {error}</p>}
+                        
+                        {!loading && !error && (
+                            <>
+                                {/* Region Tabs */}
+                                <div className="w-full mb-8">
+                                    <div className="flex w-full">
+                                        {Object.keys(branchesByRegion).map((region) => (
+                                            <button
+                                                key={region}
+                                                onClick={() => setActiveRegion(region)}
+                                                className={`flex-1 py-3 px-2 text-center font-medium text-sm whitespace-nowrap transition-colors ${
+                                                    activeRegion === region
+                                                        ? 'bg-[#dec06a] text-white'
+                                                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                                                } first:rounded-l-lg last:rounded-r-lg`}
+                                            >
+                                                {region}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+
+                                {/* Active Region Content */}
+                                {activeRegion && (
+                                    <div className="mb-12">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {branchesByRegion[activeRegion].map((branch) => (
+                                                <div key={branch.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex">
+                                                    <div className="text-[#d9b755] text-2xl mt-1 ml-3">
+                                                        <FaMapMarkerAlt />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{branch.name}</h3>
+                                                        <p className="text-gray-600 mb-2">{branch.address}</p>
+                                                        
+                                                        <div className="flex items-start mt-3">
+                                                            <FaClock className="text-[#d9b755] mt-1 ml-2 flex-shrink-0" />
+                                                            <div>
+                                                                <h4 className="font-medium text-gray-700 text-sm">مواعيد العمل:</h4>
+                                                                {branch.working_hours ? (
+                                                                    <ul className="mt-1 space-y-1">
+                                                                        {branch.working_hours.map((hours, idx) => (
+                                                                            <li key={idx} className="text-gray-600 text-xs">
+                                                                                <span className="font-medium">{hours.days}:</span> {hours.time}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <p className="text-gray-500 text-xs">مواعيد العمل غير متاحة</p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         {/* Contact Form Section */}
                         <div className="wpo-contact-title text-center mb-12">

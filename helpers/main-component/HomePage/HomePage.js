@@ -24,8 +24,8 @@ const HomePage = () => {
             <Hero hclass={'static-hero'} />
             <ImageSlider />
             <ServiceSection hclass={"service_section section-padding"} />
-            <About hclass={'about_section section-padding'}/>
-            <ProcessSection hclass={"work_section section-padding"}/>
+            {/* <About hclass={'about_section section-padding'}/> */}
+            {/* <ProcessSection hclass={"work_section section-padding"}/> */}
             <ProjectSection hclass={'project_section section-padding'}/>
             <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
             <TeamSection hclass={'team_section section-padding'} sliceEnd={3}/>

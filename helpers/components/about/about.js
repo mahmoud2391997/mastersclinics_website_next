@@ -18,19 +18,19 @@ const AboutArabic = (props) => {
           <div className="col-lg-6 col-12 order-lg-2">
             <div className="about_left">
               <div className="image relative">
-                <img src={Ab1} alt="صورة عن العيادة" />
+                <img src={"https://medically-react.wpolive.com/static/media/about.7357c6a0be72447a02fd.jpg"} alt="صورة عن العيادة" />
                 <span className="round-on"></span>
                 <span className="round-two"></span>
                 <div className="award">
                   <div className="icon">
                     <i className="flaticon-cup"></i>
                   </div>
-                  <div className="text">
+                  {/* <div className="text">
                     <h2><CountUp end={25} enableScrollSpy />+</h2>
                     <p>سنوات من الخبرة</p>
-                  </div>
+                  </div> */}
                 </div>
-                <div className="doctors">
+                {/* <div className="doctors">
                   <ul>
                     <li><img src={Abd1} alt="طبيب" /></li>
                     <li><img src={Abd2} alt="طبيب" /></li>
@@ -39,7 +39,7 @@ const AboutArabic = (props) => {
                     <li><span>95+</span></li>
                   </ul>
                   <h4>أطباء متاحون</h4>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@ const AboutArabic = (props) => {
               </div>
 
               {/* التوقيع */}
-              <div className="ceo mt-6 flex items-center justify-between">
+              {/* <div className="ceo mt-6 flex items-center justify-between">
                 <div>
                   <h4>سافانا نغوين</h4>
                   <span>المدير التنفيذي ومؤسس عيادات ماسترز</span>
@@ -99,7 +99,7 @@ const AboutArabic = (props) => {
                 <div>
                   <img src={sine} alt="توقيع" />
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 

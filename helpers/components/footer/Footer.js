@@ -40,7 +40,6 @@ export const contactInfo = {
   emailHR: "info.hr@masters.clinic",
   hotline: "8002440181",
   telemedicine: "966551996424",
-  workingHours: "من السبت إلى الأربعاء، 9:00 صباحًا - 10:00 مساءً"
 };
 
 export const socialLinks = [
@@ -56,9 +55,12 @@ export const quickLinks = [
   { name: "الرئيسية", href: "/" },
   { name: "من نحن", href: "/about" },
   { name: "الخدمات", href: "/services" },
-  { name: "الأخبار", href: "/blog" },
-  { name: "الأطباء", href: "/team" },
+  { name: "الاقسام", href: "/departments" },
+  { name: "الفروع", href: "/branches" },
+  { name: "الاجهزة", href: "/devices" },
+  { name: "الأطباء", href: "/teams" },
   { name: "العروض", href: "/offers" },
+  { name: "المقالات", href: "/blog" },
   { name: "اتصل بنا", href: "/contact" },
 ];
 
@@ -141,11 +143,11 @@ const Footer = (props) => {
                   <h3>فروعنا</h3>
                 </div>
                 <ul>
-                  {branches.slice(0, 4).map((branch, idx) => (
+                  {branches.map((branch, idx) => (
                     <li key={idx}><span>{branch.name}</span></li>
                   ))}
                   <li>
-                    <Link href="/contact" onClick={ClickHandler}>عرض جميع الفروع</Link>
+                    <Link href="/branches" onClick={ClickHandler}>عرض جميع الفروع</Link>
                   </li>
                 </ul>
               </div>

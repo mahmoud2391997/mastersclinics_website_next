@@ -8,7 +8,7 @@ export default function departments() {
     <>
     {/* Hero Section */}
 <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-    <PageTitle pageTitle={"فروعنا"} pagesub="اكتشف جميع فروعنا ومواعيد العمل" bgImage={"https://cdn.salla.sa/dEYvd/LgUfWipbId1zQL4vAXAdXtPnedinmGRFunfGfZzN.jpg"} />
+    <PageTitle pageTitle={"اقسامنا"} pagesub="الاقسام" bgImage={"/departments.png"} />
   <DepartmentsGrid />
         <Footer hclass={'wpo-site-footer'} />
 

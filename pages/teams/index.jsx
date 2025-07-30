@@ -11,9 +11,8 @@ const ServicePage = () => {
     return (
         <Fragment>
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-            <PageTitle pageTitle={'Doctor'} pagesub={'Doctor'} />
-            <TeamSection hclass='team_section_s2 section-padding'  showSectionTitle={false}/>
-            <CtafromSection hclass={'ctafrom_section'} />
+            <PageTitle pageTitle={'اطبائنا'} pagesub={'الاطباء'} bgImage={'/Rectangle 3 (1).png'} />
+            <TeamSection hclass='team_section_s2 section-padding' isTeamsPage={true}  showSectionTitle={false}/>
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar  />
 

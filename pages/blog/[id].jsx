@@ -55,8 +55,8 @@ const BlogSingle = (props) => {
                 <div className="entry-meta mt-4">
                   <ul className="flex gap-4 text-gray-600">
                     <li>
-                      <i className="fi flaticon-user mr-1"></i> بواسطة{" "}
-                      <Link href="#" className="text-primary hover:underline">{blog.author}</Link>
+                      <i className="fi  flaticon-user mr-1"></i> بواسطة{" "}
+                      <Link href="#" className=" hover:underline" style={{color:"#dec06a"}}>{blog.author}</Link>
                     </li>
                     <li>
                       <i className="fi flaticon-comment-white-oval-bubble mr-1"></i> تعليقات {blog.comment}

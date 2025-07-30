@@ -89,6 +89,7 @@ const Header = (props) => {
                       { label: "الفروع", path: "branches", items: menuData.branches },
                       { label: "الاقسام", path: "departments", items: menuData.departments },
                       { label: "الخدمات", path: "services", items: menuData.services },
+                      { label: "الاجهزة", path:"devices",items:menuData.devices},
                       { label: "الاطباء", path: "teams", items: menuData.doctors },
                       { label: "العروض", path: "offers", items: menuData.offers },
                       { label: "المقالات", path: "blog", items: menuData.blogs },
@@ -107,15 +108,16 @@ const Header = (props) => {
                 </div>
               </div>
     <div className="flex-shrink-0">
-                <Link href="/" className="navbar-brand">
+                <Link href="/" className={"navbar-brand"}>
                   <img
                     src={
-                      props.nav
+                     true
                         ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
-                        : getImageUrl("/uploads/Artboard ٨ copy.png")
+                        : "/logo.jpeg"
                     }
                     alt="logo"
                   onClick={ClickHandler}
+                  className={"h-[200px] ml-[10px]"}
                   />
                 </Link>
               </div>

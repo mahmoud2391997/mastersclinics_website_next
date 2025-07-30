@@ -76,9 +76,7 @@ const BlogSidebar = ({ blLeft = "" }) => {
               className="w-full p-3 border border-gray-300 rounded-lg pr-10 pl-12 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="ابحث في المقالات.."
             />
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none">
-              🔍
-            </span>
+         
           </div>
         </div>
 
