@@ -111,7 +111,7 @@ const BlogSidebar = ({ blLeft = "" }) => {
                     <h4 className="font-medium mb-1 text-right">
                       <button
                         onClick={() => goToBlog(blog.id)}
-                        className="hover:text-blue-600 transition-colors text-sm"
+                        className="hover:text-[#dec06a] transition-colors text-sm"
                       >
                         {blog.title2 || blog.title}
                       </button>

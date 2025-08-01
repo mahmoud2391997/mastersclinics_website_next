@@ -14,7 +14,7 @@ export default function Navbar(props) {
   const className = scroll > 80 ? "fixed-navbar active" : "fixed-navbar";
 
   return (
-    <div className={className}>
+    <div className={className} id='scrool'>
       <Header hclass={props.hclass} Logo={props.Logo} topbarClass={props.topbarClass} nav={props.nav}/>
     </div>
   );

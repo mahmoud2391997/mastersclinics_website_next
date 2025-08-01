@@ -64,7 +64,7 @@ const Header = (props) => {
       <header id="header" dir="rtl" className="relative z-[1111] w-full h-[290px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
           <nav className="navigation w-full">
-            <div className="container-fluid flex flex-wrap flex-col-reverse md:flex-row-reverse justify-end items-center px-4 gap-4 lg:px-8 py-2 w-full max-w-[1290px] mx-auto">
+            <div className={`container-fluid flex flex-wrap flex-col-reverse md:flex-row-reverse items-center px-4 gap-2 lg:px-8 py-2 w-full max-w-[1290px] mx-auto ${props.nav ? "justify-end" : "justify-center"}`}>
               {/* Logo */}
           
 
@@ -73,7 +73,6 @@ const Header = (props) => {
                 <div className="relative overflow-x-visible">
                   <ul className="flex justify-center space-x-reverse space-x-1 text-base lg:text-lg font-medium items-center whitespace-nowrap">
                     {[
-                      { label: "الرئيسية", href: "/" },
                       { label: "من نحن", href: "/about" },
                       { label: "اتصل بنا", href: "/contact" },
                     ].map((item) => (
@@ -119,7 +118,7 @@ const Header = (props) => {
                     }
                     alt="logo"
                   onClick={ClickHandler}
-className={`ml-[10px] ${props.nav ? "h-[200px]" : "h-[100px]"}`}
+className={`ml-[10px] h-[200px] ${props.nav ? null : "md:h-[100px]"}`}
                   />
                 </Link>
               </div>

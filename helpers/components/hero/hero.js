@@ -66,7 +66,7 @@ const Hero = ({
             transition={{ delay: 0.2 }}
           >
             <motion.h2 
-              className="inline-block  text-base md:text-lg text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-4 py-2 rounded-xl shadow-md"
+              className="inline-block m-auto text-center md:text-right text-base md:text-lg text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-4 py-2 rounded-xl shadow-md"
               whileHover={{ scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300 }}
             >

@@ -108,21 +108,33 @@ const BlogList = ({ blRight = "", blLeft = "" }) => {
                       </div>
                     )}
                     <div className="entry-meta">
-                      <ul>
-                        <li>
-                          <i className="fi flaticon-user"></i> بواسطة:<span style={{ color: "#dec06a" }} className="mr-1">
-                             {blog.author}
-                            </span>
-                        </li>
-                        <li>
-                          <i className="fi flaticon-calendar"></i>{" "}
-                          {new Date(blog.create_at).toLocaleDateString("ar-EG", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </li>
-                      </ul>
+                    <ul className="flex gap-6 text-gray-600" dir="rtl">
+    <li className="flex items-center gap-1">
+      <span>
+        بواسطة
+        <span className="hover:underline mr-1" style={{ color: "#dec06a" }}>
+          {blog.author}
+        </span>{" "}
+      </span>
+      <i className="fi flaticon-user"></i>
+    </li>
+    
+    <li className="flex items-center gap-1 ">
+      <span className="mr-3">تعليقات {blog.comment}</span>
+      <i className="fi flaticon-comment-white-oval-bubble"></i>
+    </li>
+
+    <li className="flex flex-row-reverse items-center gap-1">
+        <i className="fi flaticon-calendar"></i>
+      <span className="mr-3">
+        {new Date(blog.create_at).toLocaleDateString("ar-EG", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })}
+      </span>
+    </li>
+  </ul>
                     </div>
                     <div className="entry-details">
                       <h3>

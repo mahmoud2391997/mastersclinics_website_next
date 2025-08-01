@@ -23,7 +23,8 @@ const ProjectSection = ({
     sliceStart = 0,
     sliceEnd = 3,
     branchId = null,
-    showFilters = false
+    showFilters = false,
+    slider = true // New prop to control swiper vs grid
 }) => {
     const dispatch = useDispatch();
     const [searchTerm, setSearchTerm] = useState("");
@@ -62,9 +63,45 @@ const ProjectSection = ({
         
         return matchesSearch && matchesBranch;
     });
-if(devices.length === 0) return null
+
+    if(devices.length === 0) return null;
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
     if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
+
+    const renderDeviceCard = (device, index) => (
+        <div key={index} className="project_card text-right h-full mx-2">
+            <img 
+                src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
+                alt={device.name || "Device"} 
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                    e.target.src = "/download.png";
+                }}
+            />
+            <div className="text p-4">
+                {device._id ? (
+                    <h2 className="text-lg font-bold">
+                        <Link 
+                            href={`/devices/${device._id}`} 
+                            onClick={ClickHandler}
+                            className="text-[#333] hover:text-[#CBA853]"
+                        >
+                            {device.name}
+                        </Link>
+                    </h2>
+                ) : (
+                    <h2 className="text-lg font-bold">{device.name}</h2>
+                )}
+                <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
+                {device.branch_name && (
+                    <div className="mt-2 text-sm text-gray-500">
+                        <span>الفرع: </span>
+                        <span>{device.branch_name}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 
     return (
         <section className={hclass} dir="rtl">
@@ -82,7 +119,7 @@ if(devices.length === 0) return null
                         <div className="col-lg-6 col-12 order-lg-2 text-left">
                             <div className="project_btn">
                                 <Link 
-                                    href="/project" 
+                                    href="/devices" 
                                     className="relative pl-16 inline-flex items-center justify-between
                                                bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
                                                text-white font-bold rounded-full py-3 px-6
@@ -155,78 +192,55 @@ if(devices.length === 0) return null
                 )}
 
                 <div className="project_wrapper relative">
-                    <Swiper
-                        modules={[Navigation, Pagination, Autoplay]}
-                        spaceBetween={30}
-                        slidesPerView={1}
-                        breakpoints={{
-                            640: {
-                                slidesPerView: 1,
-                            },
-                            768: {
-                                slidesPerView: 2,
-                            },
-                            1024: {
-                                slidesPerView: 3,
-                            },
-                        }}
-                        navigation={{
-                            nextEl: '.swiper-button-next',
-                            prevEl: '.swiper-button-prev',
-                        }}
-                        pagination={{
-                            clickable: true,
-                            el: '.swiper-pagination',
-                            type: 'bullets',
-                        }}
-                        autoplay={{
-                            delay: 5000,
-                            disableOnInteraction: false,
-                        }}
-                        loop={true}
-                        onInit={() => setSwiperInitialized(true)}
-                        className="pb-12"
-                    >
-                        {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
-                            <SwiperSlide key={pitem}>
-                                <div className="project_card text-right h-full mx-2">
-                                    <img 
-                                        src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
-                                        alt={device.name || "Device"} 
-                                        className="w-full h-48 object-cover"
-                                        onError={(e) => {
-                                            e.target.src = "/download.png";
-                                        }}
-                                    />
-                                    <div className="text p-4">
-                                        {device._id ? (
-                                            <h2 className="text-lg font-bold">
-                                                <Link 
-                                                    href={`/devices/${device._id}`} 
-                                                    onClick={ClickHandler}
-                                                    className="text-[#333] hover:text-[#CBA853]"
-                                                >
-                                                    {device.name}
-                                                </Link>
-                                            </h2>
-                                        ) : (
-                                            <h2 className="text-lg font-bold">{device.name}</h2>
-                                        )}
-                                        <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
-                                        {device.branch_name && (
-                                            <div className="mt-2 text-sm text-gray-500">
-                                                <span>الفرع: </span>
-                                                <span>{device.branch_name}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
+                    {slider ? (
+                        <Swiper
+                            modules={[Navigation, Pagination, Autoplay]}
+                            spaceBetween={30}
+                            slidesPerView={1}
+                            breakpoints={{
+                                640: {
+                                    slidesPerView: 1,
+                                },
+                                768: {
+                                    slidesPerView: 2,
+                                },
+                                1024: {
+                                    slidesPerView: 3,
+                                },
+                            }}
+                            navigation={{
+                                nextEl: '.swiper-button-next',
+                                prevEl: '.swiper-button-prev',
+                            }}
+                            pagination={{
+                                clickable: true,
+                                el: '.swiper-pagination',
+                                type: 'bullets',
+                            }}
+                            autoplay={{
+                                delay: 5000,
+                                disableOnInteraction: false,
+                            }}
+                            loop={true}
+                            onInit={() => setSwiperInitialized(true)}
+                            className="pb-12"
+                        >
+                            {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
+                                <SwiperSlide key={pitem}>
+                                    {renderDeviceCard(device, pitem)}
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredDevices.slice(sliceStart, sliceEnd).map((device, index) => (
+                                renderDeviceCard(device, index)
+                            ))}
+                        </div>
+                    )}
 
-                    {/* Navigation buttons */}
-                    {swiperInitialized && (
+                    {/* Navigation buttons - only for slider */}
+                    {slider && swiperInitialized && (
                         <>
                             <div className="swiper-button-prev !text-[#CBA853] !left-0 after:!text-xl"></div>
                             <div className="swiper-button-next !text-[#CBA853] !right-0 after:!text-xl"></div>
