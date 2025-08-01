@@ -54,7 +54,7 @@ const Hero = ({
 
         {/* Text Content */}
         <motion.div 
-          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8 mt-20"
+          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8 md:mt-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -66,7 +66,7 @@ const Hero = ({
             transition={{ delay: 0.2 }}
           >
             <motion.h2 
-              className="inline-block text-base md:text-lg text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-4 py-2 rounded-xl shadow-md"
+              className="inline-block  text-base md:text-lg text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-4 py-2 rounded-xl shadow-md"
               whileHover={{ scale: 1.03 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
@@ -75,7 +75,7 @@ const Hero = ({
           </motion.div>
 
           <motion.h3 
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal leading-tight mb-6 text-[#2a2a2a]"
+            className="text-3xl text-center md:text-right sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-normal leading-tight mb-6 text-[#2a2a2a]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
@@ -84,7 +84,7 @@ const Hero = ({
           </motion.h3>
 
           <motion.p 
-            className="text-[#555] text-base md:text-lg leading-relaxed mb-8"
+            className="text-[#555] text-center md:text-right text-base md:text-lg leading-relaxed mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
