@@ -11659,7 +11659,7 @@ Version:        1.0.0
 }
 .wpo-blog-pg-section .entry-meta ul li + li:before {
   position: absolute;
-  left: 0;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 7px;
@@ -12012,7 +12012,7 @@ Version:        1.0.0
 }
 .wpo-blog-single-section .entry-meta ul li + li:before {
   position: absolute;
-  left: 0;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 7px;

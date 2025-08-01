@@ -110,7 +110,9 @@ const BlogList = ({ blRight = "", blLeft = "" }) => {
                     <div className="entry-meta">
                       <ul>
                         <li>
-                          <i className="fi flaticon-user"></i> بواسطة: {blog.author}
+                          <i className="fi flaticon-user"></i> بواسطة:<span style={{ color: "#dec06a" }} className="mr-1">
+                             {blog.author}
+                            </span>
                         </li>
                         <li>
                           <i className="fi flaticon-calendar"></i>{" "}

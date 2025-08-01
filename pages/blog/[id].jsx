@@ -52,20 +52,36 @@ const BlogSingle = (props) => {
                 <div className="entry-media">
                   <img src={blogImage} alt="" className="w-full rounded-lg" />
                 </div>
-                <div className="entry-meta mt-4">
-                  <ul className="flex gap-4 text-gray-600">
-                    <li>
-                      <i className="fi  flaticon-user mr-1"></i> بواسطة{" "}
-                      <Link href="#" className=" hover:underline" style={{color:"#dec06a"}}>{blog.author}</Link>
-                    </li>
-                    <li>
-                      <i className="fi flaticon-comment-white-oval-bubble mr-1"></i> تعليقات {blog.comment}
-                    </li>
-                    <li>
-                      <i className="fi flaticon-calendar mr-1"></i> {blog.create_at}
-                    </li>
-                  </ul>
-                </div>
+           <div className="entry-meta mt-4">
+  <ul className="flex gap-6 text-gray-600" dir="rtl">
+    <li className="flex items-center gap-1">
+      <span>
+        بواسطة
+        <Link href="#" className="hover:underline mr-1" style={{ color: "#dec06a" }}>
+          {blog.author}
+        </Link>{" "}
+      </span>
+      <i className="fi flaticon-user"></i>
+    </li>
+    
+    <li className="flex items-center gap-1 ">
+      <span className="mr-3">تعليقات {blog.comment}</span>
+      <i className="fi flaticon-comment-white-oval-bubble"></i>
+    </li>
+
+    <li className="flex flex-row-reverse items-center gap-1">
+        <i className="fi flaticon-calendar"></i>
+      <span className="mr-3">
+        {new Date(blog.create_at).toLocaleDateString("ar-EG", {
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })}
+      </span>
+    </li>
+  </ul>
+</div>
+
                 <h2 className="text-2xl font-bold my-4">{blog.title2}</h2>
                 <p className="mb-4">{blog.content || "لا يوجد محتوى متاح لهذا المقال."}</p>
 
