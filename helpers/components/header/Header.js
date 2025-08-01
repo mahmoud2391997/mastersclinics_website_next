@@ -119,7 +119,7 @@ const Header = (props) => {
                     }
                     alt="logo"
                   onClick={ClickHandler}
-                  className={"h-[200px] ml-[10px]"}
+className={`ml-[10px] ${props.nav ? "h-[200px]" : "h-[100px]"}`}
                   />
                 </Link>
               </div>
