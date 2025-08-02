@@ -48,17 +48,18 @@ export const fetchTeams = ({ branchId = null, departmentId = null } = {}) => asy
 
   try {
     // Build query string
-    const query = new URLSearchParams();
-    if (branchId) query.append("branchId", branchId);
-    if (departmentId) query.append("departmentId", departmentId);
+const query = new URLSearchParams();
+if (branchId) query.append("branchId", branchId);
+if (departmentId) query.append("departmentId", departmentId);
 
-    const endpoint = query.toString() ? `/doctors/active?${query}` : `/doctors/active`;
-    let data = await get(endpoint);
+const endpoint = query.toString() ? `/doctors/active?${query}` : `/doctors/active`;
+let data = await get(endpoint);
+console.log(data);
+
+console.log(data);
 
     // Fallback if empty response
-    if (!data || data.length === 0) {
-      data = Teams;
-    }
+
 
     dispatch({ type: FETCH_TEAMS_SUCCESS, payload: data });
   } catch (error) {

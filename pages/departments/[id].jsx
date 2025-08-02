@@ -22,16 +22,9 @@ export default function DepartmentPage() {
     error: deptError,
   } = useSelector((state) => state.departments);
 
-  const {
-    items: allBranches,
-    loading: branchesLoading,
-    error: branchesError,
-  } = useSelector((state) => state.branches);
-
   useEffect(() => {
     if (id) {
       dispatch(fetchDepartmentById(id));
-      dispatch(fetchBranches());
     }
   }, [id, dispatch]);
 
@@ -39,7 +32,10 @@ export default function DepartmentPage() {
 
   return (
     <>
-  
+      <Head>
+        <title>{department?.name || 'القسم'} | مسترز</title>
+        <meta name="description" content={department?.description} />
+      </Head>
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'}/>
       <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={departmentImage}/>
@@ -61,94 +57,96 @@ export default function DepartmentPage() {
         </div>
       </section>
 
-      {/* ✅ Use TeamSection for doctors */}
       <TeamSection
         departmentId={id}
         showSectionTitle={true}
         hclass="py-12 bg-gray-50"
       />
 
-      {/* ✅ Render branches like BranchesPage */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4" dir="rtl">
           <h3 className="text-2xl font-bold mb-8 text-center border-b-2 border-[#dec06a] inline-block pb-2">
-            فروعنا
+            الفروع المتوفر بها القسم
           </h3>
 
-          {branchesLoading && <p className="text-center">جاري التحميل...</p>}
-          {branchesError && (
-            <p className="text-center text-red-500">حدث خطأ: {branchesError}</p>
+          {deptLoading && <p className="text-center">جاري التحميل...</p>}
+          {deptError && (
+            <p className="text-center text-red-500">حدث خطأ: {deptError}</p>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allBranches?.map((branch) => (
-              <div
-                key={branch.id}
-                className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
-              >
-                {/* Branch Image */}
-                <div className="w-full h-48">
-                  <img
-                    className="w-full h-full object-cover"
-                    src={getImageUrl(branch.image_url) || "/placeholder.png"}
-                    alt={branch.name}
-                  />
-                </div>
-
-                <div className="p-6 flex-grow">
-                  <h4 className="text-xl font-bold mb-3">{branch.name}</h4>
-
-                  <div className="flex items-start mt-4">
-                    <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2" />
-                    <p className="text-gray-600">{branch.address}</p>
+          {department?.branches?.length === 0 ? (
+            <p className="text-center text-gray-500">لا توجد فروع متاحة لهذا القسم حالياً</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {department?.branches?.map((branch) => (
+                <div
+                  key={branch.id}
+                  className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
+                >
+                  <div className="w-full h-48">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={getImageUrl(branch.image_url) || "/placeholder.png"}
+                      alt={branch.name}
+                    />
                   </div>
 
-                  <div className="flex items-start mt-4">
-                    <FaClock className="text-[#dec06a] mt-1 ml-2" />
-                    <div>
-                      <h5 className="font-medium text-gray-700">مواعيد العمل:</h5>
-                      {branch.working_hours ? (
-                        <ul className="mt-1 space-y-1">
-                          {branch.working_hours.map((hours, idx) => (
-                            <li key={idx} className="text-sm text-gray-600">
-                              <strong>{hours.days}:</strong> {hours.time}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500 text-sm">غير متاح</p>
+                  <div className="p-6 flex-grow">
+                    <h4 className="text-xl font-bold mb-3">{branch.name}</h4>
+
+                    <div className="flex items-start mt-4">
+                      <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2" />
+                      <p className="text-gray-600">{branch.address}</p>
+                    </div>
+
+                    <div className="flex items-start mt-4">
+                      <FaClock className="text-[#dec06a] mt-1 ml-2" />
+                      <div>
+                        <h5 className="font-medium text-gray-700">مواعيد العمل:</h5>
+                        {branch.working_hours ? (
+                          <ul className="mt-1 space-y-1">
+                            {branch.working_hours.map((hours, idx) => (
+                              <li key={idx} className="text-sm text-gray-600">
+                                <strong>{hours.days}:</strong> {hours.time}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-gray-500 text-sm">غير متاح</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 pt-0">
+                    <div className="flex flex-col gap-3">
+                      <a
+                        href={`/branches/${branch.id}`}
+                        className="px-4 py-2 border border-[#dec06a] text-[#dec06a] font-medium rounded-lg text-sm text-center"
+                   style={{color: "#dec06a"}}
+                   >
+                        المزيد من التفاصيل
+                      </a>
+                      {branch.location_link && (
+                        <a
+                          href={branch.location_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-[#dec06a] text-white font-medium rounded-lg text-sm text-center"
+                        >
+                          عرض على الخريطة
+                        </a>
                       )}
                     </div>
                   </div>
                 </div>
-
-                <div className="p-6 pt-0">
-                  <div className="flex flex-col gap-3">
-                    <a
-                      href={`/branches/${branch.id}`}
-                      className="px-4 py-2 border border-[#dec06a] text-[#dec06a] font-medium rounded-lg text-sm text-center"
-                    >
-                      المزيد من التفاصيل
-                    </a>
-                    {branch.location_link && (
-                      <a
-                        href={branch.location_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-[#dec06a] text-white font-medium rounded-lg text-sm text-center"
-                      >
-                        عرض على الخريطة
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
-            <Footer hclass={'wpo-site-footer'} />
 
+      <Footer hclass={'wpo-site-footer'} />
     </>
   );
 }
