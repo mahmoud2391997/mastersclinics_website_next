@@ -56,13 +56,13 @@ const SimpleCtaForm = () => {
         onSubmit={handleSubmit}
         className="flex flex-col items-center gap-6 w-full justify-center"
       >
-        {/* Form Fields - Wide layout */}
-        <div className="w-full flex flex-col gap-6">
+        {/* Form Fields - Horizontal layout */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Name */}
           <div className="w-full relative group">
             <label
               htmlFor="name"
-              className="block text-white text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
+              className="block text-white text-right text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
             >
               الاسم الكامل*
             </label>
@@ -84,7 +84,7 @@ const SimpleCtaForm = () => {
           <div className="w-full relative group">
             <label
               htmlFor="phone"
-              className="block text-white text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
+              className="block text-white text-right text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
             >
               رقم الهاتف*
             </label>
@@ -103,7 +103,7 @@ const SimpleCtaForm = () => {
           </div>
         </div>
 
-        {/* Submit Button - Wider */}
+        {/* Submit Button - Full width */}
         <div className="w-full mt-2">
           <button
             type="submit"
