@@ -64,7 +64,7 @@ const OfferSinglePage = () => {
       <main className="container mx-auto px-4 py-8" dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
           {/* Image */}
-<div className="relative w-full h-[500px] bg-white rounded-xl shadow-md overflow-hidden">
+<div className="relative w-full h-[350px] md:h-[700px] bg-white rounded-xl shadow-md overflow-hidden">
               <Image
                 src={getImageUrl(images[activeImage]) || '/default-image.jpg'}
                 alt={offer.title || 'عرض تجهيل نسائي'}
