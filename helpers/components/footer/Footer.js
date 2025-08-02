@@ -39,7 +39,6 @@ export const contactInfo = {
   emailGeneral: "info@masters.clinic",
   emailHR: "info.hr@masters.clinic",
   hotline: "8002440181",
-  telemedicine: "966551996424",
 };
 
 export const socialLinks = [

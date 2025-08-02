@@ -49,7 +49,6 @@ const ContactpageArabic = () => {
                                         <div className="office-info-text">
                                             <h2 className="text-xl font-bold mb-3 text-gray-800">اتصل بنا</h2>
                                             <p className="text-gray-600 mb-1">الخط الساخن: 8002440181</p>
-                                            <p className="text-gray-600 mb-1">الطب الاتصالي: 966551996424</p>
                                         </div>
                                     </div>
                                 </div>

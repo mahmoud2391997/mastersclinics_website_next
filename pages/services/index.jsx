@@ -126,7 +126,7 @@ const parseServiceData = (service) => {
           </button>
         </div>
       ) : (
-        <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        <div className="container mx-auto px-4 py-8 flex flex-col-reverse lg:flex-row gap-8">
           <main className="lg:w-3/4">
             <ServiceSection 
               services={parsedServices} 

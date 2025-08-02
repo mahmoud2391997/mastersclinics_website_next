@@ -24,7 +24,7 @@ const ProjectSection = ({
     sliceEnd = 3,
     branchId = null,
     showFilters = false,
-    slider = true // New prop to control swiper vs grid
+    slider = true
 }) => {
     const dispatch = useDispatch();
     const [searchTerm, setSearchTerm] = useState("");
@@ -44,59 +44,117 @@ const ProjectSection = ({
         error: devicesError = null 
     } = useSelector(state => state.devices || {});
 
-    const { 
-        items: branches = [], 
-        loading: branchesLoading = false, 
-        error: branchesError = null 
-    } = useSelector(state => state.branches || {});
+    const { items: allBranches = [] } = useSelector(state => state.branches || {});
 
-    // Get unique branch names from devices for filtering
-    const uniqueBranchNames = [...new Set(devices.map(device => device.branch_name))].filter(name => name);
+    // Normalize and get unique branch names
+    const normalizeBranchName = (name) => name.trim().toLowerCase().replace(/\s+/g, ' ');
+    const uniqueBranchNames = [...new Set(
+        devices.flatMap(device => 
+            device.branch_names 
+                ? device.branch_names.map(b => normalizeBranchName(b))
+                : []
+        )
+    )].filter(name => name).sort();
 
-    // Filter devices based on search term and selected branch
+    // Filter devices with robust matching
     const filteredDevices = devices.filter(device => {
-        const matchesSearch = device.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            device.type?.toLowerCase().includes(searchTerm.toLowerCase());
+        // Search filter
+        const searchNorm = searchTerm.toLowerCase();
+        const matchesSearch = searchTerm === "" || 
+                            device.name?.toLowerCase().includes(searchNorm) || 
+                            device.type?.toLowerCase().includes(searchNorm);
         
+        // Branch filter with normalized comparison
+        const branchNorm = normalizeBranchName(selectedBranch);
         const matchesBranch = selectedBranch === "all" || 
-                            device.branch_name === selectedBranch;
+                            (device.branch_names && 
+                             device.branch_names.some(branch => 
+                                normalizeBranchName(branch) === branchNorm
+                             ));
         
         return matchesSearch && matchesBranch;
     });
 
-    if(devices.length === 0) return null;
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
     if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
+    if (filteredDevices.length === 0) return (
+        <div className="text-center py-5">
+            <p>لا توجد أجهزة متاحة</p>
+            {(searchTerm || selectedBranch !== "all") && (
+                <button 
+                    onClick={() => {
+                        setSearchTerm("");
+                        setSelectedBranch("all");
+                    }}
+                    className="text-[#CBA853] mt-2"
+                >
+                    إعادة تعيين الفلاتر
+                </button>
+            )}
+        </div>
+    );
 
     const renderDeviceCard = (device, index) => (
-        <div key={index} className="project_card text-right h-full mx-2">
-            <img 
-                src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
-                alt={device.name || "Device"} 
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                    e.target.src = "/download.png";
-                }}
-            />
-            <div className="text p-4">
-                {device._id ? (
-                    <h2 className="text-lg font-bold">
-                        <Link 
-                            href={`/devices/${device._id}`} 
-                            onClick={ClickHandler}
-                            className="text-[#333] hover:text-[#CBA853]"
-                        >
-                            {device.name}
-                        </Link>
-                    </h2>
-                ) : (
-                    <h2 className="text-lg font-bold">{device.name}</h2>
+        <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+            <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
+                <img 
+                    src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
+                    alt={device.name || "Device"} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                        e.target.src = "/download.png";
+                    }}
+                />
+                {device.is_active && (
+                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                        نشط
+                    </div>
                 )}
+            </div>
+            <div className="text p-4">
+                <div className="flex justify-between items-start">
+                    {device._id ? (
+                        <h2 className="text-lg font-bold flex-1">
+                            <Link 
+                                href={`/devices/${device._id}`} 
+                                onClick={ClickHandler}
+                                className="text-[#333] hover:text-[#CBA853] transition-colors"
+                            >
+                                {device.name}
+                            </Link>
+                        </h2>
+                    ) : (
+                        <h2 className="text-lg font-bold flex-1">{device.name}</h2>
+                    )}
+                    {device.priority > 0 && (
+                        <span className="bg-[#CBA853] text-white text-xs px-2 py-1 rounded-full">
+                            {device.priority}
+                        </span>
+                    )}
+                </div>
+                
                 <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
-                {device.branch_name && (
-                    <div className="mt-2 text-sm text-gray-500">
-                        <span>الفرع: </span>
-                        <span>{device.branch_name}</span>
+                
+                {device.branch_names && device.branch_names.length > 0 && (
+                    <div className="mt-2">
+                        <div className="text-sm text-gray-500 mb-1">الفروع المتاحة:</div>
+                        <div className="flex flex-wrap gap-1">
+                            {device.branch_names.map((branch, i) => (
+                                <span 
+                                    key={i} 
+                                    className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                                >
+                                    {branch.trim()}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {device.available_times && (
+                    <div className="mt-2 text-xs text-gray-500">
+                        <span>مواعيد العمل: </span>
+                        <span>{device.available_times}</span>
                     </div>
                 )}
             </div>

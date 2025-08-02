@@ -55,7 +55,7 @@ const BlogSection = ({ tClass = '' }) => {
                 <div className="content">
                   <ul>
                     <li>{new Date(blog.create_at).toLocaleDateString('ar-EG')}</li>
-                    <li>{blog.author}</li>
+                    <li className="text-[#dec06a]" style={{color:"#dec06a"}}>{blog.author}</li>
                   </ul>
                   <h3>{blog.title2}</h3>
                   <p style={{ fontSize: '14px', color: '#666' }}>

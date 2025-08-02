@@ -53,33 +53,36 @@ const BlogSingle = (props) => {
                   <img src={blogImage} alt="" className="w-full rounded-lg" />
                 </div>
            <div className="entry-meta mt-4">
-  <ul className="flex gap-6 text-gray-600" dir="rtl">
-    <li className="flex items-center gap-1">
-      <span>
-        بواسطة
-        <Link href="#" className="hover:underline mr-1" style={{ color: "#dec06a" }}>
-          {blog.author}
-        </Link>{" "}
-      </span>
-      <i className="fi flaticon-user"></i>
-    </li>
-    
-    <li className="flex items-center gap-1 ">
-      <span className="mr-3">تعليقات {blog.comment}</span>
-      <i className="fi flaticon-comment-white-oval-bubble"></i>
-    </li>
+<ul className="flex flex-wrap gap-3 md:gap-6 text-gray-600 text-sm md:text-base" dir="rtl">
+  {/* Author */}
+  <li className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
+    <i className="fi flaticon-user text-[#dec06a]"></i>
+    <span>
+      بواسطة{" "}
+      <Link href="#" className="hover:underline" style={{ color: "#dec06a" }}>
+        {blog.author}
+      </Link>
+    </span>
+  </li>
+  
+  {/* Comments */}
+  <li className="flex items-center gap-1 bg-gray-100 px-3  py-1 rounded-full">
+    <i className="fi flaticon-comment-white-oval-bubble text-[#dec06a]"></i>
+    <span>تعليقات {blog.comment}</span>
+  </li>
 
-    <li className="flex flex-row-reverse items-center gap-1">
-        <i className="fi flaticon-calendar"></i>
-      <span className="mr-3">
-        {new Date(blog.create_at).toLocaleDateString("ar-EG", {
-          year: "numeric",
-          month: "long",
-          day: "numeric"
-        })}
-      </span>
-    </li>
-  </ul>
+  {/* Date */}
+  <li className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
+    <i className="fi flaticon-calendar text-[#dec06a]"></i>
+    <span>
+      {new Date(blog.create_at).toLocaleDateString("ar-EG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      })}
+    </span>
+  </li>
+</ul>
 </div>
 
                 <h2 className="text-2xl font-bold my-4">{blog.title2}</h2>
@@ -108,30 +111,38 @@ const BlogSingle = (props) => {
                   </div>
                 </div>
 
-                <div className="author-box bg-gray-50 p-6 rounded-lg my-8">
-                  <div className="flex items-center gap-4">
-                    <div className="author-avatar">
-                      <Link href="#">
-                        <img src={blogImage} alt="صورة الكاتب" className="w-16 h-16 rounded-full object-cover" />
-                      </Link>
-                    </div>
-                    <div className="author-content">
-                      <Link href="#" className="author-name font-bold text-lg block mb-2">المؤلف: {blog.author}</Link>
-                      <p className="text-gray-600 mb-2">لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار المتعة وتمجيد الألم نشأت بالفعل.</p>
-                      <div className="socials">
-                        <ul className="social-link flex gap-2">
-                          {['facebook', 'twitter-alt', 'linkedin', 'instagram'].map((icon, idx) => (
-                            <li key={idx}>
-                              <Link href="#" className="text-gray-500 hover:text-primary">
-                                <i className={`ti-${icon}`}></i>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+             <div className="author-box bg-gray-50 p-4 sm:p-6 rounded-lg my-8">
+  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-right">
+    <div className="author-avatar shrink-0">
+      <Link href="#">
+        <img 
+          src={blogImage} 
+          alt="صورة الكاتب" 
+          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-white shadow-sm" 
+        />
+      </Link>
+    </div>
+    <div className="author-content">
+      <Link href="#" className="author-name font-bold text-lg block mb-2 text-[#dec06a]">
+        المؤلف: {blog.author}
+      </Link>
+      <p className="text-gray-600 mb-3 text-sm sm:text-base">
+        لكن لا بد أن أوضح لك أن كل هذه الأفكار المغلوطة حول استنكار المتعة وتمجيد الألم نشأت بالفعل.
+      </p>
+      <div className="socials">
+        <ul className="social-link flex justify-center sm:justify-start gap-3">
+          {['facebook', 'twitter-alt', 'linkedin', 'instagram'].map((icon, idx) => (
+            <li key={idx}>
+              <Link href="#" className="text-gray-500 hover:text-[#dec06a] text-lg">
+                <i className={`ti-${icon}`}></i>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 
                 {/* Comments area & form, you can keep as is */}
               </div>

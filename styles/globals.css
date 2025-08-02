@@ -12012,7 +12012,7 @@ Version:        1.0.0
 }
 .wpo-blog-single-section .entry-meta ul li + li:before {
   position: absolute;
-  right: 0;
+  right: 5;
   top: 50%;
   transform: translateY(-50%);
   width: 7px;
