@@ -51,18 +51,18 @@ const SimpleCtaForm = () => {
   };
 
   return (
-    <div className="w-full" id="simple-cta-form">
+    <div className="w-full max-w-[90vw] mx-auto" id="simple-cta-form">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-center gap-4 w-full justify-center"
+        className="flex flex-col items-center gap-6 w-full justify-center"
       >
-        {/* Form Fields - Stacked on mobile */}
-        <div className="w-full flex flex-col gap-4">
+        {/* Form Fields - Wide layout */}
+        <div className="w-full flex flex-col gap-6">
           {/* Name */}
           <div className="w-full relative group">
             <label
               htmlFor="name"
-              className="block text-white text-sm font-medium mb-1 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200"
+              className="block text-white text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
             >
               الاسم الكامل*
             </label>
@@ -76,7 +76,7 @@ const SimpleCtaForm = () => {
               placeholder="الاسم الكامل*"
               required
               disabled={isSubmitting}
-              className="w-full text-white text-base md:text-lg font-normal rounded-xl bg-white/20 py-3 px-4 md:py-4 md:px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white text-lg md:text-xl font-normal rounded-xl bg-white/20 py-4 px-6 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -84,7 +84,7 @@ const SimpleCtaForm = () => {
           <div className="w-full relative group">
             <label
               htmlFor="phone"
-              className="block text-white text-sm font-medium mb-1 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200"
+              className="block text-white text-lg font-medium mb-2 opacity-80 group-focus-within:opacity-100 transition-opacity duration-200"
             >
               رقم الهاتف*
             </label>
@@ -98,17 +98,17 @@ const SimpleCtaForm = () => {
               placeholder="رقم الهاتف*"
               required
               disabled={isSubmitting}
-              className="w-full text-white text-base md:text-lg font-normal rounded-xl bg-white/20 py-3 px-4 md:py-4 md:px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full text-white text-lg md:text-xl font-normal rounded-xl bg-white/20 py-4 px-6 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="w-full">
+        {/* Submit Button - Wider */}
+        <div className="w-full mt-2">
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full px-6 h-[48px] md:h-[56px] rounded-full text-base md:text-lg font-semibold text-center leading-normal border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 transform shadow-lg ${
+            className={`w-full px-8 h-[56px] md:h-[60px] rounded-full text-lg md:text-xl font-semibold text-center leading-normal border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 transform shadow-lg ${
               isSubmitting
                 ? "bg-white/50 text-gray-500 cursor-not-allowed"
                 : submitStatus === "success"
@@ -120,19 +120,19 @@ const SimpleCtaForm = () => {
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current mr-2"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current mr-2"></div>
                 جاري الإرسال...
               </div>
             ) : submitStatus === "success" ? (
               <div className="flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 تم الإرسال بنجاح!
               </div>
             ) : submitStatus === "error" ? (
               <div className="flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
                 حدث خطأ، حاول مرة أخرى
@@ -148,13 +148,13 @@ const SimpleCtaForm = () => {
       </form>
 
       {submitStatus === "success" && (
-        <div className="mt-4 p-3 md:p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-sm md:text-base">
+        <div className="mt-6 p-4 md:p-5 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-lg md:text-xl">
           تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
         </div>
       )}
 
       {submitStatus === "error" && (
-        <div className="mt-4 p-3 md:p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-sm md:text-base">
+        <div className="mt-6 p-4 md:p-5 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-lg md:text-xl">
           {errorMessage}
         </div>
       )}

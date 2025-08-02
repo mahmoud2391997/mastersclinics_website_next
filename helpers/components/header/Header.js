@@ -118,7 +118,7 @@ const Header = (props) => {
                     }
                     alt="logo"
                   onClick={ClickHandler}
-className={`ml-[10px] h-[200px] ${props.nav ? null : "md:h-[100px]"}`}
+className={`ml-[5px] h-[150px] ${props.nav ? null : "md:h-[100px]"}`}
                   />
                 </Link>
               </div>
