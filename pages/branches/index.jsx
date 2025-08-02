@@ -96,7 +96,7 @@ const BranchesPage = () => {
                   <button
                     key={region}
                     onClick={() => setActiveRegion(region)}
-                    className={`flex-1 min-w-max py-3 px-4 text-center font-medium text-sm whitespace-nowrap transition-colors ${
+                    className={`flex-1 min-w-max py-3 px-1 md:px-4 text-center font-medium text-sm whitespace-nowrap transition-colors ${
                       activeRegion === region
                         ? 'bg-[#dec06a] text-white'
                         : 'bg-white text-gray-700 hover:bg-gray-100'
