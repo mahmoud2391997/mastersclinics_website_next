@@ -64,26 +64,34 @@ const OfferSinglePage = () => {
       <main className="container mx-auto px-4 py-8" dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">
           {/* Image */}
- <div className="w-full lg:w-1/2">
-            <div className="relative w-full h-64 lg:h-full bg-white rounded-xl shadow-md overflow-hidden">
+<div className="relative w-full h-[500px] bg-white rounded-xl shadow-md overflow-hidden">
               <Image
                 src={getImageUrl(images[activeImage]) || '/default-image.jpg'}
-                alt={offer.title}
+                alt={offer.title || 'عرض تجهيل نسائي'}
                 fill
-                className="object-cover"
+                className="object-cover transition-opacity duration-300"
                 priority
-                sizes="(max-width: 768px) 100vw, 50vw"
+                sizes="(max-width: 640px) 100vw, 50vw"
                 onError={(e) => {
-                  e.target.src = '/default-image.jpg';
+                  const target = e.target;
+                  target.onerror = null;
+                  target.src = '/default-image.jpg';
+                }}
+                style={{
+                  objectPosition: 'center center'
                 }}
               />
+              
+              {/* Discount Badge - Matches reference style */}
               {discountPercentage > 0 && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  خصم {discountPercentage}%
+                <div className="absolute top-4 left-4 bg-[#D4AF37] text-white font-bold rounded-full w-14 h-14 flex items-center justify-center text-lg shadow-lg">
+                  {discountPercentage}%
                 </div>
               )}
+              
+              {/* Clinic Name - Positioned like in reference */}
+         
             </div>
-          </div>
 
           {/* Content */}
           <div className="lg:w-1/2">
@@ -164,12 +172,19 @@ const OfferSinglePage = () => {
               </ul>
             </div>
             {/* Branches Section */}
-<div className="mt-8 border-t border-gray-200 pt-6">
-  <h3 className="text-lg font-semibold mb-4 text-right">الفروع المتاحة لهذا العرض</h3>
+
+          </div>
+        </div>
+      </main>
+<div className="mt-8 border-t border-gray-200 pt-6  px-4" dir="rtl">
+  <h3 className="text-lg font-semibold mb-4">الفروع المتاحة لهذا العرض</h3>
   {offer.branches && offer.branches.length > 0 ? (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-end">
       {offer.branches.map((branch) => (
-        <div key={branch.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div 
+          key={branch.id} 
+          className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 text-right"
+        >
           <h4 className="font-medium text-lg">{branch.name}</h4>
           <p className="text-gray-600 mt-1">{branch.address}</p>
           {branch.location_link && (
@@ -177,12 +192,27 @@ const OfferSinglePage = () => {
               href={branch.location_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center text-[#dec06a] hover:underline mt-2"
+              className="inline-flex items-center text-[#D4AF37] hover:underline mt-2 justify-end"
             >
               <span>عرض الموقع</span>
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg 
+                className="w-4 h-4 ml-1 transform rotate-180" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                />
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" 
+                />
               </svg>
             </a>
           )}
@@ -190,14 +220,10 @@ const OfferSinglePage = () => {
       ))}
     </div>
   ) : (
-    <p className="text-gray-500 text-right">لا توجد فروع متاحة لهذا العرض</p>
+    <p className="text-gray-500">لا توجد فروع متاحة لهذا العرض</p>
   )}
 </div>
-          </div>
-        </div>
-      </main>
-
-      <div id="appointment-form" className="AppointmentFrom">
+      <div id="appointment-form" className="AppointmentFrom mb-5">
         <div className="container">
           <div className="cta_form_s2">
             <div className="title s2">

@@ -141,7 +141,7 @@ console.log(offers);
 
 
         {filteredOffers.length > 0 ? (
-          <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-6">
             {filteredOffers.map((offer, index) => (
               <div key={index} className="px-2 py-4">
                 <TourCard

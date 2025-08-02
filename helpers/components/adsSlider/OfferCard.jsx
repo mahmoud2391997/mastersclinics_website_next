@@ -44,16 +44,15 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
       {/* Image Section */}
       <div className="relative overflow-hidden">
         <div className="aspect-w-4 aspect-h-3 w-full">
-          <img
-            src={getImageUrl(imageUrl) || "/download.png"}
-            alt={name}
-            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-            style={{ aspectRatio: "3/4", objectFit: "cover" }}
-            loading="lazy"
-            onError={(e) => {
-              e.target.src = "/download.png"
-            }}
-          />
+         <img
+          src={getImageUrl(imageUrl) || "/download.png"}
+          alt={name}
+          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          onError={(e) => {
+            e.target.src = "/download.png"
+          }}
+        />
         </div>
         {branches.length > 0 && (
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">

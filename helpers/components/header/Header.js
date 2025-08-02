@@ -61,7 +61,7 @@ const Header = (props) => {
     <div className="relative">
       <ContactBar />
 
-      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[290px] md:h-auto">
+      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[249px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
           <nav className="navigation w-full">
             <div className={`container-fluid flex flex-wrap flex-col-reverse md:flex-row-reverse items-center px-4 gap-2 lg:px-8 py-2 w-full max-w-[1290px] mx-auto ${props.nav ? "justify-end" : "justify-center"}`}>
