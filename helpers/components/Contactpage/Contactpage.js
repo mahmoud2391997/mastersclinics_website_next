@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ContactForm from '../ContactFrom/ContactForm';
 import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
@@ -9,6 +9,8 @@ const ContactpageArabic = () => {
     const dispatch = useDispatch();
     const { items: branches, loading, error } = useSelector((state) => state.branches);
     const [activeRegion, setActiveRegion] = useState(null);
+    const [selectedBranchMapUrl, setSelectedBranchMapUrl] = useState(null);
+    const mapRef = useRef(null);
 
     useEffect(() => {
         dispatch(fetchBranches());
@@ -27,6 +29,20 @@ const ContactpageArabic = () => {
             setActiveRegion(Object.keys(branchesByRegion)[0]);
         }
     }, [loading, error, branchesByRegion, activeRegion]);
+
+    const handleBranchClick = (branch) => {
+        if (branch.location_link) {
+            setSelectedBranchMapUrl(branch.location_link);
+            
+            // Scroll to map
+            if (mapRef.current) {
+                mapRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    };
+
+    // Default map URL (can be your clinic's main location)
+    const defaultMapUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3683.290300266031!2d40.4144668!3d21.2344909!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15e98ffc9e1840d7%3A0xa2c061b30e3e2495!2z2KfZhNi52YXYp9ix2KfYqiDYp9mE2YXYudmC2Kkg2KfZhNiv2YXYs9iq2YjZitmK2YbYqSDYp9mE2LnZhNmK2Kcg2KfZhNiz2YXYp9mE2YrYqQ!5e0!3m2!1sar!2seg!4v1691615550000!5m2!1sar!2seg";
 
     return (
         <section className="wpo-contact-pg-section section-padding bg-gray-50" dir="rtl">
@@ -108,7 +124,11 @@ const ContactpageArabic = () => {
                                     <div className="mb-12">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                             {branchesByRegion[activeRegion].map((branch) => (
-                                                <div key={branch.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex">
+                                                <div 
+                                                    key={branch.id} 
+                                                    className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex cursor-pointer"
+                                                    onClick={() => handleBranchClick(branch)}
+                                                >
                                                     <div className="text-[#d9b755] text-2xl mt-1 ml-3">
                                                         <FaMapMarkerAlt />
                                                     </div>
@@ -156,19 +176,19 @@ const ContactpageArabic = () => {
             </div>
 
             {/* Map Section */}
-        <section className="wpo-contact-map-section mt-16">
-  <div className="wpo-contact-map rounded-xl overflow-hidden shadow-xl">
-    <iframe
-      title="خريطة الموقع - Masters Clinic"
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3683.993901378465!2d39.79699461505194!3d21.396002185794507!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15c21b84ac79e02d%3A0x917ea0ade98e0e49!2sMasters%20Clinic!5e0!3m2!1sen!2seg!4v1658765432103!5m2!1sen!2seg"
-      allowFullScreen
-      loading="lazy"
-      className="w-full h-96 md:h-[500px]"
-      referrerPolicy="no-referrer-when-downgrade"
-    />
-  </div>
-</section>
-
+            <section className="wpo-contact-map-section mt-16" ref={mapRef}>
+                <div className="wpo-contact-map rounded-xl overflow-hidden shadow-xl">
+                    <iframe
+                        title="خريطة الموقع - Masters Clinic"
+                        src={selectedBranchMapUrl || defaultMapUrl}
+                        allowFullScreen
+                        loading="lazy"
+                        className="w-full h-96 md:h-[500px]"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        key={selectedBranchMapUrl || 'default-map'}
+                    />
+                </div>
+            </section>
         </section>
     )
 }

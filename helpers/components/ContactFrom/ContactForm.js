@@ -84,21 +84,26 @@ const ContactForm = () => {
                     </div>
                 </div>
 
-                <div className="col col-lg-6 col-12">
-                    <div className="form-field">
-                        <input
-                            value={forms.phone}
-                            type="tel"
-                            name="phone"
-                            onBlur={changeHandler}
-                            onChange={changeHandler}
-                            placeholder="رقم هاتفك"
-                            style={{ paddingRight: '10px' }}
-                            disabled={isSubmitting}
-                        />
-                        {validator.message('phone', forms.phone, 'required|numeric|min:6|max:15')}
-                    </div>
-                </div>
+            <div className="col col-lg-6 col-12">
+    <div className="form-field">
+        <input
+            value={forms.phone}
+            type="tel"
+            name="phone"
+            onBlur={changeHandler}
+            onChange={changeHandler}
+            placeholder="رقم هاتفك"
+            style={{ 
+                paddingRight: '10px',
+                direction: 'ltr', // Numbers display LTR
+                textAlign: 'right' // Placeholder aligns right
+            }}
+            className="placeholder-rtl" // Additional class for RTL placeholder
+            disabled={isSubmitting}
+        />
+        {validator.message('phone', forms.phone, 'required|numeric|min:6|max:15')}
+    </div>
+</div>
             </div>
 
             <div className="submit-area mt-4">
