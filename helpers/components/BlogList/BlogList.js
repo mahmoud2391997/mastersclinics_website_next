@@ -120,13 +120,13 @@ const BlogList = ({ blRight = "", blLeft = "" }) => {
     </li>
     
     <li className="flex items-center gap-1 ">
-      <span className="mr-3">تعليقات {blog.comment}</span>
+      <span className="md:mr-3">تعليقات {blog.comment}</span>
       <i className="fi flaticon-comment-white-oval-bubble"></i>
     </li>
 
     <li className="flex flex-row-reverse items-center gap-1">
         <i className="fi flaticon-calendar"></i>
-      <span className="mr-3">
+      <span className="md:mr-3">
         {new Date(blog.create_at).toLocaleDateString("ar-EG", {
           year: "numeric",
           month: "long",
