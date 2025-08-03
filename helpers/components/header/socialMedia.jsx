@@ -157,7 +157,7 @@ const ContactBar = () => {
       </div>
 
       {/* Contact Info - Stacked on mobile, horizontal on md+ */}
-      <div className="flex flex-col items-center gap-2 md:flex-row md:items-center">
+      <div className=" flex-col items-center gap-2 md:flex-row md:items-center hidden md:flex">
         <div className="flex flex-col items-center gap-2 sm:gap-4 md:flex-row">
           <div className="flex items-center gap-2 text-gray-800">
             <FaEnvelope size={20} fill="#dec06a" />
