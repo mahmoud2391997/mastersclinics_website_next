@@ -105,11 +105,7 @@ const ProjectSection = ({
                         e.target.src = "/download.png";
                     }}
                 />
-                {device.is_active && (
-                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                        نشط
-                    </div>
-                )}
+          
             </div>
             <div className="text p-4">
                 <div className="flex justify-between items-start">
@@ -126,11 +122,7 @@ const ProjectSection = ({
                     ) : (
                         <h2 className="text-lg font-bold flex-1">{device.name}</h2>
                     )}
-                    {device.priority > 0 && (
-                        <span className="bg-[#CBA853] text-white text-xs px-2 py-1 rounded-full">
-                            {device.priority}
-                        </span>
-                    )}
+                   
                 </div>
                 
                 <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
@@ -142,7 +134,7 @@ const ProjectSection = ({
                             {device.branch_names.map((branch, i) => (
                                 <span 
                                     key={i} 
-                                    className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                                    className="bg-gray-100 text-black text-xs px-2 py-1 rounded"
                                 >
                                     {branch.trim()}
                                 </span>

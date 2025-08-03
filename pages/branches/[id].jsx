@@ -76,14 +76,7 @@ console.log(branch);
                 <div>
                   <h3 className="font-semibold text-gray-700 text-xl mb-2">العنوان</h3>
                   <p className="text-gray-600 text-lg">{branch.address}</p>
-                  <a
-                    href={branch.location_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-3 text-[#dec06a] hover:underline text-lg"
-                  >
-                    عرض على الخريطة
-                  </a>
+              
                 </div>
               </div>
               
@@ -103,25 +96,7 @@ console.log(branch);
                 </div>
               )}
               
-              <div className="flex items-start">
-                <FaPhone className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold text-gray-700 text-xl mb-2">الهاتف</h3>
-                  <p className="text-gray-600 text-lg">
-                    {branch.phone || "غير متوفر"}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <FaEnvelope className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
-                <div>
-                  <h3 className="font-semibold text-gray-700 text-xl mb-2">البريد الإلكتروني</h3>
-                  <p className="text-gray-600 text-lg">
-                    {branch.email || `info@branch${branch.id}.com`}
-                  </p>
-                </div>
-              </div>
+          
             </div>
           </div>
 

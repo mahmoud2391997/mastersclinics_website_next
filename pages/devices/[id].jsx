@@ -44,6 +44,7 @@ console.log(currentDevice);
   if (!currentDevice) {
     return <div className="text-center py-5">لا توجد بيانات متاحة</div>;
   }
+console.log(currentDevice);
 
   return (
     <Fragment>
@@ -113,60 +114,64 @@ console.log(currentDevice);
           </div>
           
           {/* Branch Card Section */}
-          {currentDevice.branch && (
-            <div className="row my-8">
-              <div className="col-12">
-                <h2 className="text-3xl font-bold text-gray-800 mb-8 pb-2 border-b-2 border-[#dec06a] text-right">
-                  الفرع المتاح بهذا الجهاز
-                </h2>
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
-                  {/* Branch image */}
-                  <div className="w-full md:w-1/3 h-64 md:h-auto">
-                    <img
-                      className="w-full h-full object-cover"
-                      src={getImageUrl(currentDevice.branch.image_url) || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
-                      alt={currentDevice.branch.name}
-                    />
-                  </div>
+       {currentDevice.branches && currentDevice.branches.length > 0 && (
+  <div className="row my-8">
+    <div className="col-12">
+      <h2 className="text-3xl font-bold text-gray-800 mb-8 pb-2 border-b-2 border-[#dec06a] text-right">
+        الفروع المتاحة لهذا الجهاز
+      </h2>
 
-                  <div className="p-6 flex-grow md:w-2/3">
-                    <h3 className="text-xl font-bold text-gray-800 mb-3 text-right">{currentDevice.branch.name}</h3>
+      {currentDevice.branches.map((branch) => (
+        <div key={branch.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row mb-6">
+          {/* Branch image */}
+          <div className="w-full md:w-1/3 h-64 md:h-auto">
+            <img
+              className="w-full h-full object-cover"
+              src={getImageUrl(branch.image_url) || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
+              alt={branch.name}
+            />
+          </div>
 
-                    <div className="flex items-start mt-4 text-right">
-                      <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
-                      <p className="text-gray-600">{currentDevice.branch.address}</p>
-                    </div>
+          {/* Branch info */}
+          <div className="p-6 flex-grow md:w-2/3">
+            <h3 className="text-xl font-bold text-gray-800 mb-3 text-right">{branch.name}</h3>
 
-                    <div className="flex items-start mt-4 text-right">
-                      <FaClock className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-medium text-gray-700">مواعيد العمل:</h4>
-                        <p className="text-gray-500 text-sm">يرجى الاتصال بالفرع لمعرفة المواعيد</p>
-                      </div>
-                    </div>
+            <div className="flex items-start mt-4 text-right">
+              <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
+              <p className="text-gray-600">{branch.address}</p>
+            </div>
 
-                    <div className="flex flex-col md:flex-row gap-3 mt-6">
-                      <Link
-                        href={`/branches/${currentDevice.branch.id}`}
-                        className="px-4 py-2 border-2 border-[#dec06a] text-sm font-medium rounded-lg text-[#dec06a] bg-white hover:bg-gray-50 text-center transition-colors"
-                        style={{ color: "#dec06a" }}
-                      >
-                        المزيد من التفاصيل
-                      </Link>
-                      <a
-                        href={currentDevice.branch.location_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
-                      >
-                        عرض على الخريطة
-                      </a>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex items-start mt-4 text-right">
+              <FaClock className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
+              <div>
+                <h4 className="font-medium text-gray-700">مواعيد العمل:</h4>
+                <p className="text-gray-500 text-sm">يرجى الاتصال بالفرع لمعرفة المواعيد</p>
               </div>
             </div>
-          )}
+
+            <div className="flex flex-col md:flex-row gap-3 mt-6">
+              <Link
+                href={`/branches/${branch.id}`}
+                className="px-4 py-2 border-2 border-[#dec06a] text-sm font-medium rounded-lg text-[#dec06a] bg-white hover:bg-gray-50 text-center transition-colors"
+              >
+                المزيد من التفاصيل
+              </Link>
+              <a
+                href={branch.location_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
+              >
+                عرض على الخريطة
+              </a>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
           
           <div className="row my-8">
             <div className="col-lg-6 col-12">
