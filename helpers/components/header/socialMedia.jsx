@@ -13,7 +13,7 @@ import {
 import { FaXTwitter } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 
-const ContactBar = () => {
+const ContactBar = ({ onSearchClick }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -47,7 +47,6 @@ const ContactBar = () => {
     }
   };
 
-  // Debounced version
   const debouncedSearch = useCallback((value) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -110,8 +109,8 @@ const ContactBar = () => {
         ))}
       </div>
 
-      {/* Search Bar with min-width of 300px */}
-      <div className="w-full min-w-[300px] md:w-1/3 relative" ref={dropdownRef}>
+      {/* Search Bar - Only on desktop */}
+      <div className="hidden md:block w-full min-w-[300px] md:w-1/3 relative" ref={dropdownRef}>
         <input
           type="text"
           placeholder="ابحث هنا..."
@@ -156,8 +155,8 @@ const ContactBar = () => {
         )}
       </div>
 
-      {/* Contact Info - Stacked on mobile, horizontal on md+ */}
-      <div className=" flex-col items-center gap-2 md:flex-row md:items-center hidden md:flex">
+      {/* Contact Info - Only on desktop */}
+      <div className="hidden md:flex flex-col items-center gap-2 md:flex-row md:items-center">
         <div className="flex flex-col items-center gap-2 sm:gap-4 md:flex-row">
           <div className="flex items-center gap-2 text-gray-800">
             <FaEnvelope size={20} fill="#dec06a" />

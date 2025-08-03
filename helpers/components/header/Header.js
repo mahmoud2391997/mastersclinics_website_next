@@ -2,9 +2,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import MobileMenu from "../MobileMenu/MobileMenu";
-import { getImageUrl } from "@/helpers/hooks/imageUrl";
 import ContactBar from "./socialMedia";
-import { FaChevronDown } from "react-icons/fa";
+import { FaChevronDown, FaSearch } from "react-icons/fa";
 
 const Header = (props) => {
   const [menuData, setMenuData] = useState({
@@ -16,14 +15,13 @@ const Header = (props) => {
     blogs: [],
     services: [],
   });
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
-        console.log(data);
-        
         setMenuData(data);
       } catch (error) {
         console.error("Failed to fetch navbar data", error);
@@ -61,14 +59,38 @@ const Header = (props) => {
     <div className="relative">
       <ContactBar />
 
-      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[249px] md:h-auto">
+      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[150px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
           <nav className="navigation w-full">
-            <div className={`container-fluid flex flex-wrap flex-row md:!flex-row-reverse items-center px-4 gap-2 lg:px-8 py-2 w-full max-w-[1150px] mx-auto ${props.nav ? "justify-between md:justify-end" : "justify-center"}`}>
-              {/* Logo */}
-          
+            <div className={`container-fluid flex flex-wrap flex-row md:!flex-row-reverse items-center justify-center px-4 gap-2 lg:px-8 py-2 w-full max-w-[1150px] mx-auto ${props.nav ? "justify-between md:justify-end" : "justify-center"}`}>
+              {/* Mobile Menu Toggle - Right */}
+              <div className="flex md:hidden order-3 ml-auto">
+                <MobileMenu menuData={menuData} />
+              </div>
 
-              {/* Desktop Navigation - Centered and non-wrapping */}
+              {/* Logo - Center */}
+              <div className="flex-shrink-0 order-2 mx-auto">
+                <Link href="/" className="navbar-brand">
+                  <img
+                    src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
+                    alt="logo"
+                    onClick={ClickHandler}
+                    className={`w-[150px] md:w-[250px]`}
+                  />
+                </Link>
+              </div>
+
+              {/* Mobile Search Icon - Left */}
+              <div className="flex md:hidden order-1 mr-auto">
+                <FaSearch
+                  onClick={() => setShowMobileSearch(!showMobileSearch)}
+                  className="text-[#dec06a] cursor-pointer"
+                  size={20}
+                  fill="#dec06a"
+                />
+              </div>
+
+              {/* Desktop Navigation */}
               <div className="hidden md:block w-full max-w-[800px] mx-4">
                 <div className="relative overflow-x-visible">
                   <ul className="flex justify-center space-x-reverse space-x-1 text-base lg:text-lg font-medium items-center whitespace-nowrap">
@@ -108,39 +130,26 @@ const Header = (props) => {
                   </ul>
                 </div>
               </div>
-    <div className="flex-shrink-0">
-                <Link href="/" className={"navbar-brand"}>
-                  <img
-                    src={
-                     true
-                        ? "https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
-                        : "/logo.jpeg"
-                    }
-                    alt="logo"
-                  onClick={ClickHandler}
-className={`ml-[5px] h-[150px] ${props.nav ? null : "md:h-[100px]"}`}
-                  />
-                </Link>
-              </div>
-              {/* Mobile Menu Toggle */}
-              <div className="flex md:hidden justify-center items-center">
-                <MobileMenu menuData={menuData} />
-              </div>
             </div>
+
+            {/* Mobile Search Bar */}
+            {showMobileSearch && (
+              <div className="md:hidden px-4 pb-2 relative">
+                <input
+                  type="text"
+                  placeholder="ابحث هنا..."
+                  className="w-full px-4 py-2 border border-[#dec06a] rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition"
+                />
+                <FaSearch
+                  className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a] cursor-pointer"
+                  size={18}
+                  fill="#dec06a"
+                />
+              </div>
+            )}
           </nav>
         </div>
       </header>
-
-      {/* Scrollbar styling */}
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };
