@@ -159,10 +159,10 @@ const Footer = (props) => {
                   <h3>تواصل معنا</h3>
                 </div>
                 <ul>
-                  <li><i className="flaticon-email"></i><span>{contactInfo.emailGeneral}</span></li>
-                  <li><i className="flaticon-telephone"></i><span>{contactInfo.hotline}<br />{contactInfo.telemedicine}</span></li>
-                  <li><i className="flaticon-clock"></i><span>{contactInfo.workingHours}</span></li>
-                </ul>
+  <li><i className="flaticon-email"></i><span>العامة: {contactInfo.emailGeneral}</span></li>
+  <li><i className="flaticon-email"></i><span>الموارد البشرية: {contactInfo.emailHR}</span></li>
+  <li><i className="flaticon-telephone"></i><span>الخط الساخن: {contactInfo.hotline}</span></li>
+</ul>
               </div>
             </div>
           </div>
