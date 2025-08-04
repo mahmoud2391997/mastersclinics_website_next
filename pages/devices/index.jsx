@@ -12,7 +12,7 @@ const ProjectPage = () => {
     return (
         <Fragment>
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'}  />
-            <PageTitle pageTitle={'أجهزتنا الطبية'} pagesub={"الاجهزة"} bgImage={"/devices.png"}/>
+            <PageTitle pageTitle={'أجهزتنا الطبية'} pagesub={"الاجهزة"} bgImage={"/devices @0.5x.webp"}/>
             <ProjectSection hclass={"project_section_s3 section-padding"} ShowSectionTitle={false} sliceStart={0} sliceEnd={6} showFilters={true} slider={false}/>
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar />

@@ -309,7 +309,7 @@ useEffect(() => {
       </Head>
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={"/service.png"}/>
+      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={"/service.webp"}/>
 
       <section dir="rtl" className="service_single section-padding">
         <div className="container mx-auto px-4">

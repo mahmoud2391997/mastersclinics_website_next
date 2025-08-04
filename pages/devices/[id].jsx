@@ -49,7 +49,7 @@ console.log(currentDevice);
   return (
     <Fragment>
       <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
-      <PageTitle pageTitle={currentDevice.name} pagesub={currentDevice.type} bgImage={"/devices.png"}/>
+      <PageTitle pageTitle={currentDevice.name} pagesub={currentDevice.type} bgImage={"/devices @0.5x.webp"}/>
       
       <section className="project_single section-padding" dir="rtl">
         <div className="container">

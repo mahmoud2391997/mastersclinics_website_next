@@ -59,7 +59,7 @@ const OfferSinglePage = () => {
   return (
     <div className="min-h-screen">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض"  bgImage={"/offers.png"}/>
+      <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض"  bgImage={"/offers@0.5x.webp"}/>
 
       <main className="container mx-auto px-4 py-8" dir="rtl">
         <div className="flex flex-col lg:flex-row-reverse gap-8">

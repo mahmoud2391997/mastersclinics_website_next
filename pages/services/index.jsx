@@ -109,7 +109,7 @@ const parseServiceData = (service) => {
       </Head>
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={'خدماتنا'} pagesub={'الخدمات'} bgImage={"/services.png"} />
+      <PageTitle pageTitle={'خدماتنا'} pagesub={'الخدمات'} bgImage={"/services.webp"} />
 
       {loading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
