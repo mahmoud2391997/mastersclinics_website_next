@@ -229,13 +229,13 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-[#f6eecd] pt-2">
+    <div className="relative bg-[#f6eecd] pt-2  xl:px-2">
 
       <header id="header" dir="rtl" className="relative z-[1111] w-full h-[220px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd]  `}>
       <ContactBar />
-          <nav className="navigation w-full md:px-1">
-            <div className={`container-fluid flex flex-row items-center justify-between px-4 md:!px-0 lg:px-8 py-2 w-full max-w-[1100px] mx-auto`}>
+          <nav className="navigation w-full mx-auto px-4 md:!px-2">
+            <div className={`container-fluid flex flex-row items-center justify-around w-full px-2 md:!px-0 lg:px-8 py-2 w-full  mx-auto`}>
               {/* Logo - Right on desktop */}
               <div className="flex-shrink-0 order-2 md:order-1">
                 <Link href="/" className="navbar-brand">
@@ -243,7 +243,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[120px] lg:!w-[150px]"
+                    className="w-[200px] md:!w-[150px]"
                   />
                 </Link>
               </div>
@@ -251,7 +251,7 @@ const Header = (props) => {
               {/* Desktop Navigation - Center */}
               <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
                 <div className="relative overflow-x-visible w-full">
-                  <ul className="flex justify-center space-x-reverse space-x-1 text-sm lg:text-lg font-medium items-center whitespace-nowrap">
+                  <ul className="flex justify-around space-x-reverse space-x-1 text-sm lg:text-lg font-medium items-center whitespace-nowrap">
                     {[
                       { label: "من نحن", href: "/about" },
                       { label: "اتصل بنا", href: "/contact" },

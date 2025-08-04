@@ -54,7 +54,7 @@ const Hero = ({
 
         {/* Text Content */}
         <motion.div 
-          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8 md:mt-20"
+          className="w-full lg:w-1/2 flex flex-col items-center md:items-end px-4 lg:px-8 xl:px-12 text-right py-8 md:mt-50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -102,7 +102,7 @@ const Hero = ({
             <motion.img
               src={heroImageSrc || "/placeholder.svg"}
               alt="hero"
-              className="w-full md:mt-30 h-auto object-contain drop-shadow-xl"
+              className="w-full md:mt-35 h-auto object-contain drop-shadow-xl"
               style={{ maxHeight: "60vh" }}
               whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.3 }}
