@@ -234,7 +234,7 @@ const Header = (props) => {
       <header id="header" dir="rtl" className="relative z-[1111] w-full h-[220px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd]  `}>
       <ContactBar />
-          <nav className="navigation w-full px-2">
+          <nav className="navigation w-full md:px-1">
             <div className={`container-fluid flex flex-row items-center justify-between px-4 md:!px-0 lg:px-8 py-2 w-full max-w-[1100px] mx-auto`}>
               {/* Logo - Right on desktop */}
               <div className="flex-shrink-0 order-2 md:order-1">

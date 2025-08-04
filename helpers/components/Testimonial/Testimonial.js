@@ -61,7 +61,7 @@ const TestimonialArabic = (props) => {
     return <p className="text-center mt-10">لا توجد تقييمات متاحة حاليًا.</p>
 
   return (
-    <section dir="rtl" className={`${props.tClass || ""} w-full overflow-hidden`}>
+    <section dir="rtl" className={`${props.tClass || ""} w-full overflow-hidden pt-5`}>
       <div className="container-fluid px-3 md:px-4 lg:px-6">
         <div className="row justify-content-right">
           <div className="col-12">

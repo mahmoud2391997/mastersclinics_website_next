@@ -102,7 +102,7 @@ const Hero = ({
             <motion.img
               src={heroImageSrc || "/placeholder.svg"}
               alt="hero"
-              className="w-full mt-30 h-auto object-contain drop-shadow-xl"
+              className="w-full md:mt-30 h-auto object-contain drop-shadow-xl"
               style={{ maxHeight: "60vh" }}
               whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.3 }}
