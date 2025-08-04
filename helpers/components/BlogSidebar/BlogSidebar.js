@@ -116,7 +116,7 @@ const BlogSidebar = ({ blLeft = "" }) => {
                         {blog.title2 || blog.title}
                       </button>
                     </h4>
-                    <span className="date text-sm text-gray-500 text-right block mr-2">
+                    <span className="date text-sm text-gray-500 text-right block text-center">
                       {new Date(blog.create_at).toLocaleDateString("ar-EG")}
                     </span>
                   </div>
