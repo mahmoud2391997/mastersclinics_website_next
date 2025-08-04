@@ -11,7 +11,7 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const SocialMediaIcons = () => {
   return (
-    <div className="flex flex-wrap justify-center gap-3 mt-2">
+    <div className="flex flex-wrap justify-center gap-3  bg-transparent">
       {[
         { icon: <FaFacebook size={24} />, href: "https://www.facebook.com/masters.clinicn/" },
         { icon: <FaYoutube size={24} />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },

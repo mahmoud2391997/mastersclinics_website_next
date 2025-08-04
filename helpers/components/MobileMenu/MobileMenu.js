@@ -42,7 +42,7 @@ const MobileMenu = ({ menuData }) => {
     { id: 5, title: 'الاقسام', path: 'departments', items: menuData.departments },
     { id: 6, title: 'الخدمات', path: 'services', items: menuData.services },
     { id: 7, title: 'الاطباء', path: 'teams', items: menuData.doctors },
-    { id: 8, title: 'الاجهزة', path: 'devices', items: menuData.devices },
+    { id: 8, title: 'الاجهزة', path: 'devices' }, // No items property
     { id: 9, title: 'العروض', path: 'offers', items: menuData.offers },
     { id: 10, title: 'المقالات', path: 'blog', items: menuData.blogs },
   ];
@@ -173,8 +173,7 @@ const MobileMenu = ({ menuData }) => {
             width: '100%',
             height: '2px',
             backgroundColor: '#fff',
-                        margin: 'auto',
-
+            margin: 'auto',
           }}></span>
         </button>
       </div>

@@ -10,7 +10,6 @@ const Header = (props) => {
   const [menuData, setMenuData] = useState({
     branches: [],
     departments: [],
-    devices: [],
     doctors: [],
     offers: [],
     blogs: [],
@@ -39,7 +38,6 @@ const Header = (props) => {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
         console.log(data);
-        
         setMenuData(data);
       } catch (error) {
         console.error("Failed to fetch navbar data", error);
@@ -185,9 +183,6 @@ const Header = (props) => {
           </ul>
         </div>
       ))}
-      
-      {/* All branches section */}
-  
     </div>
   );
 
@@ -211,9 +206,10 @@ const Header = (props) => {
       
       {/* General departments section */}
       <div className="relative group/general">
-        <div className="px-4 py-2 flex justify-between items-center font-semibold  border-t border-b cursor-default">
+        <div className="px-4 py-2 flex justify-between items-center font-semibold border-t border-b cursor-default">
           الأقسام العامة
- <FaChevronLeft className="mr-1 text-xs" />       </div>
+          <FaChevronLeft className="mr-1 text-xs" />
+        </div>
         {/* General departments dropdown */}
         <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/general:block min-w-[200px] border-t-2 border-[#CBA853]">
           {groupedDepartments.general.map((dept) => (
@@ -233,12 +229,12 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative">
-      <ContactBar />
+    <div className="relative bg-[#f6eecd] pt-2">
 
-      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[150px] md:h-auto">
-        <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
-          <nav className="navigation w-full">
+      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[220px] md:h-auto">
+        <div className={`${props.hclass} m-auto w-full bg-[#f6eecd]  `}>
+      <ContactBar />
+          <nav className="navigation w-full px-2">
             <div className={`container-fluid flex flex-row items-center justify-between px-4 md:!px-0 lg:px-8 py-2 w-full max-w-[1100px] mx-auto`}>
               {/* Logo - Right on desktop */}
               <div className="flex-shrink-0 order-2 md:order-1">
@@ -292,23 +288,59 @@ const Header = (props) => {
                       {menuData.departments.length > 0 && renderDepartmentsDropdown()}
                     </li>
 
-                    {[
-                      { label: "الخدمات", path: "services", items: menuData.services },
-                      { label: "الاجهزة", path:"devices",items:menuData.devices},
-                      { label: "الاطباء", path: "teams", items: menuData.doctors },
-                      { label: "العروض", path: "offers", items: menuData.offers },
-                      { label: "المقالات", path: "blog", items: menuData.blogs },
-                    ].map((menu) => (
-                      <li key={menu.path} className="relative group px-1 lg:px-2">
-                        <Link
-                          href={`/${menu.path}`}
-                          className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                          {menu.label} <FaChevronDown className="mr-1 text-xs" />
-                        </Link>
-                        {menu.items.length > 0 && renderDropdown(menu.items, menu.path)}
-                      </li>
-                    ))}
+                    {/* Services with dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/services"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        الخدمات <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.services.length > 0 && renderDropdown(menuData.services, "services")}
+                    </li>
+
+                    {/* Devices without dropdown */}
+                    <li className="px-1 lg:px-2">
+                      <Link
+                        href="/devices"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        الاجهزة
+                      </Link>
+                    </li>
+
+                    {/* Doctors with dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/teams"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        الاطباء <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.doctors.length > 0 && renderDropdown(menuData.doctors, "teams")}
+                    </li>
+
+                    {/* Offers with dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/offers"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        العروض <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.offers.length > 0 && renderDropdown(menuData.offers, "offers")}
+                    </li>
+
+                    {/* Blogs with dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/blog"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        المقالات <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.blogs.length > 0 && renderDropdown(menuData.blogs, "blog")}
+                    </li>
                   </ul>
                 </div>
               </div>

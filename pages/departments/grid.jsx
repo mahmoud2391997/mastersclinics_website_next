@@ -69,7 +69,7 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
       branchId ?
       
       <div className='m-auto mt-5'>
-<SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقيام التالية"}/>
+<SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقسام التالية"}/>
       </div> : null
     }  
       {/* Search and Filter Section - Only shown if isDepartmentPage is true */}
