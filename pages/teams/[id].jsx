@@ -105,8 +105,7 @@ console.log(currentMember);
       <PageTitle
         pageTitle={currentMember.name || "الطبيب"}
         pagesub={currentMember.specialty || "أخصائي"}
-        bgImage={"/doctor.png"}
-      />
+bgImage={'/doctors.png'}      />
 
       <section className="team_single_page section-padding" dir="rtl">
         <div className="container">

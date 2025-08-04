@@ -66,7 +66,7 @@ const BranchesPage = () => {
       <PageTitle 
         pageTitle={"فروعنا"} 
         pagesub="اكتشف جميع فروعنا ومواعيد العمل" 
-        bgImage={"https://cdn.salla.sa/dEYvd/LgUfWipbId1zQL4vAXAdXtPnedinmGRFunfGfZzN.jpg"} 
+        bgImage={"/branches.webp"} 
       />
 
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8" dir="rtl">
@@ -162,14 +162,7 @@ const BranchesPage = () => {
                         >
                           المزيد من التفاصيل
                         </Link>
-                        <a
-                          href={branch.location_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
-                        >
-                          عرض على الخريطة
-                        </a>
+                     
                       </div>
                     </div>
                   </div>

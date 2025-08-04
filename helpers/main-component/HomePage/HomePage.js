@@ -16,8 +16,8 @@ import ImageSlider from '../../components/adsSlider/index';
 
 const HomePage = () => {
     return (
-        <Fragment>
-            <div className='bg-[#f6eecd] md:pb-5 ' >
+        <Fragment className="w-full">
+            <div className='bg-[#f6eecd] md:pb-5 w-full ' >
 
             <Navbar hclass={'wpo-site-header  '}  nav={true} />
             </div>

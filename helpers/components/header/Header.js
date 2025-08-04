@@ -187,7 +187,7 @@ const Header = (props) => {
   );
 
   const renderDepartmentsDropdown = () => (
-    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
+    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md  py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
       {/* Main departments section */}
       <div className="px-4 py-2 font-semibold text-[#CBA853] border-b">
         الأقسام الرئيسية
@@ -229,7 +229,7 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-[#f6eecd] pt-2  xl:px-2">
+    <div className="relative bg-[#f6eecd] pt-2 min-h-[20vh] w-[100vw]  ">
 
       <header id="header" dir="rtl" className="relative z-[1111] w-full h-[220px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd]  `}>

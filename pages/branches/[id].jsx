@@ -51,7 +51,8 @@ console.log(branch);
   return (
     <div className="">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع" bgImage={"/branch.png"} />
+      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع"         bgImage={"/branches.webp"} 
+ />
       
       {/* Hero Image */}
 

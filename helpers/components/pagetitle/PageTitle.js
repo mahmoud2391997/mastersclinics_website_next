@@ -20,7 +20,7 @@ const PageTitle = (props) => {
                         src={bgImage}
                         alt={bgImageAlt}
                         fill
-                        className="object-cover"
+                        className="object-cover h-[80vh]"
                         priority
                     />
                     <div 
