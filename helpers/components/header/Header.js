@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import MobileMenu from "../MobileMenu/MobileMenu";
 import ContactBar from "./socialMedia";
-import { FaChevronDown, FaSearch, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaChevronLeft, FaSearch, FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 const Header = (props) => {
@@ -38,6 +38,8 @@ const Header = (props) => {
       try {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
+        console.log(data);
+        
         setMenuData(data);
       } catch (error) {
         console.error("Failed to fetch navbar data", error);
@@ -46,6 +48,20 @@ const Header = (props) => {
 
     fetchMenuData();
   }, []);
+
+  // Define main departments
+  const mainDepartments = [
+    "قسم الجلدية",
+    "قسم الاسنان",
+    "قسم النساء والولادة",
+    "قسم التغذية"
+  ];
+
+  // Group departments into main and general
+  const groupedDepartments = {
+    main: menuData.departments.filter(dept => mainDepartments.includes(dept.name)),
+    general: menuData.departments.filter(dept => !mainDepartments.includes(dept.name))
+  };
 
   const handleSearch = async (searchQuery) => {
     if (!searchQuery.trim()) {
@@ -113,6 +129,15 @@ const Header = (props) => {
     }
   };
 
+  // Group branches by region
+  const groupedBranches = menuData.branches.reduce((acc, branch) => {
+    if (!acc[branch.region_name]) {
+      acc[branch.region_name] = [];
+    }
+    acc[branch.region_name].push(branch);
+    return acc;
+  }, {});
+
   const renderDropdown = (items, basePath) => (
     <ul 
       className={`absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px] ${
@@ -133,6 +158,80 @@ const Header = (props) => {
     </ul>
   );
 
+  const renderBranchesDropdown = () => (
+    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
+      {/* Regions section */}
+      <div className="px-4 py-2 font-semibold text-[#CBA853] border-b">
+        المناطق
+      </div>
+      {Object.keys(groupedBranches).map((region) => (
+        <div key={region} className="relative group/region">
+          <div className="block flex justify-between items-center px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right cursor-default">
+            {region} <FaChevronLeft className="mr-1 text-xs" />
+          </div>
+          {/* Branches for this region */}
+          <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/region:block min-w-[200px] border-t-2 border-[#CBA853]">
+            {groupedBranches[region].map((branch) => (
+              <li key={branch.id}>
+                <Link
+                  href={`/branches/${branch.id}`}
+                  className="block px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right"
+                  onClick={ClickHandler}
+                >
+                  {branch.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      
+      {/* All branches section */}
+  
+    </div>
+  );
+
+  const renderDepartmentsDropdown = () => (
+    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
+      {/* Main departments section */}
+      <div className="px-4 py-2 font-semibold text-[#CBA853] border-b">
+        الأقسام الرئيسية
+      </div>
+      {groupedDepartments.main.map((dept) => (
+        <li key={dept.id}>
+          <Link
+            href={`/departments/${dept.id}`}
+            className="block px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right"
+            onClick={ClickHandler}
+          >
+            {dept.name}
+          </Link>
+        </li>
+      ))}
+      
+      {/* General departments section */}
+      <div className="relative group/general">
+        <div className="px-4 py-2 flex justify-between items-center font-semibold  border-t border-b cursor-default">
+          الأقسام العامة
+ <FaChevronLeft className="mr-1 text-xs" />       </div>
+        {/* General departments dropdown */}
+        <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/general:block min-w-[200px] border-t-2 border-[#CBA853]">
+          {groupedDepartments.general.map((dept) => (
+            <li key={dept.id}>
+              <Link
+                href={`/departments/${dept.id}`}
+                className="block px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right"
+                onClick={ClickHandler}
+              >
+                {dept.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+
   return (
     <div className="relative">
       <ContactBar />
@@ -140,7 +239,7 @@ const Header = (props) => {
       <header id="header" dir="rtl" className="relative z-[1111] w-full h-[150px] md:h-auto">
         <div className={`${props.hclass} m-auto w-full bg-[#f6eecd] md:bg-transparent`}>
           <nav className="navigation w-full">
-            <div className={`container-fluid flex flex-row items-center justify-between px-4 lg:px-8 py-2 w-full max-w-[1100px] mx-auto`}>
+            <div className={`container-fluid flex flex-row items-center justify-between px-4 md:!px-0 lg:px-8 py-2 w-full max-w-[1100px] mx-auto`}>
               {/* Logo - Right on desktop */}
               <div className="flex-shrink-0 order-2 md:order-1">
                 <Link href="/" className="navbar-brand">
@@ -148,7 +247,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[120px] lg:w-[200px]"
+                    className="w-[200px] md:!w-[120px] lg:!w-[150px]"
                   />
                 </Link>
               </div>
@@ -171,9 +270,29 @@ const Header = (props) => {
                       </li>
                     ))}
 
+                    {/* Branches with special dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/branches"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        الفروع <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.branches.length > 0 && renderBranchesDropdown()}
+                    </li>
+
+                    {/* Departments with special dropdown */}
+                    <li className="relative group px-1 lg:px-2">
+                      <Link
+                        href="/departments"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
+                      >
+                        الاقسام <FaChevronDown className="mr-1 text-xs" />
+                      </Link>
+                      {menuData.departments.length > 0 && renderDepartmentsDropdown()}
+                    </li>
+
                     {[
-                      { label: "الفروع", path: "branches", items: menuData.branches },
-                      { label: "الاقسام", path: "departments", items: menuData.departments },
                       { label: "الخدمات", path: "services", items: menuData.services },
                       { label: "الاجهزة", path:"devices",items:menuData.devices},
                       { label: "الاطباء", path: "teams", items: menuData.doctors },
