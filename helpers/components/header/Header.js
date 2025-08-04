@@ -148,15 +148,15 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px]"
+                    className="w-[200px] md:!w-[120px] lg:w-[200px]"
                   />
                 </Link>
               </div>
 
               {/* Desktop Navigation - Center */}
-              <div className="hidden md:flex w-full max-w-[800px] mx-4 order-2">
+              <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
                 <div className="relative overflow-x-visible w-full">
-                  <ul className="flex justify-center space-x-reverse space-x-1 text-base lg:text-lg font-medium items-center whitespace-nowrap">
+                  <ul className="flex justify-center space-x-reverse space-x-1 text-sm lg:text-lg font-medium items-center whitespace-nowrap">
                     {[
                       { label: "من نحن", href: "/about" },
                       { label: "اتصل بنا", href: "/contact" },
@@ -164,7 +164,7 @@ const Header = (props) => {
                       <li key={item.href} className="lg:px-2">
                         <Link
                           href={item.href}
-                          className="text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-2 px-2 lg:px-3"
+                          className="text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-2 px-0 lg:!px-3"
                         >
                           {item.label}
                         </Link>
@@ -183,7 +183,7 @@ const Header = (props) => {
                       <li key={menu.path} className="relative group px-1 lg:px-2">
                         <Link
                           href={`/${menu.path}`}
-                          className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-2 lg:px-3"
+                          className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
                         >
                           {menu.label} <FaChevronDown className="mr-1 text-xs" />
                         </Link>
