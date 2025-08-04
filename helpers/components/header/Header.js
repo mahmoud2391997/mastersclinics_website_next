@@ -206,7 +206,7 @@ const Header = (props) => {
       
       {/* General departments section */}
       <div className="relative group/general">
-        <div className="px-4 py-2 flex justify-between items-center font-semibold border-t border-b cursor-default">
+        <div className="px-4 py-2 flex justify-between items-center font-semibold text-black cursor-default">
           الأقسام العامة
           <FaChevronLeft className="mr-1 text-xs" />
         </div>
