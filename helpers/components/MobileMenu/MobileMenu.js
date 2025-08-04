@@ -44,7 +44,6 @@ const MobileMenu = ({ menuData }) => {
     { id: 7, title: 'الاطباء', path: 'teams', items: menuData.doctors },
     { id: 8, title: 'الاجهزة', path: 'devices' }, // No items property
     { id: 9, title: 'العروض', path: 'offers', items: menuData.offers },
-    { id: 10, title: 'المقالات', path: 'blog', items: menuData.blogs },
   ];
 
   return (

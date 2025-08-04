@@ -252,20 +252,14 @@ const Header = (props) => {
               <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
                 <div className="relative overflow-x-visible w-full">
                   <ul className="flex justify-around space-x-reverse space-x-1 text-sm lg:text-lg font-medium items-center whitespace-nowrap">
-                    {[
-                      { label: "من نحن", href: "/about" },
-                      { label: "اتصل بنا", href: "/contact" },
-                    ].map((item) => (
-                      <li key={item.href} className="lg:px-2">
-                        <Link
-                          href={item.href}
-                          className="text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-2 px-0 lg:!px-3"
+   <li className="px-1 lg:px-2">
+                      <Link
+                        href="/"
+                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
                         >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-
+                        الرئيسية
+                      </Link>
+                    </li>
                     {/* Branches with special dropdown */}
                     <li className="relative group px-1 lg:px-2">
                       <Link
@@ -282,7 +276,7 @@ const Header = (props) => {
                       <Link
                         href="/departments"
                         className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
+                        >
                         الاقسام <FaChevronDown className="mr-1 text-xs" />
                       </Link>
                       {menuData.departments.length > 0 && renderDepartmentsDropdown()}
@@ -293,28 +287,28 @@ const Header = (props) => {
                       <Link
                         href="/services"
                         className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
+                        >
                         الخدمات <FaChevronDown className="mr-1 text-xs" />
                       </Link>
                       {menuData.services.length > 0 && renderDropdown(menuData.services, "services")}
                     </li>
 
                     {/* Devices without dropdown */}
-                    <li className="px-1 lg:px-2">
+                    {/* <li className="px-1 lg:px-2">
                       <Link
                         href="/devices"
                         className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
+                        >
                         الاجهزة
                       </Link>
-                    </li>
+                    </li> */}
 
                     {/* Doctors with dropdown */}
                     <li className="relative group px-1 lg:px-2">
                       <Link
                         href="/teams"
                         className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
+                        >
                         الاطباء <FaChevronDown className="mr-1 text-xs" />
                       </Link>
                       {menuData.doctors.length > 0 && renderDropdown(menuData.doctors, "teams")}
@@ -325,22 +319,27 @@ const Header = (props) => {
                       <Link
                         href="/offers"
                         className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
+                        >
                         العروض <FaChevronDown className="mr-1 text-xs" />
                       </Link>
                       {menuData.offers.length > 0 && renderDropdown(menuData.offers, "offers")}
                     </li>
 
                     {/* Blogs with dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/blog"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
-                        المقالات <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.blogs.length > 0 && renderDropdown(menuData.blogs, "blog")}
-                    </li>
+                   
+                        {[
+                          { label: "من نحن", href: "/about" },
+                          { label: "اتصل بنا", href: "/contact" },
+                        ].map((item) => (
+                          <li key={item.href} className="lg:px-2">
+                            <Link
+                              href={item.href}
+                              className="text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-2 px-0 lg:!px-3"
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
                   </ul>
                 </div>
               </div>
