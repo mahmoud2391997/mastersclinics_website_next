@@ -229,11 +229,10 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-[#f6eecd] pt-2 min-h-[20vh] w-[100vw]  ">
+    <div className="relative bg-transparent pt-2  w-[100vw]  ">
 
-      <header id="header" dir="rtl" className="relative z-[1111] w-full h-[220px] md:h-auto">
-        <div className={`${props.hclass} m-auto w-full bg-[#f6eecd]  `}>
-      <ContactBar />
+      <header id="header" dir="rtl" className="relative z-[1111] w-full">
+  <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>      <ContactBar />
           <nav className="navigation w-full mx-auto px-2">
             <div className={`container-fluid flex flex-row items-center justify-around w-full px-2 md:!px-0 lg:px-8 py-2 w-full  mx-auto`}>
               {/* Logo - Right on desktop */}

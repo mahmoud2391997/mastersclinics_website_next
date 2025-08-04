@@ -14,7 +14,7 @@ import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
 
 const AboutPage = () => {
     return (
-        <Fragment  className="w-full">
+        <Fragment  className="w-full relative">
             <Navbar hclass={'wpo-site-header wpo-site-header-s2 w-[100vw]'}  />
             <PageTitle pageTitle={'من نحن'} pagesub={'من نحن'} bgImage={'/about.webp'}   />
             <About hclass={'about_section section-padding s4'} />

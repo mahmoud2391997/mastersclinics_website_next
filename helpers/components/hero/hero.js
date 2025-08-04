@@ -9,7 +9,7 @@ const Hero = ({
   heroImageSrc = "https://medically-react.wpolive.com/static/media/1.f83d52cba0c04965b7cd.png",
 }) => {
   return (
-    <section className="relative z-[111] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden sm:min-h-[100vh] bg-[#f6eecd]">
+    <section className="relative z-[111] mt-[145px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden sm:min-h-[100vh] bg-[#f6eecd]">
       {/* Mobile-only background shape - removed since we're changing layout */}
       
       {/* Container for side-by-side mobile layout */}

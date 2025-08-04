@@ -16,7 +16,7 @@ import ImageSlider from '../../components/adsSlider/index';
 
 const HomePage = () => {
     return (
-        <Fragment className="w-full">
+        <div className="w-full ">
             <div className='bg-[#f6eecd] md:pb-5 w-full ' >
 
             <Navbar hclass={'wpo-site-header  '}  nav={true} />
@@ -33,7 +33,7 @@ const HomePage = () => {
             <BlogSection tClass={'blog_section section-padding'} slider={true}/>
             <Footer hclass={'wpo-site-footer'}/>
             <Scrollbar />
-        </Fragment>
+        </div>
     )
 };
 export default HomePage;
