@@ -9,7 +9,7 @@ const Hero = ({
   heroImageSrc = "https://medically-react.wpolive.com/static/media/1.f83d52cba0c04965b7cd.png",
 }) => {
   return (
-    <section className="relative !max-h-[85vh] z-[111] !mt-[230px] sm:!mt-[235px] md:!mt-[170px] lg:!mt-[145px] xl:!mt-[185px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden  bg-[#f6eecd]  md:max-h-[900px]">
+    <section className="relative !max-h-[85vh] z-[111] !mt-[235px] md:!mt-[170px] lg:!mt-[145px] xl:!mt-[185px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden  bg-[#f6eecd]  md:max-h-[900px]">
       {/* Mobile-only background shape - removed since we're changing layout */}
       
       {/* Container for side-by-side mobile layout */}
