@@ -234,8 +234,8 @@ const Header = (props) => {
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
         <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>
           <ContactBar />
-          <nav className="navigation w-full mx-auto px-2">
-            <div className="container-fluid flex flex-row items-center justify-around w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto">
+          <nav className="navigation w-full mx-auto px-2 relative">
+            <div className="container-fluid flex flex-row items-center justify-between w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto">
               {/* logo */}
               <div className="flex-shrink-0 order-2 md:order-1">
                 <Link href="/" className="navbar-brand">
@@ -243,7 +243,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[150px] xl:!w-[250px]"
+                    className="w-[200px] md:!w-[150px] xl:!w-[250px] xl:mr-10"
                   />
                 </Link>
               </div>
@@ -252,41 +252,41 @@ const Header = (props) => {
               <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
                 <ul className="flex justify-around text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap w-full">
                   <li>
-                    <Link href="/" className="py-2 px-3 text-black hover:text-[#CBA853]">الرئيسية</Link>
+                    <Link href="/" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">الرئيسية</Link>
                   </li>
-                                    <li><Link href="/about" className="py-2 px-3 text-black hover:text-[#CBA853]">من نحن</Link></li>
+                                    <li><Link href="/about" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">من نحن</Link></li>
 
                   <li className="relative group">
-                    <Link href="/branches" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                    <Link href="/branches" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
                       الفروع <FaChevronDown className="mr-1 text-xs" />
                     </Link>
                     {menuData.branches.length > 0 && renderBranchesDropdown()}
                   </li>
                   <li className="relative group">
-                    <Link href="/departments" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                    <Link href="/departments" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
                       الاقسام <FaChevronDown className="mr-1 text-xs" />
                     </Link>
                     {menuData.departments.length > 0 && renderDepartmentsDropdown()}
                   </li>
                   <li className="relative group">
-                    <Link href="/services" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                    <Link href="/services" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
                       الخدمات <FaChevronDown className="mr-1 text-xs" />
                     </Link>
                     {menuData.services.length > 0 && renderEntityDropdown(menuData.services, "services")}
                   </li>
                   <li className="relative group">
-                    <Link href="/doctors" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                    <Link href="/doctors" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
                       الاطباء <FaChevronDown className="mr-1 text-xs" />
                     </Link>
                     {menuData.doctors.length > 0 && renderEntityDropdown(menuData.doctors, "doctors")}
                   </li>
                   <li className="relative group">
-                    <Link href="/offers" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                    <Link href="/offers" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
                       العروض <FaChevronDown className="mr-1 text-xs" />
                     </Link>
                     {menuData.offers.length > 0 && renderEntityDropdown(menuData.offers, "offers")}
                   </li>
-                  <li><Link href="/contact" className="py-2 px-3 text-black hover:text-[#CBA853]">اتصل بنا</Link></li>
+                  <li><Link href="/contact" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">اتصل بنا</Link></li>
                 </ul>
               </div>
 
@@ -309,8 +309,8 @@ const Header = (props) => {
 
             {/* search bar */}
             {showSearch && (
-              <div ref={searchRef} className="w-full flex justify-center px-4 pb-4 bg-[#f6eecd]">
-                <div className="relative w-full max-w-[600px]">
+              <div ref={searchRef} className="w-full absolute  px-4 pb-4 bg-transparent">
+                <div className="relative w-full max-w-[600px] m-auto">
                   <input
                     type="text"
                     placeholder="ابحث هنا..."

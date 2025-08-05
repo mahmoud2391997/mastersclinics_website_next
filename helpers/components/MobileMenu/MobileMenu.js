@@ -1,3 +1,4 @@
+"use client";
 import React, { Fragment, useState } from 'react';
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -7,7 +8,7 @@ import { IconButton } from '@mui/material';
 import { Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 
 const MobileMenu = ({ menuData }) => {
-  const [openId, setOpenId] = useState(0);
+  const [openIds, setOpenIds] = useState([]);
   const [menuActive, setMenuState] = useState(false);
 
   const handleMenuToggle = () => {
@@ -19,8 +20,10 @@ const MobileMenu = ({ menuData }) => {
     }
   };
 
-  const handleSubmenuToggle = (id) => {
-    setOpenId(openId === id ? 0 : id);
+  const toggleSubmenu = (id) => {
+    setOpenIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
   };
 
   const ClickHandler = () => {
@@ -29,6 +32,40 @@ const MobileMenu = ({ menuData }) => {
     document.body.style.overflow = 'auto';
   };
 
+  const normalizeDepartmentName = (name, type) => {
+    const prefixMap = {
+      doctors: "أطباء",
+      services: "خدمات",
+      offers: "عروض",
+    };
+    const prefix = prefixMap[type];
+    if (!prefix) return name;
+    const cleanedName = name.replace(/^قسم\s+/, "").trim();
+    return `${prefix} ${cleanedName}`;
+  };
+
+  // Group departments like in desktop
+  const mainDepartments = [
+    "قسم الجلدية",
+    "قسم الاسنان",
+    "قسم النساء والولادة",
+    "قسم التغذية"
+  ];
+
+  const groupedDepartments = {
+    main: (menuData.departments || []).filter(dept => mainDepartments.includes(dept.name)),
+    general: (menuData.departments || []).filter(dept => !mainDepartments.includes(dept.name))
+  };
+
+  // Group branches by region like in desktop
+  const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
+    if (!acc[branch.region_name]) {
+      acc[branch.region_name] = [];
+    }
+    acc[branch.region_name].push(branch);
+    return acc;
+  }, {});
+
   // Static top-level items
   const staticMenus = [
     { id: 1, title: 'الرئيسية', link: '/' },
@@ -36,25 +73,145 @@ const MobileMenu = ({ menuData }) => {
     { id: 3, title: 'اتصل بنا', link: '/contact' },
   ];
 
-  // Dynamic fetched items
+  // Dynamic fetched items with proper structure
   const dynamicMenus = [
-    { id: 4, title: 'الفروع', path: 'branches', items: menuData.branches },
-    { id: 5, title: 'الاقسام', path: 'departments', items: menuData.departments },
-    { id: 6, title: 'الخدمات', path: 'services', items: menuData.services },
-    { id: 7, title: 'الاطباء', path: 'doctors', items: menuData.doctors },
-    { id: 8, title: 'الاجهزة', path: 'devices' }, // No items property
-    { id: 9, title: 'العروض', path: 'offers', items: menuData.offers },
+    { 
+      id: 4, 
+      title: 'الفروع', 
+      path: 'branches',
+      items: Object.entries(groupedBranches).map(([region, branches]) => ({
+        id: `branch-region-${region}`,
+        title: region,
+        items: branches.map(branch => ({
+          id: branch.id,
+          title: branch.name,
+          link: `/branches/${branch.id}`
+        }))
+      }))
+    },
+    { 
+      id: 5, 
+      title: 'الاقسام', 
+      path: 'departments',
+      items: [
+        ...groupedDepartments.main.map(dept => ({
+          id: dept.id,
+          title: dept.name,
+          link: `/departments/${dept.id}`
+        })),
+        {
+          id: 'general-departments',
+          title: 'الأقسام العامة',
+          items: groupedDepartments.general.map(dept => ({
+            id: dept.id,
+            title: dept.name,
+            link: `/departments/${dept.id}`
+          }))
+        }
+      ]
+    },
+    { 
+      id: 6, 
+      title: 'الخدمات', 
+      path: 'services', 
+      items: (menuData.services || []).map(service => ({
+        id: service.department_id,
+        title: normalizeDepartmentName(service.department_name, 'services'),
+        link: `/services?departmentId=${service.department_id}`
+      }))
+    },
+    { 
+      id: 7, 
+      title: 'الاطباء', 
+      path: 'doctors', 
+      items: (menuData.doctors || []).map(doctor => ({
+        id: doctor.department_id,
+        title: normalizeDepartmentName(doctor.department_name, 'doctors'),
+        link: `/doctors?departmentId=${doctor.department_id}`
+      }))
+    },
+    { 
+      id: 8, 
+      title: 'العروض', 
+      path: 'offers', 
+      items: (menuData.offers || []).map(offer => ({
+        id: offer.department_id,
+        title: normalizeDepartmentName(offer.department_name, 'offers'),
+        link: `/offers?departmentId=${offer.department_id}`
+      }))
+    },
+    {
+      id: 9,
+      title: 'الأجهزة',
+      path: 'devices',
+      link: '/devices'
+    }
   ];
+
+  const renderMenuItems = (items, level = 0) => {
+    return items.map((item) => (
+      <Fragment key={item.id}>
+        <ListItem sx={{ 
+          padding: 0, 
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          backgroundColor: level > 0 ? 'rgba(0,0,0,0.1)' : 'transparent'
+        }}>
+          <div className="flex justify-around items-center w-full" style={{ paddingLeft: `${level * 15}px` }}>
+            {item.link ? (
+              <Link 
+                href={item.link} 
+                onClick={ClickHandler}
+                className="menu-link"
+              >
+                {item.title}
+              </Link>
+            ) : (
+              <div 
+                className="menu-link"
+                style={{ cursor: 'pointer' }}
+                onClick={() => toggleSubmenu(item.id)}
+              >
+                {item.title}
+              </div>
+            )}
+            
+            {item.items && item.items.length > 0 && (
+              <IconButton 
+                onClick={() => toggleSubmenu(item.id)}
+                size="small"
+                sx={{ 
+                  color: '#fff',
+                  padding: '8px',
+                  marginLeft: '10px'
+                }}
+              >
+                {openIds.includes(item.id) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+              </IconButton>
+            )}
+          </div>
+        </ListItem>
+        
+        {item.items && item.items.length > 0 && (
+          <Collapse in={openIds.includes(item.id)} timeout="auto" unmountOnExit>
+            <ul className="subMenu">
+              {renderMenuItems(item.items, level + 1)}
+            </ul>
+          </Collapse>
+        )}
+      </Fragment>
+    ));
+  };
 
   return (
     <div dir="rtl">
-      <div className={`mobileMenu ${menuActive ? "show" : ""}`}>
+      <div className={`mobileMenu !bg-[#d9b755] ${menuActive ? "show" : ""}`}>
         <div className="menu-close" style={{ 
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           padding: '10px',
-          backgroundColor: '#d9b755'
+          backgroundColor: '#d9b755',
+          borderBottom: '1px solid rgba(255,255,255,0.2)'
         }}>
           <IconButton 
             onClick={handleMenuToggle}
@@ -73,7 +230,10 @@ const MobileMenu = ({ menuData }) => {
 
         <ul className="responsivemenu">
           {staticMenus.map((item) => (
-            <ListItem key={item.id} sx={{ padding: 0 }}>
+            <ListItem key={item.id} sx={{ 
+              padding: 0,
+              borderBottom: '1px solid rgba(255,255,255,0.1)'
+            }}>
               <Link 
                 href={item.link} 
                 onClick={ClickHandler}
@@ -83,13 +243,16 @@ const MobileMenu = ({ menuData }) => {
               </Link>
             </ListItem>
           ))}
-
+          
           {dynamicMenus.map((menu) => (
             <Fragment key={menu.id}>
-              <ListItem sx={{ padding: 0 }}>
+              <ListItem sx={{ 
+                padding: 0,
+                borderBottom: '1px solid rgba(255,255,255,0.1)'
+              }}>
                 <div className="menu-item-container">
                   <Link 
-                    href={`/${menu.path}`} 
+                    href={menu.link ? menu.link : `/${menu.path}`} 
                     onClick={ClickHandler}
                     className="menu-link"
                   >
@@ -97,7 +260,7 @@ const MobileMenu = ({ menuData }) => {
                   </Link>
                   {menu.items && menu.items.length > 0 && (
                     <IconButton 
-                      onClick={() => handleSubmenuToggle(menu.id)}
+                      onClick={() => toggleSubmenu(menu.id)}
                       size="small"
                       sx={{ 
                         color: '#fff',
@@ -105,26 +268,16 @@ const MobileMenu = ({ menuData }) => {
                         marginLeft: '10px'
                       }}
                     >
-                      {menu.id === openId ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                      {openIds.includes(menu.id) ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
                     </IconButton>
                   )}
                 </div>
               </ListItem>
               
               {menu.items && menu.items.length > 0 && (
-                <Collapse in={menu.id === openId} timeout="auto" unmountOnExit>
+                <Collapse in={openIds.includes(menu.id)} timeout="auto" unmountOnExit>
                   <ul className="subMenu">
-                    {menu.items.map((sub) => (
-                      <ListItem key={sub.id} sx={{ padding: 0 }}>
-                        <Link 
-                          href={`/${menu.path}/${sub.id}`} 
-                          onClick={ClickHandler}
-                          className="submenu-link"
-                        >
-                          {sub.name}
-                        </Link>
-                      </ListItem>
-                    ))}
+                    {renderMenuItems(menu.items, 1)}
                   </ul>
                 </Collapse>
               )}
@@ -158,26 +311,40 @@ const MobileMenu = ({ menuData }) => {
             width: '100%',
             height: '2px',
             backgroundColor: '#fff',
-            margin: 'auto',
+            margin: '2px 0',
           }}></span>
           <span className="icon-bar middle-angle" style={{
             display: 'block',
             width: '100%',
             height: '2px',
             backgroundColor: '#fff',
-            margin: 'auto',
+            margin: '2px 0',
           }}></span>
           <span className="icon-bar last-angle" style={{
             display: 'block',
             width: '100%',
             height: '2px',
             backgroundColor: '#fff',
-            margin: 'auto',
+            margin: '2px 0',
           }}></span>
         </button>
       </div>
 
       <style jsx>{`
+        .mobileMenu {
+          position: fixed;
+          right: -280px;
+          top: 0;
+          width: 280px;
+          height: 100%;
+          background: #2a2a2a;
+          z-index: 9999;
+          transition: all 0.5s ease;
+          overflow-y: auto;
+        }
+        .mobileMenu.show {
+          right: 0;
+        }
         .menu-item-container {
           display: flex;
           justify-content: space-between;
@@ -186,20 +353,12 @@ const MobileMenu = ({ menuData }) => {
         }
         .menu-link {
           display: block;
-          padding: 13px 35px;
-          font-size: 14px;
+          padding: 15px 20px;
+          font-size: 15px;
           font-weight: 500;
           color: #fff;
           text-decoration: none;
           flex-grow: 1;
-        }
-        .submenu-link {
-          display: block;
-          padding: 10px 35px 10px 50px;
-          font-size: 13px;
-          color: #fff;
-          text-decoration: none;
-          background-color: rgba(0, 0, 0, 0.1);
         }
         .subMenu {
           list-style: none;
@@ -207,11 +366,12 @@ const MobileMenu = ({ menuData }) => {
           margin: 0;
         }
         @media (max-width: 450px) {
-          .menu-link {
-            padding: 13px 25px;
+          .mobileMenu {
+            width: 100%;
+            right: -100%;
           }
-          .submenu-link {
-            padding: 10px 25px 10px 40px;
+          .menu-link {
+            padding: 15px;
           }
         }
       `}</style>
