@@ -1,6 +1,3 @@
-import getImageUrl from "@/utilies/getImageUrl"
-
-
 
 const Hero = ({
   tagline = "ماسترز خبراء لجمالك وصحتك",
@@ -9,15 +6,10 @@ const Hero = ({
   heroImageSrc = "https://medically-react.wpolive.com/static/media/1.f83d52cba0c04965b7cd.png",
 }) => {
   return (
-    <section className="relative !max-h-[85vh] z-[111] !mt-[235px] md:!mt-[170px] lg:!mt-[145px] xl:!mt-[185px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden  bg-[#f6eecd]  md:max-h-[900px]">
-      {/* Mobile-only background shape - removed since we're changing layout */}
-      
-      {/* Container for side-by-side mobile layout */}
-      <div className="w-full flex flex-row-reverse items-center justify-between px-4 lg:px-0 ">
-        {/* Text Content - adjusted for mobile */}
+    <section className="relative !max-h-[85vh] z-[111]  flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden bg-[#f6eecd] md:max-h-[900px]">
+      <div className="w-full flex flex-row-reverse items-center justify-between px-4 lg:px-0">
         <div className="w-full md:w-1/2 max-w-1/2 flex justify-center items-center flex-col px-2 md:px-5 text-right m-auto">
           <div className="w-full justify-center items-center flex flex-col gap-3 md:gap-5">
-           
             <h2 className="inline-block !text-sm md:!text-[18px] lg:!text-[30px] xl:!text-[40px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
               {tagline}
             </h2>
@@ -30,13 +22,11 @@ const Hero = ({
           </p>
         </div>
 
-        {/* Image - adjusted for mobile */}
         <div className="w-full md:w-1/2 max-w-[400px] md:max-w-[753px] mx-auto lg:mr-[90px] mb-3 md:mt-0 lg:p-10">
-          {/* Curved container for the image */}
-          <div className="relative overflow-hidden rounded-[40px] md:rounded-[60px] bg-transparent  p-2 md:p-4 shadow-xl md:shadow-2xl">
+          <div className="relative overflow-hidden rounded-[40px] md:rounded-[60px] bg-transparent p-2 md:p-4 shadow-xl md:shadow-2xl">
             <div className="relative overflow-hidden rounded-[30px] md:rounded-[50px] lg:p-5">
               <img
-                src={getImageUrl(heroImageSrc) || "/placeholder.svg"}
+                src={heroImageSrc}
                 alt="hero"
                 className="w-full h-auto object-cover rounded-[25px] md:rounded-[45px]"
                 style={{ objectFit: "cover" }}
@@ -44,7 +34,6 @@ const Hero = ({
             </div>
           </div>
 
-          {/* Background decorative circle - positioned behind */}
           <div className="absolute top-[19%] left-1/2 transform -translate-x-1/2 z-[-2] max-h-[400px] md:max-h-[750px] opacity-30 overflow-hidden">
             <svg width="753" height="752" viewBox="0 0 753 752" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -60,7 +49,6 @@ const Hero = ({
         </div>
       </div>
     </section>
-  )
-}
-
+  );
+}; 
 export default Hero

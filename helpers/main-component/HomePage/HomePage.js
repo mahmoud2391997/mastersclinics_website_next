@@ -16,16 +16,11 @@ import ImageSlider from '../../components/adsSlider/index';
 
 const HomePage = () => {
     return (
-        <div className="w-full ">
-            <div className='bg-[#f6eecd] md:pb-5 w-full ' >
-
-            <Navbar hclass={'wpo-site-header  '}  nav={true} />
-            </div>
+        <div className="w-full relative">
+            <Navbar hclass={'wpo-site-header wpo-site-header-s2'} nav={true} />
             <Hero hclass={'static-hero'} />
             <ImageSlider />
             <ServiceSection hclass={"service_section section-padding"} sliceEnd={3}/>
-            {/* <About hclass={'about_section section-padding'}/> */}
-            {/* <ProcessSection hclass={"work_section section-padding"}/> */}
             <ProjectSection hclass={'project_section section-padding'}/>
             <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
             <TeamSection hclass={'team_section section-padding'} sliceEnd={3} slider={true}/>

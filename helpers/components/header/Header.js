@@ -229,7 +229,7 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-transparent pt-2  w-[100vw]  ">
+    <div className="relative bg-transparent   w-[100vw]  ">
 
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
   <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>      <ContactBar />
