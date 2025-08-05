@@ -9,32 +9,32 @@ const Hero = ({
   heroImageSrc = "https://medically-react.wpolive.com/static/media/1.f83d52cba0c04965b7cd.png",
 }) => {
   return (
-    <section className="relative z-[111] mt-[145px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden sm:min-h-[100vh] bg-[#f6eecd]">
+    <section className="relative !max-h-[85vh] z-[111] !mt-[230px] sm:!mt-[235px] md:!mt-[170px] lg:!mt-[145px] xl:!mt-[185px] flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden  bg-[#f6eecd]  md:max-h-[900px]">
       {/* Mobile-only background shape - removed since we're changing layout */}
       
       {/* Container for side-by-side mobile layout */}
-      <div className="w-full flex flex-row-reverse items-center justify-between px-4 lg:px-0">
+      <div className="w-full flex flex-row-reverse items-center justify-between px-4 lg:px-0 ">
         {/* Text Content - adjusted for mobile */}
-        <div className="w-full md:w-1/2 max-w-1/2 flex justify-center items-center flex-col px-2 md:px-5 text-right lg:mr-[140px] mt-5 md:mt-0">
+        <div className="w-full md:w-1/2 max-w-1/2 flex justify-center items-center flex-col px-2 md:px-5 text-right m-auto">
           <div className="w-full justify-center items-center flex flex-col gap-3 md:gap-5">
            
-            <h2 className="inline-block text-[10px] md:text-[18px] lg:text-[20px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
+            <h2 className="inline-block !text-sm md:!text-[18px] lg:!text-[30px] xl:!text-[40px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
               {tagline}
             </h2>
           </div>
-          <h3 className="text-[20px] sm:text-[28px] md:text-[36px] lg:text-[60px] xl:text-[80px] text-center font-normal leading-tight mb-3 md:mb-[20px]">
+          <h3 className="!text-sm sm:!text-[28px] md:!text-[36px] lg:!text-[60px] xl:!text-[80px] text-center font-normal leading-tight mb-3 md:mb-[20px]">
             {heading}
           </h3>
-          <p className="text-[#767676] text-center text-[10px] sm:text-[16px] md:text-[18px] leading-relaxed max-w-xl mx-auto md:mx-0 mb-6 md:mb-8">
+          <p className="text-[#767676] text-center !text-sm sm:!text-base md:!text-2xl leading-relaxed max-w-xl mx-auto md:mx-0 mb-6 md:mb-8">
             {description}
           </p>
         </div>
 
         {/* Image - adjusted for mobile */}
-        <div className="w-full md:w-1/2 max-w-[400px] md:max-w-[753px] mx-auto lg:mr-[90px] mb-3 md:mt-0">
+        <div className="w-full md:w-1/2 max-w-[400px] md:max-w-[753px] mx-auto lg:mr-[90px] mb-3 md:mt-0 lg:p-10">
           {/* Curved container for the image */}
           <div className="relative overflow-hidden rounded-[40px] md:rounded-[60px] bg-transparent  p-2 md:p-4 shadow-xl md:shadow-2xl">
-            <div className="relative overflow-hidden rounded-[30px] md:rounded-[50px]">
+            <div className="relative overflow-hidden rounded-[30px] md:rounded-[50px] lg:p-5">
               <img
                 src={getImageUrl(heroImageSrc) || "/placeholder.svg"}
                 alt="hero"

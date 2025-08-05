@@ -242,7 +242,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[150px]"
+                    className="w-[200px] md:!w-[150px] xl:!w-[250px]"
                   />
                 </Link>
               </div>
@@ -250,7 +250,7 @@ const Header = (props) => {
               {/* Desktop Navigation - Center */}
               <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
                 <div className="relative overflow-x-visible w-full">
-                  <ul className="flex justify-around space-x-reverse space-x-1 text-sm lg:text-lg font-medium items-center whitespace-nowrap">
+                  <ul className="flex justify-around space-x-reverse space-x-1 text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap">
    <li className="px-1 lg:px-2">
                       <Link
                         href="/"
