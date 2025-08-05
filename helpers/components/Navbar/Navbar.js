@@ -15,7 +15,7 @@ export default function Navbar(props) {
 
   return (
     <div 
-      className={`${className} w-full top-0 ${props.nav ? "!h-[235px] sm:!h-[230px] md:!h-[208px] lg:!h-[145px] xl:!h-[200px]" : "h-auto bg-transparent"}`} 
+      className={`${className} w-full top-0 ${props.nav ? "!h-[198px]  md:!h-[168px] lg:!h-[145px] xl:!h-[200px]" : "h-auto bg-transparent"}`} 
       id='scrool'
     >
       <Header hclass={props.hclass} Logo={props.Logo} topbarClass={props.topbarClass} nav={props.nav}/>

@@ -1236,7 +1236,6 @@ Version:        1.0.0
 ----------------------------------------------------------------*/
 .wpo-breadcumb-area {
   background: url(../helpers/images/page-title.jpg) no-repeat center top/cover;
-  min-height: 500px;
   position: relative;
   display: flex;
   justify-content: center;
@@ -2358,11 +2357,6 @@ Version:        1.0.0
   width: 100%;
 }
 
-@media (max-width: 991px) {
-  .wpo-site-header .navigation {
-    padding: 20px 0;
-  }
-}
 .wpo-site-header #navbar {
   transition: all 0.5s;
 }
@@ -3001,11 +2995,7 @@ Version:        1.0.0
 .wpo-site-header .navigation > .container {
   position: relative;
 }
-@media (max-width: 991px) {
-  .wpo-site-header .navigation {
-    padding: 20px 0;
-  }
-}
+
 .wpo-site-header #navbar {
   transition: all 0.5s;
 }
