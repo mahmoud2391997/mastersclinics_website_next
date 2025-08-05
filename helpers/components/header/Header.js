@@ -22,7 +22,6 @@ const Header = (props) => {
   const router = useRouter();
   const debounceRef = useRef();
 
-  // Mapping entity keys to Arabic titles
   const entityNames = {
     branches: "الفروع",
     departments: "الأقسام",
@@ -32,13 +31,31 @@ const Header = (props) => {
     blogs: "المقالات",
   };
 
+  const normalizeDepartmentName = (name, type) => {
+    const prefixMap = {
+      doctors: "أطباء",
+      services: "خدمات",
+      offers: "عروض",
+    };
+    const prefix = prefixMap[type];
+    if (!prefix) return name;
+    const cleanedName = name.replace(/^قسم\s+/, "").trim();
+    return `${prefix} ${cleanedName}`;
+  };
+
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
-        console.log(data);
-        setMenuData(data);
+        setMenuData({
+          branches: data.branches || [],
+          departments: data.departments || [],
+          doctors: data.doctors || [],
+          offers: data.offers || [],
+          blogs: data.blogs || [],
+          services: data.services || []
+        });
       } catch (error) {
         console.error("Failed to fetch navbar data", error);
       }
@@ -47,7 +64,6 @@ const Header = (props) => {
     fetchMenuData();
   }, []);
 
-  // Define main departments
   const mainDepartments = [
     "قسم الجلدية",
     "قسم الاسنان",
@@ -55,10 +71,9 @@ const Header = (props) => {
     "قسم التغذية"
   ];
 
-  // Group departments into main and general
   const groupedDepartments = {
-    main: menuData.departments.filter(dept => mainDepartments.includes(dept.name)),
-    general: menuData.departments.filter(dept => !mainDepartments.includes(dept.name))
+    main: (menuData.departments || []).filter(dept => mainDepartments.includes(dept.name)),
+    general: (menuData.departments || []).filter(dept => !mainDepartments.includes(dept.name))
   };
 
   const handleSearch = async (searchQuery) => {
@@ -96,14 +111,13 @@ const Header = (props) => {
   };
 
   const handleItemClick = (entity, id) => {
-    const route = entity === "doctors" ? `/teams/${id}` : `/${entity}/${id}`;
+    const route = entity === "doctors" ? `/doctors?departmentId=${id}` : `/${entity}?departmentId=${id}`;
     router.push(route);
     setShowSearch(false);
     setQuery("");
     setResults(null);
   };
 
-  // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -127,8 +141,7 @@ const Header = (props) => {
     }
   };
 
-  // Group branches by region
-  const groupedBranches = menuData.branches.reduce((acc, branch) => {
+  const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
     if (!acc[branch.region_name]) {
       acc[branch.region_name] = [];
     }
@@ -136,20 +149,20 @@ const Header = (props) => {
     return acc;
   }, {});
 
-  const renderDropdown = (items, basePath) => (
+  const renderEntityDropdown = (items, entityType) => (
     <ul 
       className={`absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px] ${
         items.length > 8 ? 'max-h-80 overflow-y-auto' : ''
       }`}
     >
       {items.map((item) => (
-        <li key={item.id}>
+        <li key={item.department_id}>
           <Link
-            href={`/${basePath}/${item.id}`}
+            href={`/${entityType}?departmentId=${item.department_id}`}
             className="block px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right"
             onClick={ClickHandler}
           >
-            {item.name}
+            {normalizeDepartmentName(item.department_name, entityType)}
           </Link>
         </li>
       ))}
@@ -158,16 +171,11 @@ const Header = (props) => {
 
   const renderBranchesDropdown = () => (
     <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
-      {/* Regions section */}
-      <div className="px-4 py-2 font-semibold text-[#CBA853] border-b">
-        المناطق
-      </div>
       {Object.keys(groupedBranches).map((region) => (
         <div key={region} className="relative group/region">
           <div className="block flex justify-between items-center px-4 py-2 text-black hover:text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right cursor-default">
             {region} <FaChevronLeft className="mr-1 text-xs" />
           </div>
-          {/* Branches for this region */}
           <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/region:block min-w-[200px] border-t-2 border-[#CBA853]">
             {groupedBranches[region].map((branch) => (
               <li key={branch.id}>
@@ -187,11 +195,7 @@ const Header = (props) => {
   );
 
   const renderDepartmentsDropdown = () => (
-    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md  py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
-      {/* Main departments section */}
-      <div className="px-4 py-2 font-semibold text-[#CBA853] border-b">
-        الأقسام الرئيسية
-      </div>
+    <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
       {groupedDepartments.main.map((dept) => (
         <li key={dept.id}>
           <Link
@@ -203,14 +207,11 @@ const Header = (props) => {
           </Link>
         </li>
       ))}
-      
-      {/* General departments section */}
       <div className="relative group/general">
         <div className="px-4 py-2 flex justify-between items-center font-semibold text-black cursor-default">
           الأقسام العامة
           <FaChevronLeft className="mr-1 text-xs" />
         </div>
-        {/* General departments dropdown */}
         <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/general:block min-w-[200px] border-t-2 border-[#CBA853]">
           {groupedDepartments.general.map((dept) => (
             <li key={dept.id}>
@@ -229,13 +230,13 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-transparent   w-[100vw]  ">
-
+    <div className="relative bg-transparent w-[100vw]">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-  <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>      <ContactBar />
+        <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>
+          <ContactBar />
           <nav className="navigation w-full mx-auto px-2">
-            <div className={`container-fluid flex flex-row items-center justify-around w-full px-2 md:!px-0 lg:px-8 py-2 w-full  mx-auto`}>
-              {/* Logo - Right on desktop */}
+            <div className="container-fluid flex flex-row items-center justify-around w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto">
+              {/* logo */}
               <div className="flex-shrink-0 order-2 md:order-1">
                 <Link href="/" className="navbar-brand">
                   <img
@@ -247,130 +248,66 @@ const Header = (props) => {
                 </Link>
               </div>
 
-              {/* Desktop Navigation - Center */}
+              {/* main nav */}
               <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
-                <div className="relative overflow-x-visible w-full">
-                  <ul className="flex justify-around space-x-reverse space-x-1 text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap">
-   <li className="px-1 lg:px-2">
-                      <Link
-                        href="/"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        الرئيسية
-                      </Link>
-                    </li>
-                    {/* Branches with special dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/branches"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                      >
-                        الفروع <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.branches.length > 0 && renderBranchesDropdown()}
-                    </li>
+                <ul className="flex justify-around text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap w-full">
+                  <li>
+                    <Link href="/" className="py-2 px-3 text-black hover:text-[#CBA853]">الرئيسية</Link>
+                  </li>
+                                    <li><Link href="/about" className="py-2 px-3 text-black hover:text-[#CBA853]">من نحن</Link></li>
 
-                    {/* Departments with special dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/departments"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        الاقسام <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.departments.length > 0 && renderDepartmentsDropdown()}
-                    </li>
-
-                    {/* Services with dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/services"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        الخدمات <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.services.length > 0 && renderDropdown(menuData.services, "services")}
-                    </li>
-
-                    {/* Devices without dropdown */}
-                    {/* <li className="px-1 lg:px-2">
-                      <Link
-                        href="/devices"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        الاجهزة
-                      </Link>
-                    </li> */}
-
-                    {/* Doctors with dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/teams"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        الاطباء <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.doctors.length > 0 && renderDropdown(menuData.doctors, "teams")}
-                    </li>
-
-                    {/* Offers with dropdown */}
-                    <li className="relative group px-1 lg:px-2">
-                      <Link
-                        href="/offers"
-                        className="flex items-center text-black hover:text-[#CBA853] transition-colors duration-300 relative py-2 px-0 lg:!px-3"
-                        >
-                        العروض <FaChevronDown className="mr-1 text-xs" />
-                      </Link>
-                      {menuData.offers.length > 0 && renderDropdown(menuData.offers, "offers")}
-                    </li>
-
-                    {/* Blogs with dropdown */}
-                   
-                        {[
-                          { label: "من نحن", href: "/about" },
-                          { label: "اتصل بنا", href: "/contact" },
-                        ].map((item) => (
-                          <li key={item.href} className="lg:px-2">
-                            <Link
-                              href={item.href}
-                              className="text-black hover:text-[#CBA853] transition-colors duration-300 relative block py-2 px-0 lg:!px-3"
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        ))}
-                  </ul>
-                </div>
+                  <li className="relative group">
+                    <Link href="/branches" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                      الفروع <FaChevronDown className="mr-1 text-xs" />
+                    </Link>
+                    {menuData.branches.length > 0 && renderBranchesDropdown()}
+                  </li>
+                  <li className="relative group">
+                    <Link href="/departments" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                      الاقسام <FaChevronDown className="mr-1 text-xs" />
+                    </Link>
+                    {menuData.departments.length > 0 && renderDepartmentsDropdown()}
+                  </li>
+                  <li className="relative group">
+                    <Link href="/services" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                      الخدمات <FaChevronDown className="mr-1 text-xs" />
+                    </Link>
+                    {menuData.services.length > 0 && renderEntityDropdown(menuData.services, "services")}
+                  </li>
+                  <li className="relative group">
+                    <Link href="/doctors" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                      الاطباء <FaChevronDown className="mr-1 text-xs" />
+                    </Link>
+                    {menuData.doctors.length > 0 && renderEntityDropdown(menuData.doctors, "doctors")}
+                  </li>
+                  <li className="relative group">
+                    <Link href="/offers" className="py-2 px-3 text-black hover:text-[#CBA853] flex items-center">
+                      العروض <FaChevronDown className="mr-1 text-xs" />
+                    </Link>
+                    {menuData.offers.length > 0 && renderEntityDropdown(menuData.offers, "offers")}
+                  </li>
+                  <li><Link href="/contact" className="py-2 px-3 text-black hover:text-[#CBA853]">اتصل بنا</Link></li>
+                </ul>
               </div>
 
-              {/* Search Icon - Right in mobile view */}
+              {/* search icon */}
               <div className="flex items-center order-1 md:!order-3">
                 <div className="bg-white rounded-full p-2">
                   {showSearch ? (
-                    <FaTimes
-                      onClick={toggleSearch}
-                      className="text-[#dec06a] cursor-pointer"
-                      size={24}
-                      fill="#dec06a"
-                    />
+                    <FaTimes onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
                   ) : (
-                    <FaSearch
-                      onClick={toggleSearch}
-                      className="text-[#dec06a] cursor-pointer"
-                      size={24}
-                      fill="#dec06a"
-                    />
+                    <FaSearch onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
                   )}
                 </div>
               </div>
 
-              {/* Mobile Menu - Hidden on desktop */}
+              {/* mobile nav */}
               <div className="flex md:hidden order-3 md:order-none">
                 <MobileMenu menuData={menuData} />
               </div>
             </div>
 
-            {/* Search Bar - Appears below header when activated */}
+            {/* search bar */}
             {showSearch && (
               <div ref={searchRef} className="w-full flex justify-center px-4 pb-4 bg-[#f6eecd]">
                 <div className="relative w-full max-w-[600px]">
@@ -382,12 +319,8 @@ const Header = (props) => {
                     onKeyDown={handleKeyPress}
                     className="w-full px-4 py-3 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
                   />
-                  <FaSearch
-                    className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
-                    size={20}
-                  />
+                  <FaSearch className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]" size={20} />
 
-                  {/* Dropdown results */}
                   {results && (
                     <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
                       {Object.entries(results).some(([, items]) => items.length > 0) ? (

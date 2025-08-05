@@ -6,9 +6,9 @@ const Hero = ({
   heroImageSrc = "https://medically-react.wpolive.com/static/media/1.f83d52cba0c04965b7cd.png",
 }) => {
   return (
-    <section className="relative !max-h-[85vh] z-[111]  flex flex-col lg:flex-row-reverse items-center justify-between overflow-hidden bg-[#f6eecd] md:max-h-[900px]">
-      <div className="w-full flex flex-row-reverse items-center justify-between px-4 lg:px-0">
-        <div className="w-full md:w-1/2 max-w-1/2 flex justify-center items-center flex-col px-2 md:px-5 text-right m-auto">
+    <section className="relative md:h-[80vh] z-[111]  flex flex-col lg:flex-row-reverse items-center justify-center overflow-hidden bg-[#f6eecd] ">
+      <div className="w-full flex flex-col md:flex-row-reverse items-center justify-between px-4 lg:px-0">
+        <div className="w-full md:!w-2/3 !w-full flex justify-center items-center flex-col px-2 md:px-5 text-right m-auto">
           <div className="w-full justify-center items-center flex flex-col gap-3 md:gap-5">
             <h2 className="inline-block !text-sm md:!text-[18px] lg:!text-[30px] xl:!text-[40px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
               {tagline}
@@ -22,7 +22,7 @@ const Hero = ({
           </p>
         </div>
 
-        <div className="w-full md:w-1/2 max-w-[400px] md:max-w-[753px] mx-auto lg:mr-[90px] mb-3 md:mt-0 lg:p-10">
+        <div className="w-full md:!w-1/3 w-full mx-auto lg:mr-[90px] mb-3 md:mt-0 lg:p-10">
           <div className="relative overflow-hidden rounded-[40px] md:rounded-[60px] bg-transparent p-2 md:p-4 shadow-xl md:shadow-2xl">
             <div className="relative overflow-hidden rounded-[30px] md:rounded-[50px] lg:p-5">
               <img

@@ -145,7 +145,7 @@ const TeamSection = ({
           )}
 
           <Link
-            href={`/teams/${team.id}`}
+            href={`/doctors/${team.id}`}
             className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
           >
             <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
@@ -276,7 +276,7 @@ const TeamSection = ({
                 {!isTeamsPage & !branchId ? (
                   <div className="flex justify-center mt-12">
                     <Link 
-                      href="/teams" 
+                      href="/doctors" 
                       className="relative pl-16 inline-flex items-center justify-between
                                  bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
                                  text-white font-bold rounded-full py-3 px-8

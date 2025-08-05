@@ -57,7 +57,7 @@ export const quickLinks = [
   { name: "الاقسام", href: "/departments" },
   { name: "الفروع", href: "/branches" },
   { name: "الاجهزة", href: "/devices" },
-  { name: "الأطباء", href: "/teams" },
+  { name: "الأطباء", href: "/doctors" },
   { name: "العروض", href: "/offers" },
   { name: "المقالات", href: "/blog" },
   { name: "اتصل بنا", href: "/contact" },
