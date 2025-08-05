@@ -1245,9 +1245,7 @@ Version:        1.0.0
   padding-top: 30px;
 }
 @media (max-width: 767px) {
-  .wpo-breadcumb-area {
-    min-height: 300px;
-  }
+
 }
 .wpo-breadcumb-area:before {
   position: absolute;
