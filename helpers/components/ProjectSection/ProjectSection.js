@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDevices } from '../../../store/slices/devices';
 import { fetchBranches } from '../../../store/slices/branches';
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
+import ServiceSidebar from "../../main-component/ServiceSinglePage/sidebar"
 
 // Import Swiper React components and styles
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -17,6 +18,14 @@ const ClickHandler = () => {
     window.scrollTo(10, 0);
 }
 
+// Department mapping based on device types
+const DEPARTMENT_MAPPING = {
+    "أجهزة التغذية ونحت القوام": "أجهزة التغذية",
+    "ليزر إزالة الشعر": "أجهزة الجلدية",
+    "أجهزة معالجة البشرة": "أجهزة الجلدية"
+    // Add more mappings as needed
+};
+
 const ProjectSection = ({
     hclass,
     ShowSectionTitle = true,
@@ -24,19 +33,21 @@ const ProjectSection = ({
     sliceEnd = 3,
     branchId = null,
     showFilters = false,
-    slider = true
+    slider = true,
+    showSidebar = false
 }) => {
     const dispatch = useDispatch();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedBranch, setSelectedBranch] = useState("all");
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [swiperInitialized, setSwiperInitialized] = useState(false);
     
     useEffect(() => {
         dispatch(fetchDevices(branchId));
-        if (showFilters) {
+        if (showFilters || showSidebar) {
             dispatch(fetchBranches());
         }
-    }, [dispatch, branchId, showFilters]);
+    }, [dispatch, branchId, showFilters, showSidebar]);
 
     const { 
         items: devices = [], 
@@ -56,6 +67,34 @@ const ProjectSection = ({
         )
     )].filter(name => name).sort();
 
+    // Prepare branches data for sidebar
+    const processedBranches = useMemo(() => {
+        return allBranches.map(branch => ({
+            id: branch.id,
+            name: branch.name.trim()
+        }));
+    }, [allBranches]);
+
+    // Prepare departments data for sidebar
+    const departmentsData = useMemo(() => {
+        const deptMap = new Map();
+        
+        // Add all devices with their types mapped to departments
+        devices.forEach(device => {
+            if (device.type) {
+                const departmentName = DEPARTMENT_MAPPING[device.type] || device.type;
+                if (!deptMap.has(departmentName)) {
+                    deptMap.set(departmentName, {
+                        id: departmentName,
+                        name: departmentName
+                    });
+                }
+            }
+        });
+        
+        return Array.from(deptMap.values());
+    }, [devices]);
+
     // Filter devices with robust matching
     const filteredDevices = devices.filter(device => {
         // Search filter
@@ -72,19 +111,36 @@ const ProjectSection = ({
                                 normalizeBranchName(branch) === branchNorm
                              ));
         
-        return matchesSearch && matchesBranch;
+        // Department filter
+        const matchesDepartment = !selectedDepartment || 
+                                (device.type && 
+                                 DEPARTMENT_MAPPING[device.type] === selectedDepartment);
+        
+        return matchesSearch && matchesBranch && matchesDepartment;
     });
+
+    const handleBranchChange = (branchId) => {
+        if (branchId === null) {
+            setSelectedBranch("all");
+        } else {
+            const branch = allBranches.find(b => b.id === branchId);
+            if (branch) {
+                setSelectedBranch(normalizeBranchName(branch.name));
+            }
+        }
+    };
 
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
     if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
     if (filteredDevices.length === 0) return (
         <div className="text-center py-5">
             <p>لا توجد أجهزة متاحة</p>
-            {(searchTerm || selectedBranch !== "all") && (
+            {(searchTerm || selectedBranch !== "all" || selectedDepartment) && (
                 <button 
                     onClick={() => {
                         setSearchTerm("");
                         setSelectedBranch("all");
+                        setSelectedDepartment(null);
                     }}
                     className="text-[#CBA853] mt-2"
                 >
@@ -105,7 +161,6 @@ const ProjectSection = ({
                         e.target.src = "/download.png";
                     }}
                 />
-          
             </div>
             <div className="text p-4">
                 <div className="flex justify-between items-start">
@@ -122,7 +177,11 @@ const ProjectSection = ({
                     ) : (
                         <h2 className="text-lg font-bold flex-1">{device.name}</h2>
                     )}
-                   
+                    {device.type && (
+                        <span className="bg-[#f0db83] text-white text-xs px-2 py-1 rounded">
+                            {DEPARTMENT_MAPPING[device.type] || device.type}
+                        </span>
+                    )}
                 </div>
                 
                 <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
@@ -156,6 +215,39 @@ const ProjectSection = ({
     return (
         <section className={hclass} dir="rtl">
             <div className="container">
+                {showSidebar ? (
+                    <div className="row">
+                        <div className="col-lg-3">
+                            <ServiceSidebar 
+                                services={departmentsData.map(dept => ({
+                                    department_id: dept.id,
+                                    department_name: dept.name
+                                }))}
+                                branches={processedBranches}
+                                onSearchChange={setSearchTerm}
+                                onDepartmentChange={setSelectedDepartment}
+                                onBranchChange={handleBranchChange}
+                                currentSearch={searchTerm}
+                                currentDepartment={selectedDepartment}
+                                currentBranch={allBranches.find(b => 
+                                    normalizeBranchName(b.name) === selectedBranch
+                                )?.id || null}
+                            />
+                        </div>
+                        <div className="col-lg-9">
+                            {renderContent()}
+                        </div>
+                    </div>
+                ) : (
+                    renderContent()
+                )}
+            </div>
+        </section>
+    );
+
+    function renderContent() {
+        return (
+            <>
                 {ShowSectionTitle && (
                     <div className="row align-items-center">
                         <div className="col-lg-6 col-12 order-lg-1">
@@ -198,48 +290,7 @@ const ProjectSection = ({
                     </div>
                 )}
 
-                {showFilters && (
-                    <div className="flex flex-col md:flex-row gap-4 mb-8" dir="rtl">
-                        <div className="flex-1">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="ابحث عن جهاز أو نوع..."
-                                    className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                                <svg
-                                    className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                            </div>
-                        </div>
-                        
-                        <div className="w-full md:w-64">
-                            <select
-                                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                                value={selectedBranch}
-                                onChange={(e) => setSelectedBranch(e.target.value)}
-                            >
-                                <option value="all">جميع الفروع</option>
-                                {uniqueBranchNames.map((branchName) => (
-                                    <option key={branchName} value={branchName}>
-                                        {branchName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                )}
+         
 
                 <div className="project_wrapper relative">
                     {slider ? (
@@ -298,9 +349,9 @@ const ProjectSection = ({
                         </>
                     )}
                 </div>
-            </div>
-        </section>
-    );
+            </>
+        );
+    }
 };
 
 export default ProjectSection;

@@ -243,7 +243,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[150px] xl:!w-[200px] xl:mr-10"
+                    className="w-[200px] md:!w-[150px] xl:!w-[187px] xl:mr-10"
                   />
                 </Link>
               </div>
@@ -286,6 +286,7 @@ const Header = (props) => {
                     </Link>
                     {menuData.offers.length > 0 && renderEntityDropdown(menuData.offers, "offers")}
                   </li>
+                  <li><Link href="/blog" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">المقالات</Link></li>
                   <li><Link href="/contact" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">اتصل بنا</Link></li>
                 </ul>
               </div>
