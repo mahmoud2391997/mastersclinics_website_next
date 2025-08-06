@@ -105,7 +105,7 @@ console.log(branch);
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="h-full">
               <iframe
-                src={`https://maps.google.com/maps?q=${branch.latitude},${branch.longitude}&z=15&output=embed`}
+                src={branch.location_link}
                 width="100%"
                 height="100%"
                 className="min-h-[400px] lg:min-h-[500px]"

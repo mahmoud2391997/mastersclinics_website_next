@@ -114,60 +114,83 @@ const BranchesPage = () => {
                 <p className="text-gray-500 text-lg">لا توجد فروع متطابقة مع بحثك</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredBranches.map((branch) => (
-                  <div key={branch.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full">
-                    {/* Branch image */}
-                    <div className="w-full h-48">
-                      <img
-                        className="w-full h-full object-cover"
-                        src={getImageUrl(branch.image_url) || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
-                        alt={branch.name}
-                      />
-                    </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  {filteredBranches.map((branch) => (
+    <div 
+      key={branch.id} 
+      className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-full hover:shadow-xl transition-shadow"
+    >
+      {/* Clickable image for Google Maps */}
+      <a 
+        href={branch.google_map_link} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block w-full h-48 hover:opacity-90 transition-opacity"
+      >
+        <img
+          className="w-full h-full object-cover"
+          src={getImageUrl(branch.image_url) || "https://cdn.salla.sa/dEYvd/EObtK4Gx7k6mKsNWYobYNsczGSRhLYDESyQm7jnp.jpg"}
+          alt={branch.name}
+        />
+      </a>
 
-                    <div className="p-6 flex-grow">
-                      <h3 className="text-xl font-bold text-gray-800 mb-3">{branch.name}</h3>
+      <div className="p-6 flex-grow">
+        {/* Branch name links to branch details page */}
+<Link 
+          href={`/branches/${branch.id}`}
+          className="block text-xl font-bold !text-gray-800 mb-3 hover:!text-[#dec06a] transition-colors"
+        >
+          {branch.name}
+        </Link>
 
-                      <div className="flex items-start mt-4">
-                        <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
-                        <p className="text-gray-600">{branch.address}</p>
-                      </div>
+        {/* Clickable address for Google Maps */}
+        <a 
+          href={branch.google_map_link} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-start mt-4 group"
+        >
+          <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
+          <p className="text-gray-600 hover:text-[#dec06a] transition-colors">
+            {branch.address}
+          </p>
+        </a>
 
-                      <div className="flex items-start mt-4">
-                        <FaClock className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-gray-700">مواعيد العمل:</h4>
-                          {branch.working_hours ? (
-                            <ul className="mt-1 space-y-1">
-                              {branch.working_hours.map((hours, idx) => (
-                                <li key={idx} className="text-gray-600 text-sm">
-                                  <span className="font-medium">{hours.days}:</span> {hours.time}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-gray-500 text-sm">مواعيد العمل غير متاحة</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-6 pt-0">
-                      <div className="flex flex-col gap-3">
-                        <Link
-                          href={`/branches/${branch.id}`}
-                          className="px-4 py-2 border-2 border-[#dec06a] text-sm font-medium rounded-lg text-[#dec06a] bg-white hover:bg-gray-50 text-center transition-colors"
-                          style={{ color: "#dec06a" }}
-                        >
-                          المزيد من التفاصيل
-                        </Link>
-                     
-                      </div>
-                    </div>
-                  </div>
+        {/* Working hours */}
+        <div className="flex items-start mt-4">
+          <FaClock className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
+          <div>
+            <h4 className="font-medium text-gray-700">مواعيد العمل:</h4>
+            {branch.working_hours ? (
+              <ul className="mt-1 space-y-1">
+                {branch.working_hours.map((hours, idx) => (
+                  <li key={idx} className="text-gray-600 text-sm">
+                    <span className="font-medium">{hours.days}:</span> {hours.time}
+                  </li>
                 ))}
-              </div>
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">مواعيد العمل غير متاحة</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6 pt-0">
+        <div className="flex flex-col gap-3">
+          <Link
+            href={`/branches/${branch.id}`}
+            className="px-4 py-2 border-2 border-[#dec06a] text-sm font-medium rounded-lg text-[#dec06a] bg-white hover:bg-[#dec06a] hover:text-white text-center transition-colors"
+style={{ color: "#dec06a" }}
+       
+       >
+            المزيد من التفاصيل
+          </Link>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
             )}
           </>
         )}

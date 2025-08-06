@@ -275,7 +275,6 @@ body {
 
 p {
   font-size: 16px;
-  color: #687693;
   line-height: 1.8em;
 }
 
@@ -2463,7 +2462,6 @@ Version:        1.0.0
   }
   .wpo-site-header #navbar ul a:hover,
   .wpo-site-header #navbar ul li.current a {
-    color: linear-gradient(358deg, #1E63FF -1077.15%, #187CFF -690.64%, #128FFF -213.19%, #0CA9FF 218.79%, #06C2FF 764.46%, #00DBFF 1196.44%);
   }
   .wpo-site-header #navbar .close-navbar .ti-close {
     position: relative;
@@ -3213,7 +3211,6 @@ Version:        1.0.0
   }
   .wpo-site-header #navbar ul a:hover,
   .wpo-site-header #navbar ul li.current a {
-    color: linear-gradient(358deg, #1E63FF -1077.15%, #187CFF -690.64%, #128FFF -213.19%, #0CA9FF 218.79%, #06C2FF 764.46%, #00DBFF 1196.44%);
   }
   .wpo-site-header #navbar .navbar-nav {
     height: 100%;
@@ -11636,7 +11633,6 @@ Version:        1.0.0
   color: #636893;
 }
 .wpo-blog-pg-section .entry-meta ul li a:hover {
-  color: linear-gradient(358deg, #A58532 -1077.15%, #CBA853 -690.64%, #B59542 -213.19%, #D7B763 218.79%, #DEBF6C 764.46%, #f0db83 1196.44%);
 }
 .wpo-blog-pg-section .entry-meta ul li i {
   position: relative;
