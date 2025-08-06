@@ -243,7 +243,7 @@ const Header = (props) => {
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
                     alt="logo"
                     onClick={ClickHandler}
-                    className="w-[200px] md:!w-[150px] xl:!w-[250px] xl:mr-10"
+                    className="w-[200px] md:!w-[150px] xl:!w-[200px] xl:mr-10"
                   />
                 </Link>
               </div>

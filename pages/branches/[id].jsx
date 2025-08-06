@@ -13,6 +13,7 @@ import TeamSection from "../../helpers/components/TeamSection/TeamSection";
 import DepartmentsGrid from "../departments/grid"
 import ProjectSection from "../../helpers/components/ProjectSection/ProjectSection";
 import Footer from "../../helpers/components/footer/Footer";
+import Scrollbar from "../../helpers/components/scrollbar/scrollbar";
 const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -76,7 +77,17 @@ console.log(branch);
                 <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-3 text-xl flex-shrink-0" />
                 <div>
                   <h3 className="font-semibold text-gray-700 text-xl mb-2">العنوان</h3>
-                  <p className="text-gray-600 text-lg">{branch.address}</p>
+       <a 
+          href={branch.google_map_link} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-start mt-4 group"
+        >
+          <FaMapMarkerAlt className="text-[#dec06a] mt-1 ml-2 flex-shrink-0" />
+          <p className="text-gray-600 hover:text-[#dec06a] transition-colors">
+            {branch.address}
+          </p>
+        </a>
               
                 </div>
               </div>
@@ -143,6 +154,7 @@ console.log(branch);
       <TeamSection branchId={id} />
       <ProjectSection branchId={id} hclass="project-section" />
       <Footer hclass={'wpo-site-footer'} />
+                  <Scrollbar />
 
     </div>
   );

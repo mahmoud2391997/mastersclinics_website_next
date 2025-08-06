@@ -9,6 +9,7 @@ import Navbar from "../../helpers/components/Navbar/Navbar";
 import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 import { getImageUrl } from "../../helpers/hooks/imageUrl";
 import Footer from "../../helpers/components/footer/Footer";
+import Scrollbar from "../../helpers/components/scrollbar/scrollbar";
 
 export const metadata = {
   title: "فروعنا",
@@ -196,6 +197,8 @@ style={{ color: "#dec06a" }}
         )}
       </div>
       <Footer hclass={'wpo-site-footer'} />
+                  <Scrollbar />
+
     </div>
   );
 };
