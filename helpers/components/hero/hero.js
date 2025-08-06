@@ -10,14 +10,14 @@ const Hero = ({
       <div className="w-full flex flex-col md:flex-row-reverse items-center justify-between px-4 lg:px-0">
         <div className="w-full md:!w-2/3 !w-full flex justify-center items-center flex-col px-2 md:px-5 text-right m-auto">
           <div className="w-full justify-center items-center flex flex-col gap-3 md:gap-5">
-            <h2 className="inline-block !text-sm md:!text-[18px] lg:!text-[30px] xl:!text-[40px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
+            <h2 className="inline-block !text-sm md:!text-[18px] lg:!text-[30px] xl:!text-[35px] text-white bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] px-3 py-1 rounded-[20px] mb-2 md:mb-4 text-center">
               {tagline}
             </h2>
           </div>
-          <h3 className="!text-sm sm:!text-[28px] md:!text-[36px] lg:!text-[60px] xl:!text-[80px] text-center font-normal leading-tight mb-3 md:mb-[20px]">
+          <h3 className="!text-sm sm:!text-[28px] md:!text-[36px] lg:!text-[60px] xl:!text-[70px] text-center font-normal leading-tight mb-3 md:mb-[20px]">
             {heading}
           </h3>
-          <p className="text-[#767676] text-center !text-sm sm:!text-base md:!text-2xl leading-relaxed max-w-xl mx-auto md:mx-0 mb-6 md:mb-8">
+          <p className="text-[#767676] text-center !text-sm sm:!text-base md:!text-xl leading-relaxed max-w-xl mx-auto md:mx-0 mb-6 md:mb-8">
             {description}
           </p>
         </div>

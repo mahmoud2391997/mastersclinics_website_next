@@ -309,15 +309,15 @@ const Header = (props) => {
 
             {/* search bar */}
             {showSearch && (
-              <div ref={searchRef} className="w-full absolute  px-4 pb-4 bg-transparent">
-                <div className="relative w-full max-w-[600px] m-auto">
+              <div ref={searchRef} className="w-full absolute top-1 px-4  bg-transparent">
+                <div className="relative w-full  max-w-[600px] m-auto">
                   <input
                     type="text"
                     placeholder="ابحث هنا..."
                     value={query}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyPress}
-                    className="w-full px-4 py-3 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
+                    className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
                   />
                   <FaSearch className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]" size={20} />
 

@@ -143,7 +143,7 @@
 
 @media(max-width:450px){
     .mobileMenu {
-        left: -260px;
+        left: -435px;
         width: 260px;
     }
     .responsivemenu li a, .responsivemenu li p {
