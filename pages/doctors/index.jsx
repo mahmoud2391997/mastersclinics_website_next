@@ -31,7 +31,7 @@ const TeamPage = () => {
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
             <PageTitle pageTitle={'اطبائنا'} pagesub={'الاطباء'} bgImage={'/doctors.png'} />
       <section className="section-padding">
-        <div className="container mx-auto px-4">
+        <div >
           <TeamSection
             hclass="team_section_s2"
             isTeamsPage={true}
@@ -40,7 +40,6 @@ const TeamPage = () => {
           />
         </div>
       </section>
-      <CtafromSection />
       <Footer hclass={"wpo-site-footer"} />
       <Scrollbar />
     </Fragment>
@@ -246,7 +245,7 @@ useEffect(() => {
 
   return (
     <section className={hclass}>
-      <div className="container mx-auto px-4">
+      <div >
         {showSectionTitle && (
           <div className="row justify-center">
             <div className="col-lg-9 col-12">
@@ -357,7 +356,7 @@ useEffect(() => {
                           </Slider>
                         </div>
                       ) : (
-                        <div className="flex flex-wrap -mx-4">
+                        <div className="flex flex-wrap ">
                           {displayedTeams.map((team, index) => renderTeamCard(team, index))}
                         </div>
                       )}
@@ -394,7 +393,7 @@ useEffect(() => {
                         </Slider>
                       </div>
                     ) : (
-                      <div className="flex flex-wrap -mx-4">
+                      <div className="flex flex-wrap ">
                         {displayedTeams.map((team, index) => renderTeamCard(team, index))}
                       </div>
                     )}

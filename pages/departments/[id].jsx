@@ -129,7 +129,7 @@ export default function DepartmentPage() {
                       </a>
                       {branch.location_link && (
                         <a
-                          href={branch.location_link}
+                          href={branch.google_map_link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 bg-[#dec06a] text-white font-medium rounded-lg text-sm text-center"

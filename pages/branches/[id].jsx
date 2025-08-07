@@ -14,6 +14,7 @@ import DepartmentsGrid from "../departments/grid"
 import ProjectSection from "../../helpers/components/ProjectSection/ProjectSection";
 import Footer from "../../helpers/components/footer/Footer";
 import Scrollbar from "../../helpers/components/scrollbar/scrollbar";
+import CtafromSection from "../../helpers/components/Form";
 const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -69,7 +70,7 @@ console.log(branch);
       </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-10">
           {/* Branch Info */}
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+          <div className="bg-white flex flex-col justify-between rounded-xl shadow-lg p-6 md:p-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">معلومات الفرع</h2>
             
             <div className="space-y-6">
@@ -110,6 +111,17 @@ console.log(branch);
               
           
             </div>
+                     <button
+              className="w-full bg-[#dec06a] hover:bg-[#e8cf8c] text-white py-3 px-6 rounded-lg font-medium transition-colors mt-10"
+              onClick={() => {
+                const formSection = document.getElementById('appointment-form');
+                if (formSection) {
+                  formSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              حجز موعد في الفرع
+            </button>
           </div>
 
           {/* Map Section */}
@@ -152,7 +164,18 @@ console.log(branch);
       </div>
       <DepartmentsGrid branchId={id} />
       <TeamSection branchId={id} />
-      <ProjectSection branchId={id} hclass="project-section" />
+      <ProjectSection branchId={id} hclass="project_section section-padding" />
+       <div id="appointment-form" className="AppointmentFrom mb-5">
+        <div className="container">
+          <div className="cta_form_s2">
+            <div className="title s2">
+              <h3>حجز موعد</h3>
+              <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
+            </div>
+            <CtafromSection />
+          </div>
+        </div>
+      </div>
       <Footer hclass={'wpo-site-footer'} />
                   <Scrollbar />
 

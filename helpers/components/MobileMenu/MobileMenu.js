@@ -368,7 +368,7 @@ const MobileMenu = ({ menuData }) => {
         @media (max-width: 450px) {
           .mobileMenu {
             width: 100%;
-            right: -100%;
+            right: -104%;
           }
           .menu-link {
             padding: 15px;
