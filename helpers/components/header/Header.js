@@ -230,14 +230,14 @@ const Header = (props) => {
   );
 
   return (
-    <div className="relative bg-transparent w-[100vw]">
+   <div className={"relative  w-[100vw]"}>
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-        <div className={`${props.hclass} m-auto w-full ${props.nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>
+        <div className={`${props.hclass} m-auto w-full `}>
           <ContactBar />
-          <nav className="navigation w-full mx-auto px-2 relative">
-            <div className="container-fluid flex flex-row items-center justify-between w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto">
-              {/* logo */}
-              <div className="flex-shrink-0 order-2 md:order-1">
+          <nav className="navigation w-full mx-auto px-2 relative mt-10" >
+            <div className="container-fluid flex flex-row items-center justify-between md:justify-center w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto relative h-20">
+              {/* logo - normal flow on mobile, absolute on md+ */}
+              <div className="flex-shrink-0 order-2 md:order-1 md:absolute md:right-4 lg:right-8 md:top-1/2 md:transform md:-translate-y-1/2">
                 <Link href="/" className="navbar-brand">
                   <img
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
@@ -248,13 +248,13 @@ const Header = (props) => {
                 </Link>
               </div>
 
-              {/* main nav */}
-              <div className="hidden md:flex w-full max-w-[800px] lg:mx-4 order-2">
-                <ul className="flex justify-around text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap w-full">
+              {/* main nav - hidden on mobile, centered on md+ */}
+              <div className="hidden md:flex w-full max-w-[800px] mx-auto order-2">
+                <ul className="flex justify-center text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap gap-2 lg:gap-4 w-full">
                   <li>
                     <Link href="/" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">الرئيسية</Link>
                   </li>
-                                    <li><Link href="/about" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">من نحن</Link></li>
+                  <li><Link href="/about" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853]">من نحن</Link></li>
 
                   <li className="relative group">
                     <Link href="/branches" className="py-2 px-2 lg:px3 text-black hover:text-[#CBA853] flex items-center">
@@ -291,8 +291,8 @@ const Header = (props) => {
                 </ul>
               </div>
 
-              {/* search icon */}
-              <div className="flex items-center order-1 md:!order-3">
+              {/* search icon - normal flow on mobile, absolute on md+ */}
+              <div className="flex items-center order-1 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2">
                 <div className="bg-white rounded-full p-2">
                   {showSearch ? (
                     <FaTimes onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
@@ -302,7 +302,7 @@ const Header = (props) => {
                 </div>
               </div>
 
-              {/* mobile nav */}
+              {/* mobile nav - normal flow on mobile, hidden on md+ */}
               <div className="flex md:hidden order-3 md:order-none">
                 <MobileMenu menuData={menuData} />
               </div>
@@ -310,8 +310,8 @@ const Header = (props) => {
 
             {/* search bar */}
             {showSearch && (
-              <div ref={searchRef} className="w-full absolute top-1 px-4  bg-transparent">
-                <div className="relative w-full  max-w-[600px] m-auto">
+              <div ref={searchRef} className="w-full absolute top-[-20] px-4 bg-transparent">
+                <div className="relative w-full max-w-[600px] m-auto">
                   <input
                     type="text"
                     placeholder="ابحث هنا..."
