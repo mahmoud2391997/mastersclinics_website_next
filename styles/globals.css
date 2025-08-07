@@ -1298,9 +1298,9 @@ Version:        1.0.0
   }
 }
 .wpo-breadcumb-area .wpo-breadcumb-wrap ul li:after {
-  content: "<";
+  content: ">";
   position: relative;
-  left: 7px;
+  right: 5px;
 }
 .wpo-breadcumb-area .wpo-breadcumb-wrap ul li:last-child span {
   color: #f6eecd;

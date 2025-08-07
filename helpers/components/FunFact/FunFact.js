@@ -14,7 +14,7 @@ const FunFactArabic = (props) => {
     );
 
     return (
-        <section className={"" + props.hclass}>
+        <section className={"" + props.hclass} dir='ltr'>
             <div className="container">
                 <div className="row">
                     <div className="col col-lg-3 col-md-6 col-sm-6 col-12">

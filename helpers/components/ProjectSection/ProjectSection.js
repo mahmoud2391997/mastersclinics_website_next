@@ -6,6 +6,7 @@ import { fetchBranches } from '../../../store/slices/branches';
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
 import ServiceSidebar from "../../main-component/ServiceSinglePage/sidebar"
+import { useSearchParams } from 'next/navigation';
 
 // Import Swiper React components and styles
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -18,12 +19,10 @@ const ClickHandler = () => {
     window.scrollTo(10, 0);
 }
 
-// Department mapping based on device types
 const DEPARTMENT_MAPPING = {
     "أجهزة التغذية ونحت القوام": "أجهزة التغذية",
     "ليزر إزالة الشعر": "أجهزة الجلدية",
     "أجهزة معالجة البشرة": "أجهزة الجلدية"
-    // Add more mappings as needed
 };
 
 const ProjectSection = ({
@@ -37,17 +36,30 @@ const ProjectSection = ({
     showSidebar = false
 }) => {
     const dispatch = useDispatch();
+    const searchParams = useSearchParams();
+    
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedBranch, setSelectedBranch] = useState("all");
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [swiperInitialized, setSwiperInitialized] = useState(false);
     
+    // Read departmentId from searchParams
+    const departmentIdFromParams = searchParams?.get('departmentId');
+    
     useEffect(() => {
-        dispatch(fetchDevices(branchId));
+        // Fetch all devices (we'll filter them client-side)
+        dispatch(fetchDevices());
+        
         if (showFilters || showSidebar) {
             dispatch(fetchBranches());
         }
-    }, [dispatch, branchId, showFilters, showSidebar]);
+    }, [dispatch, showFilters, showSidebar]);
+
+    useEffect(() => {
+        // Set department filter if departmentId is in URL params
+        if (departmentIdFromParams) {
+            setSelectedDepartment(departmentIdFromParams);
+        }
+    }, [departmentIdFromParams]);
 
     const { 
         items: devices = [], 
@@ -57,77 +69,35 @@ const ProjectSection = ({
 
     const { items: allBranches = [] } = useSelector(state => state.branches || {});
 
-    // Normalize and get unique branch names
-    const normalizeBranchName = (name) => name.trim().toLowerCase().replace(/\s+/g, ' ');
-    const uniqueBranchNames = [...new Set(
-        devices.flatMap(device => 
-            device.branch_names 
-                ? device.branch_names.map(b => normalizeBranchName(b))
-                : []
-        )
-    )].filter(name => name).sort();
-
-    // Prepare branches data for sidebar
-    const processedBranches = useMemo(() => {
-        return allBranches.map(branch => ({
-            id: branch.id,
-            name: branch.name.trim()
-        }));
-    }, [allBranches]);
-
-    // Prepare departments data for sidebar
-    const departmentsData = useMemo(() => {
-        const deptMap = new Map();
-        
-        // Add all devices with their types mapped to departments
-        devices.forEach(device => {
-            if (device.type) {
-                const departmentName = DEPARTMENT_MAPPING[device.type] || device.type;
-                if (!deptMap.has(departmentName)) {
-                    deptMap.set(departmentName, {
-                        id: departmentName,
-                        name: departmentName
-                    });
-                }
-            }
+    // Filter devices based on branchId, search term, and department
+    const filteredDevices = useMemo(() => {
+        return devices.filter(device => {
+            // Search filter
+            const searchNorm = searchTerm.toLowerCase();
+            const matchesSearch = searchTerm === "" || 
+                              device.name?.toLowerCase().includes(searchNorm) || 
+                              device.type?.toLowerCase().includes(searchNorm);
+            
+            // Branch filter - compare both string and number versions of IDs
+            const matchesBranch = !branchId || 
+                               (device.branches_ids && 
+                                device.branches_ids.some(id => 
+                                   String(id) === String(branchId)
+                                ));
+            
+            // Department filter
+            const matchesDepartment = !selectedDepartment || 
+                                   (device.type && 
+                                    (DEPARTMENT_MAPPING[device.type] === selectedDepartment || 
+                                     device.type === selectedDepartment));
+            
+            return matchesSearch && matchesBranch && matchesDepartment;
         });
-        
-        return Array.from(deptMap.values());
-    }, [devices]);
+    }, [devices, searchTerm, selectedDepartment, branchId]);
 
-    // Filter devices with robust matching
-    const filteredDevices = devices.filter(device => {
-        // Search filter
-        const searchNorm = searchTerm.toLowerCase();
-        const matchesSearch = searchTerm === "" || 
-                            device.name?.toLowerCase().includes(searchNorm) || 
-                            device.type?.toLowerCase().includes(searchNorm);
-        
-        // Branch filter with normalized comparison
-        const branchNorm = normalizeBranchName(selectedBranch);
-        const matchesBranch = selectedBranch === "all" || 
-                            (device.branch_names && 
-                             device.branch_names.some(branch => 
-                                normalizeBranchName(branch) === branchNorm
-                             ));
-        
-        // Department filter
-        const matchesDepartment = !selectedDepartment || 
-                                (device.type && 
-                                 DEPARTMENT_MAPPING[device.type] === selectedDepartment);
-        
-        return matchesSearch && matchesBranch && matchesDepartment;
-    });
-
-    const handleBranchChange = (branchId) => {
-        if (branchId === null) {
-            setSelectedBranch("all");
-        } else {
-            const branch = allBranches.find(b => b.id === branchId);
-            if (branch) {
-                setSelectedBranch(normalizeBranchName(branch.name));
-            }
-        }
+    const resetFilters = () => {
+        setSearchTerm("");
+        setSelectedDepartment(null);
     };
 
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
@@ -135,13 +105,9 @@ const ProjectSection = ({
     if (filteredDevices.length === 0) return (
         <div className="text-center py-5">
             <p>لا توجد أجهزة متاحة</p>
-            {(searchTerm || selectedBranch !== "all" || selectedDepartment) && (
+            {(searchTerm || selectedDepartment) && (
                 <button 
-                    onClick={() => {
-                        setSearchTerm("");
-                        setSelectedBranch("all");
-                        setSelectedDepartment(null);
-                    }}
+                    onClick={resetFilters}
                     className="text-[#CBA853] mt-2"
                 >
                     إعادة تعيين الفلاتر
@@ -150,11 +116,12 @@ const ProjectSection = ({
         </div>
     );
 
+    // ... rest of the component remains the same (renderDeviceCard, renderContent, etc.)
     const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
                 <img 
-                    src={device.image_url ? getImageUrl(device.image_url) : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s"} 
+                    src={device.image_url ? getImageUrl(device.image_url) : "/download.png"} 
                     alt={device.name || "Device"} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -177,14 +144,9 @@ const ProjectSection = ({
                     ) : (
                         <h2 className="text-lg font-bold flex-1">{device.name}</h2>
                     )}
-                    {/* {device.type && (
-                        <span className="bg-[#f0db83] text-white text-xs px-2 py-1 rounded">
-                            {DEPARTMENT_MAPPING[device.type] || device.type}
-                        </span>
-                    )} */}
                 </div>
                 
-                <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>
+                <span className="text-[#777] block mt-2">{device.type}</span>
                 
                 {device.branch_names && device.branch_names.length > 0 && (
                     <div className="mt-2">
@@ -219,19 +181,18 @@ const ProjectSection = ({
                     <div className="row">
                         <div className="col-lg-3">
                             <ServiceSidebar 
-                                services={departmentsData.map(dept => ({
-                                    department_id: dept.id,
-                                    department_name: dept.name
+                                services={Object.entries(DEPARTMENT_MAPPING).map(([type, department]) => ({
+                                    department_id: department,
+                                    department_name: department
                                 }))}
-                                branches={processedBranches}
+                                branches={allBranches.map(branch => ({
+                                    id: branch.id,
+                                    name: branch.name.trim()
+                                }))}
                                 onSearchChange={setSearchTerm}
                                 onDepartmentChange={setSelectedDepartment}
-                                onBranchChange={handleBranchChange}
                                 currentSearch={searchTerm}
                                 currentDepartment={selectedDepartment}
-                                currentBranch={allBranches.find(b => 
-                                    normalizeBranchName(b.name) === selectedBranch
-                                )?.id || null}
                             />
                         </div>
                         <div className="col-lg-9">
@@ -290,8 +251,6 @@ const ProjectSection = ({
                     </div>
                 )}
 
-         
-
                 <div className="project_wrapper relative">
                     {slider ? (
                         <Swiper
@@ -340,7 +299,6 @@ const ProjectSection = ({
                         </div>
                     )}
 
-                    {/* Navigation buttons - only for slider */}
                     {slider && swiperInitialized && (
                         <>
                             <div className="swiper-button-prev !text-[#CBA853] !left-0 after:!text-xl"></div>

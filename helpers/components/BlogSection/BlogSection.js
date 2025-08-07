@@ -37,7 +37,7 @@ const BlogSection = ({ tClass = '' }) => {
   }
 
   return (
-    <section className={tClass} dir="ltr">
+    <section className={tClass} >
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-9 col-12">
@@ -46,7 +46,7 @@ const BlogSection = ({ tClass = '' }) => {
         </div>
         <div className="row">
           {topBlogs.map((blog, index) => (
-            <div className="col-lg-4 col-md-6 col-12" key={blog.id || index}>
+            <div className="col-lg-4 col-md-6 col-12" key={blog.id || index} dir="ltr">
               <div className="blog_card">
                 {blog.image && (
                   <img src={getImageUrl(blog.image)} alt={blog.title2} style={{ height: 200, objectFit: 'cover' }} />

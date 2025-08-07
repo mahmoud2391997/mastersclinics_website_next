@@ -37,8 +37,8 @@ const PageTitle = (props) => {
                         <div className="wpo-breadcumb-wrap">
                             <h2>{pageTitle}</h2>
                             <ul>
-                                <li>{pagesub}</li>
                                 <li><Link href="/">الرئيسية</Link></li>
+                                <li>{pagesub}</li>
                             </ul>
                         </div>
                     </div>
