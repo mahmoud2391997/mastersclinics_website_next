@@ -177,11 +177,11 @@ const ProjectSection = ({
                     ) : (
                         <h2 className="text-lg font-bold flex-1">{device.name}</h2>
                     )}
-                    {device.type && (
+                    {/* {device.type && (
                         <span className="bg-[#f0db83] text-white text-xs px-2 py-1 rounded">
                             {DEPARTMENT_MAPPING[device.type] || device.type}
                         </span>
-                    )}
+                    )} */}
                 </div>
                 
                 <span className="text-[#777] block mt-2">{device.subtitle || device.type}</span>

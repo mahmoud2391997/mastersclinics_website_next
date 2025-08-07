@@ -37,7 +37,7 @@ const BlogSection = ({ tClass = '' }) => {
   }
 
   return (
-    <section className={tClass}>
+    <section className={tClass} dir="ltr">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-lg-9 col-12">
