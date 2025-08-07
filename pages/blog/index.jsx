@@ -10,7 +10,7 @@ const BlogPage = () => {
     return (
         <Fragment>
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-            <PageTitle pageTitle={'أحدث المقالات والنصائح'} pagesub={'المقالات'} bgImage={"/blogs.png"} />
+            <PageTitle pageTitle={'أحدث المقالات والنصائح'} pagesub={'المقالات'} bgImage={"/blogs.webp"} />
             <BlogList props={blogs} />
             <Footer hclass={'wpo-site-footer_s2'} />
             <Scrollbar />

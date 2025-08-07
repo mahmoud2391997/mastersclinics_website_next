@@ -11,6 +11,7 @@ import Footer from "../../helpers/components/footer/Footer"
 import Scrollbar from "../../helpers/components/scrollbar/scrollbar"
 import Head from "next/head"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 
 // Spinner
 const LoadingSpinner = ({ text = "جاري التحميل...", size = "medium", color = "primary" }) => {
@@ -118,6 +119,28 @@ const ServicePage = () => {
       </Head>
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
       <PageTitle pageTitle={"خدماتنا"} pagesub={"الخدمات"} bgImage={"/services.webp"} />
+      
+      {/* Add the new devices section buttons */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-center gap-4 mb-8">
+          <Link 
+            href="/devices?departmentName=أجهزة التغذية" 
+            className="bg-gradient-to-r from-[#CBA853] to-[#A58532] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <h3 className="text-xl font-bold mb-2">أجهزة التغذية ونحت القوام</h3>
+            <p className="text-sm">أحدث الأجهزة لتحقيق القوام المثالي</p>
+          </Link>
+          
+          <Link 
+            href="/devices?departmentName=أجهزة الجلدية" 
+            className="bg-gradient-to-r from-[#4a90e2] to-[#2a5a9a] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <h3 className="text-xl font-bold mb-2">أجهزة الجلدية والليزر</h3>
+            <p className="text-sm">أحدث تقنيات العناية بالبشرة وإزالة الشعر</p>
+          </Link>
+        </div>
+      </div>
+      
       {loading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
           <LoadingSpinner text="جارٍ تحميل الخدمات..." />

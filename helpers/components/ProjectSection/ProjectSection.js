@@ -42,8 +42,8 @@ const ProjectSection = ({
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [swiperInitialized, setSwiperInitialized] = useState(false);
     
-    // Read departmentId from searchParams
-    const departmentIdFromParams = searchParams?.get('departmentId');
+    // Read departmentName from searchParams
+    const departmentNameFromParams = searchParams?.get('departmentName');
     
     useEffect(() => {
         // Fetch all devices (we'll filter them client-side)
@@ -55,11 +55,11 @@ const ProjectSection = ({
     }, [dispatch, showFilters, showSidebar]);
 
     useEffect(() => {
-        // Set department filter if departmentId is in URL params
-        if (departmentIdFromParams) {
-            setSelectedDepartment(departmentIdFromParams);
+        // Set department filter if departmentName is in URL params
+        if (departmentNameFromParams) {
+            setSelectedDepartment(departmentNameFromParams);
         }
-    }, [departmentIdFromParams]);
+    }, [departmentNameFromParams]);
 
     const { 
         items: devices = [], 
@@ -85,7 +85,7 @@ const ProjectSection = ({
                                    String(id) === String(branchId)
                                 ));
             
-            // Department filter
+            // Department filter - now using departmentName instead of departmentId
             const matchesDepartment = !selectedDepartment || 
                                    (device.type && 
                                     (DEPARTMENT_MAPPING[device.type] === selectedDepartment || 
@@ -98,6 +98,25 @@ const ProjectSection = ({
     const resetFilters = () => {
         setSearchTerm("");
         setSelectedDepartment(null);
+    };
+
+    // Update the section title based on the selected department
+    const getSectionTitle = () => {
+        if (selectedDepartment === "أجهزة التغذية") {
+            return "أجهزة التغذية ونحت القوام";
+        } else if (selectedDepartment === "أجهزة الجلدية") {
+            return "أجهزة الجلدية والليزر";
+        }
+        return "أجهزتنا الطبية";
+    };
+
+    const getSectionSubtitle = () => {
+        if (selectedDepartment === "أجهزة التغذية") {
+            return "أحدث الأجهزة لتحقيق القوام المثالي والصحة الغذائية";
+        } else if (selectedDepartment === "أجهزة الجلدية") {
+            return "أحدث تقنيات العناية بالبشرة وإزالة الشعر بالليزر";
+        }
+        return "أحدث التقنيات والأجهزة التي نقدمها لرعايتكم";
     };
 
     if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
@@ -116,7 +135,6 @@ const ProjectSection = ({
         </div>
     );
 
-    // ... rest of the component remains the same (renderDeviceCard, renderContent, etc.)
     const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
@@ -213,8 +231,8 @@ const ProjectSection = ({
                     <div className="row align-items-center">
                         <div className="col-lg-6 col-12 order-lg-1">
                             <SectionTitle 
-                                title="أجهزتنا الطبية" 
-                                subtitle="أحدث التقنيات والأجهزة التي نقدمها لرعايتكم" 
+                                title={getSectionTitle()} 
+                                subtitle={getSectionSubtitle()} 
                                 dir="rtl"
                                 className="medical-devices-title"
                             />

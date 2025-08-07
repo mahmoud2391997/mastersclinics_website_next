@@ -159,7 +159,7 @@ const BlogDetails = () => {
   return (
     <Fragment>
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
-      <PageTitle pageTitle={"مدونة"} pagesub={"مقال"} bgImage={"/blog.png"} />
+      <PageTitle pageTitle={"مدونة"} pagesub={"مقال"} bgImage={"/blogs.webp"} />
       <BlogSingle />
       <Footer hclass={"wpo-site-footer_s2"} />
     </Fragment>
