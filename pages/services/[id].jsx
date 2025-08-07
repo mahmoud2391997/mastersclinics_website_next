@@ -302,14 +302,11 @@ useEffect(() => {
 
   return (
     <Fragment>
-      <Head>
-        <title>{serviceData?.name_ar?.trim() || 'الخدمة'} | خدماتنا</title>
-        <meta name="description" content={serviceData?.description || 'خدمة طبية متخصصة'} />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+  
+console.log(serviceData);
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={"/services.webp"}/>
+      <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={serviceData.image ? serviceData.image  : "/services.webp"}/>
 
       <section dir="rtl" className="service_single section-padding">
         <div className="container mx-auto px-4">

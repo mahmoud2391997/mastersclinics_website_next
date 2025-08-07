@@ -105,7 +105,7 @@ console.log(currentMember);
       <PageTitle
         pageTitle={currentMember.name || "الطبيب"}
         pagesub={currentMember.specialty || "أخصائي"}
-bgImage={'/doctors.png'}      />
+bgImage={currentMember.image ? getImageUrl(currentMember.image) :  '/doctors.png'}      />
 
       <section className="team_single_page section-padding" dir="rtl">
         <div className="container">
