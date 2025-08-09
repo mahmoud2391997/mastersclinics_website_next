@@ -142,9 +142,9 @@ const MobileMenu = ({ menuData }) => {
     },
     {
       id: 9,
-      title: 'الأجهزة',
-      path: 'devices',
-      link: '/devices'
+      title: 'المقالات',
+      path: 'blog',
+      link: '/blog'
     }
   ];
 

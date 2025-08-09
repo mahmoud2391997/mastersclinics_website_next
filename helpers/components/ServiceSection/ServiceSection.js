@@ -120,12 +120,20 @@ const ServiceSection = ({
         {!loading && !error && (
           <div className="relative">
             <Swiper
-              modules={[Navigation, Autoplay]}
+              modules={[Navigation, Pagination, Autoplay]}
               navigation={{
                 nextEl: ".service-swiper-button-next",
                 prevEl: ".service-swiper-button-prev",
               }}
-         
+              pagination={{
+                el: ".service-swiper-pagination",
+                clickable: true,
+                bulletClass: "swiper-bullet-custom",
+                bulletActiveClass: "swiper-bullet-active-custom",
+                renderBullet: function (index, className) {
+                  return `<span class="${className}"></span>`;
+                },
+              }}
               spaceBetween={20}
               slidesPerView={1}
               breakpoints={{
@@ -245,8 +253,8 @@ const ServiceSection = ({
               </svg>
             </button>
 
-            {/* Pagination */}
-            <div className="service-swiper-pagination mt-4 flex justify-center gap-1"></div>
+            {/* Pagination Container */}
+            <div className="service-swiper-pagination mt-6 flex justify-center gap-2"></div>
           </div>
         )}
 
@@ -288,29 +296,39 @@ const ServiceSection = ({
         .rtl .flaticon-left-arrow {
           transform: rotate(180deg);
         }
+        
+        /* Custom Pagination Styles */
         .swiper-bullet-custom {
-          width: 6px;
-          height: 6px;
-          background: rgba(200, 200, 200, 0.7);
-          border-radius: 50%;
-          margin: 0 2px;
+          width: 12px;
+          height: 12px;
+          background: rgba(203, 168, 83, 0.3);
+          border-radius: 6px;
+          margin: 0 4px;
           cursor: pointer;
           transition: all 0.3s ease;
+          display: inline-block;
         }
         .swiper-bullet-active-custom {
           background: #CBA853;
-          width: 8px;
-          height: 8px;
+          width: 30px;
+          border-radius: 8px;
         }
-        @media (min-width: 768px) {
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
           .swiper-bullet-custom {
-            width: 8px;
-            height: 8px;
-          }
-          .swiper-bullet-active-custom {
             width: 10px;
             height: 10px;
           }
+          .swiper-bullet-active-custom {
+            width: 24px;
+          }
+        }
+        
+        /* Accessibility focus styles */
+        .swiper-bullet-custom:focus {
+          outline: 2px solid #CBA853;
+          outline-offset: 2px;
         }
       `}</style>
     </section>

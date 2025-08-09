@@ -53,7 +53,7 @@ console.log(branch);
   return (
     <div className="">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع"         bgImage={ branch.image_url ? getImageUrl(branch.image_url) : "/branches.webp"} 
+      <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع"         bgImage={ "/branches.webp"} 
  />
       
       {/* Hero Image */}

@@ -19,41 +19,34 @@ const TestimonialArabic = (props) => {
     dispatch(fetchReviews())
   }, [dispatch])
 
-  const settings = {
-    dots: false,
-    autoplay: true,
-    infinite: true,
-    arrows: false,
-    speed: 300,
-    slidesToShow: 2,
-    slidesToScroll: 1,
-    rtl: true,
-    responsive: [
-      {
-        breakpoint: 991,
-        settings: {
-          slidesToShow: 1,
-          dots: true,
-        },
+ const settings = {
+  dots: false,
+  autoplay: true,
+  infinite: true,
+  arrows: false,
+  speed: 300,
+  slidesToShow: 3, // default for large screens
+  slidesToScroll: 1,
+  rtl: true,
+  responsive: [
+    {
+      breakpoint: 1024, // from md to lg
+      settings: {
+        slidesToShow: 2,
+        dots: true,
       },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          dots: true,
-          rtl: true,
-        },
+    },
+    {
+      breakpoint: 768, // below md
+      settings: {
+        slidesToShow: 1,
+        dots: true,
+        rtl: true,
       },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          dots: true,
-          rtl: true,
-        },
-      },
-    ],
-  }
+    },
+  ],
+};
+
 
   if (loading) return <p className="text-center mt-10">جارٍ تحميل التقييمات...</p>
   if (error) return <p className="text-center text-red-500 mt-10">حدث خطأ: {error}</p>
@@ -73,7 +66,7 @@ const TestimonialArabic = (props) => {
             <div className="testimonial_slider w-full">
               <Slider {...settings}>
                 {testimonials.map((testitem, idx) => (
-                  <div className="px-2" key={testitem.id || idx}>
+                  <div className="px-2 lg:px-1" key={testitem.id || idx}>
                     <div className="testimonial_card mx-2">
                       <div className="icon flex justify-center items-center">
                         <svg
@@ -105,7 +98,7 @@ const TestimonialArabic = (props) => {
                         {testitem.des}
                       </p>
 
-                      <div className="ath flex items-center justify-center gap-3">
+                      <div className="ath flex !flex-row-reverse lg:!flex-row items-center justify-center gap-1">
                         <div className="image w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow">
                           <img
                             className="w-full h-full object-cover"

@@ -8,7 +8,7 @@ import { getImageUrl } from "@/helpers/hooks/imageUrl";
 import ServiceSidebar from "../../main-component/ServiceSinglePage/sidebar"
 import { useSearchParams } from 'next/navigation';
 
-// Import Swiper React components and styles
+// Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -17,7 +17,7 @@ import 'swiper/css/pagination';
 
 const ClickHandler = () => {
     window.scrollTo(10, 0);
-}
+};
 
 const DEPARTMENT_MAPPING = {
     "أجهزة التغذية ونحت القوام": "أجهزة التغذية",
@@ -37,25 +37,21 @@ const ProjectSection = ({
 }) => {
     const dispatch = useDispatch();
     const searchParams = useSearchParams();
-    
+
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [swiperInitialized, setSwiperInitialized] = useState(false);
-    
-    // Read departmentName from searchParams
+
     const departmentNameFromParams = searchParams?.get('departmentName');
-    
+
     useEffect(() => {
-        // Fetch all devices (we'll filter them client-side)
         dispatch(fetchDevices());
-        
         if (showFilters || showSidebar) {
             dispatch(fetchBranches());
         }
     }, [dispatch, showFilters, showSidebar]);
 
     useEffect(() => {
-        // Set department filter if departmentName is in URL params
         if (departmentNameFromParams) {
             setSelectedDepartment(departmentNameFromParams);
         }
@@ -69,28 +65,22 @@ const ProjectSection = ({
 
     const { items: allBranches = [] } = useSelector(state => state.branches || {});
 
-    // Filter devices based on branchId, search term, and department
     const filteredDevices = useMemo(() => {
         return devices.filter(device => {
-            // Search filter
             const searchNorm = searchTerm.toLowerCase();
             const matchesSearch = searchTerm === "" || 
-                              device.name?.toLowerCase().includes(searchNorm) || 
-                              device.type?.toLowerCase().includes(searchNorm);
-            
-            // Branch filter - compare both string and number versions of IDs
+                device.name?.toLowerCase().includes(searchNorm) || 
+                device.type?.toLowerCase().includes(searchNorm);
+
             const matchesBranch = !branchId || 
-                               (device.branches_ids && 
-                                device.branches_ids.some(id => 
-                                   String(id) === String(branchId)
-                                ));
-            
-            // Department filter - now using departmentName instead of departmentId
+                (device.branches_ids && 
+                 device.branches_ids.some(id => String(id) === String(branchId)));
+
             const matchesDepartment = !selectedDepartment || 
-                                   (device.type && 
-                                    (DEPARTMENT_MAPPING[device.type] === selectedDepartment || 
-                                     device.type === selectedDepartment));
-            
+                (device.type && 
+                 (DEPARTMENT_MAPPING[device.type] === selectedDepartment || 
+                  device.type === selectedDepartment));
+
             return matchesSearch && matchesBranch && matchesDepartment;
         });
     }, [devices, searchTerm, selectedDepartment, branchId]);
@@ -100,7 +90,6 @@ const ProjectSection = ({
         setSelectedDepartment(null);
     };
 
-    // Update the section title based on the selected department
     const getSectionTitle = () => {
         if (selectedDepartment === "أجهزة التغذية") {
             return "أجهزة التغذية ونحت القوام";
@@ -276,15 +265,9 @@ const ProjectSection = ({
                             spaceBetween={30}
                             slidesPerView={1}
                             breakpoints={{
-                                640: {
-                                    slidesPerView: 1,
-                                },
-                                768: {
-                                    slidesPerView: 2,
-                                },
-                                1024: {
-                                    slidesPerView: 3,
-                                },
+                                640: { slidesPerView: 1 },
+                                768: { slidesPerView: 2 },
+                                1024: { slidesPerView: 3 },
                             }}
                             navigation={{
                                 nextEl: '.swiper-button-next',
@@ -294,13 +277,33 @@ const ProjectSection = ({
                                 clickable: true,
                                 el: '.swiper-pagination',
                                 type: 'bullets',
+                                renderBullet: (index, className) => {
+                                    return `<span class="${className}" 
+                                        style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;">
+                                    </span>`;
+                                }
                             }}
                             autoplay={{
                                 delay: 5000,
                                 disableOnInteraction: false,
                             }}
                             loop={true}
-                            onInit={() => setSwiperInitialized(true)}
+                            onInit={() => {
+                                setSwiperInitialized(true);
+                                // Style active bullet
+                                setTimeout(() => {
+                                    document.querySelectorAll('.swiper-pagination-bullet-active')
+                                        .forEach(el => el.style.backgroundColor = '#CBA853');
+                                }, 0);
+                            }}
+                            onSlideChange={() => {
+                                setTimeout(() => {
+                                    document.querySelectorAll('.swiper-pagination-bullet')
+                                        .forEach(el => el.style.backgroundColor = '#e0e0e0');
+                                    document.querySelectorAll('.swiper-pagination-bullet-active')
+                                        .forEach(el => el.style.backgroundColor = '#CBA853');
+                                }, 0);
+                            }}
                             className="pb-12"
                         >
                             {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
