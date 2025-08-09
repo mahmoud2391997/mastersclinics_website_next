@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState, useMemo } from "react";
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
@@ -40,6 +41,7 @@ const ProjectSection = ({
 
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [selectedBranch, setSelectedBranch] = useState(null);
     const [swiperInitialized, setSwiperInitialized] = useState(false);
 
     const departmentNameFromParams = searchParams?.get('departmentName');
@@ -63,7 +65,7 @@ const ProjectSection = ({
         error: devicesError = null 
     } = useSelector(state => state.devices || {});
 
-    const { items: allBranches = [] } = useSelector(state => state.branches || {});
+    const { items: allBranches = [], loading: branchesLoading } = useSelector(state => state.branches || {});
 
     const filteredDevices = useMemo(() => {
         return devices.filter(device => {
@@ -72,9 +74,9 @@ const ProjectSection = ({
                 device.name?.toLowerCase().includes(searchNorm) || 
                 device.type?.toLowerCase().includes(searchNorm);
 
-            const matchesBranch = !branchId || 
+            const matchesBranch = !selectedBranch || 
                 (device.branches_ids && 
-                 device.branches_ids.some(id => String(id) === String(branchId)));
+                 device.branches_ids.some(id => String(id) === String(selectedBranch)));
 
             const matchesDepartment = !selectedDepartment || 
                 (device.type && 
@@ -83,11 +85,12 @@ const ProjectSection = ({
 
             return matchesSearch && matchesBranch && matchesDepartment;
         });
-    }, [devices, searchTerm, selectedDepartment, branchId]);
+    }, [devices, searchTerm, selectedDepartment, selectedBranch]);
 
     const resetFilters = () => {
         setSearchTerm("");
         setSelectedDepartment(null);
+        setSelectedBranch(null);
     };
 
     const getSectionTitle = () => {
@@ -108,23 +111,24 @@ const ProjectSection = ({
         return "أحدث التقنيات والأجهزة التي نقدمها لرعايتكم";
     };
 
-    if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
-    if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
-    if (filteredDevices.length === 0) return (
-        <div className="text-center py-5">
-            <p>لا توجد أجهزة متاحة</p>
-            {(searchTerm || selectedDepartment) && (
-                <button 
-                    onClick={resetFilters}
-                    className="text-[#CBA853] mt-2"
-                >
-                    إعادة تعيين الفلاتر
-                </button>
-            )}
-        </div>
+    const renderSidebar = () => (
+        <ServiceSidebar 
+            services={Object.entries(DEPARTMENT_MAPPING).map(([type, department]) => ({
+                department_id: department,
+                department_name: department
+            }))}
+            branches={allBranches}
+            onSearchChange={setSearchTerm}
+            onDepartmentChange={setSelectedDepartment}
+            onBranchChange={setSelectedBranch}
+            currentSearch={searchTerm}
+            currentDepartment={selectedDepartment}
+            currentBranch={selectedBranch}
+            searchPlaceholder="ابحث عن الأجهزة..."
+        />
     );
 
-    const renderDeviceCard = (device, index) => (
+      const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
                 <img 
@@ -181,26 +185,29 @@ const ProjectSection = ({
         </div>
     );
 
+    if (devicesLoading) return <div className="text-center py-5">جاري تحميل الأجهزة...</div>;
+    if (devicesError) return <div className="text-center py-5 text-danger">خطأ في تحميل الأجهزة: {devicesError}</div>;
+    if (filteredDevices.length === 0) return (
+        <div className="text-center py-5">
+            <p>لا توجد أجهزة متاحة</p>
+            {(searchTerm || selectedDepartment || selectedBranch) && (
+                <button 
+                    onClick={resetFilters}
+                    className="text-[#CBA853] mt-2"
+                >
+                    إعادة تعيين الفلاتر
+                </button>
+            )}
+        </div>
+    );
+
     return (
         <section className={hclass} dir="rtl">
             <div className="container">
                 {showSidebar ? (
                     <div className="row">
                         <div className="col-lg-3">
-                            <ServiceSidebar 
-                                services={Object.entries(DEPARTMENT_MAPPING).map(([type, department]) => ({
-                                    department_id: department,
-                                    department_name: department
-                                }))}
-                                branches={allBranches.map(branch => ({
-                                    id: branch.id,
-                                    name: branch.name.trim()
-                                }))}
-                                onSearchChange={setSearchTerm}
-                                onDepartmentChange={setSelectedDepartment}
-                                currentSearch={searchTerm}
-                                currentDepartment={selectedDepartment}
-                            />
+                            {renderSidebar()}
                         </div>
                         <div className="col-lg-9">
                             {renderContent()}
@@ -290,7 +297,6 @@ const ProjectSection = ({
                             loop={true}
                             onInit={() => {
                                 setSwiperInitialized(true);
-                                // Style active bullet
                                 setTimeout(() => {
                                     document.querySelectorAll('.swiper-pagination-bullet-active')
                                         .forEach(el => el.style.backgroundColor = '#CBA853');

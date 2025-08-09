@@ -6,25 +6,23 @@ const ServiceSidebar = ({
   branches = [],
   onSearchChange,
   onDepartmentChange,
-  onBranchChange,
+  onBranchChange = () => {}, // Default empty function
   currentSearch = "",
   currentDepartment = null,
   currentBranch = null,
+  searchPlaceholder = "ابحث عن الخدمات...",
 }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState(currentSearch)
 
-  // Extract unique departments from services with proper names
+  // Extract unique departments from services
   const departments = useMemo(() => {
     const deptMap = new Map()
     services.forEach((service) => {
-      if (service.department_id) {
-        // Use the department_name from the first service with this department_id
-        if (!deptMap.has(service.department_id)) {
-          deptMap.set(service.department_id, {
-            id: service.department_id,
-            name: service.department_name || `القسم ${service.department_id}`,
-          })
-        }
+      if (service.department_id && !deptMap.has(service.department_id)) {
+        deptMap.set(service.department_id, {
+          id: service.department_id,
+          name: service.department_name || `القسم ${service.department_id}`,
+        })
       }
     })
     return Array.from(deptMap.values())
@@ -32,12 +30,9 @@ const ServiceSidebar = ({
 
   // Process branches data
   const processedBranches = useMemo(() => {
-    // Normalize branch names (remove extra spaces and normalize case)
-    const normalizeBranchName = (name) => name.trim().replace(/\s+/g, ' ')
-    
     return branches.map(branch => ({
       id: branch.id,
-      name: normalizeBranchName(branch.name)
+      name: branch.name.trim()
     }))
   }, [branches])
 
@@ -49,7 +44,6 @@ const ServiceSidebar = ({
     return () => clearTimeout(handler)
   }, [localSearchTerm, onSearchChange])
 
-  // Sync local search term with external currentSearch prop
   useEffect(() => {
     setLocalSearchTerm(currentSearch)
   }, [currentSearch])
@@ -58,19 +52,14 @@ const ServiceSidebar = ({
     setLocalSearchTerm(e.target.value)
   }, [])
 
-  const handleDepartmentChange = useCallback(
-    (deptId) => {
-      onDepartmentChange(deptId)
-    },
-    [onDepartmentChange],
-  )
+  const handleDepartmentChange = useCallback((deptId) => {
+    onDepartmentChange(deptId)
+  }, [onDepartmentChange])
 
-  const handleBranchChange = useCallback(
-    (branchId) => {
-      onBranchChange(branchId)
-    },
-    [onBranchChange],
-  )
+  const handleBranchChange = useCallback((e) => {
+    const branchId = e.target.value === "all" ? null : e.target.value
+    onBranchChange(branchId)
+  }, [onBranchChange])
 
   return (
     <div className="service_sidebar space-y-6 sticky top-4 rtl">
@@ -82,7 +71,7 @@ const ServiceSidebar = ({
             type="text"
             value={localSearchTerm}
             onChange={handleSearchChange}
-            placeholder="ابحث عن الخدمات..."
+            placeholder={searchPlaceholder}
           />
           <svg
             className="absolute left-3 top-3 h-4 w-4 text-gray-400"
@@ -100,26 +89,21 @@ const ServiceSidebar = ({
       </div>
 
       {/* Branches Filter Widget */}
-      {branches.length > 0 && (
+      {processedBranches.length > 0 && (
         <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
           <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a]">الفروع</h2>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            <button
-              onClick={() => handleBranchChange(null)}
-              className={`w-full text-right py-2 px-3 rounded transition ${!currentBranch ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
-            >
-              جميع الفروع
-            </button>
+          <select
+            className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
+            value={currentBranch || "all"}
+            onChange={handleBranchChange}
+          >
+            <option value="all">جميع الفروع</option>
             {processedBranches.map((branch) => (
-              <button
-                key={branch.id}
-                onClick={() => handleBranchChange(branch.id)}
-                className={`w-full text-right py-2 px-3 rounded transition ${currentBranch === branch.id ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
-              >
+              <option key={branch.id} value={branch.id}>
                 {branch.name}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
       )}
 

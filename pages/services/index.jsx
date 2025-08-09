@@ -1,5 +1,5 @@
 "use client"
-import { Fragment, useEffect, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import PropTypes from "prop-types"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchServices } from "../../store/slices/services"
@@ -13,7 +13,6 @@ import Head from "next/head"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 
-// Spinner
 const LoadingSpinner = ({ text = "جاري التحميل...", size = "medium", color = "primary" }) => {
   const sizeClasses = {
     small: "w-6 h-6 border-2",
@@ -41,7 +40,6 @@ LoadingSpinner.propTypes = {
   size: PropTypes.oneOf(["small", "medium", "large"]),
   color: PropTypes.oneOf(["primary", "white", "gray"]),
 }
-
 const ServicePage = () => {
   const dispatch = useDispatch()
   const { services = [], loading = false, error = null } = useSelector((state) => state.services || {})
@@ -49,32 +47,26 @@ const ServicePage = () => {
   const departmentIdFromUrl = searchParams.get("departmentId")
 
   const [searchTerm, setSearchTerm] = useState("")
-  // Initialize selectedDepartment with the value from URL search params
   const [selectedDepartment, setSelectedDepartment] = useState(
     departmentIdFromUrl ? Number.parseInt(departmentIdFromUrl, 10) : null,
   )
+  const [selectedBranch, setSelectedBranch] = useState(null)
 
   useEffect(() => {
     dispatch(fetchServices())
   }, [dispatch])
 
-  // Update selectedDepartment if the URL departmentId changes
   useEffect(() => {
     const newDepartmentId = searchParams.get("departmentId")
     setSelectedDepartment(newDepartmentId ? Number.parseInt(newDepartmentId, 10) : null)
   }, [searchParams])
 
-  console.log(services)
-
   const parseServiceData = (service) => {
     try {
-      // Parse doctors and branches
       const doctors_ids = service.doctors_ids ? JSON.parse(service.doctors_ids) : []
       const branches = service.branches ? JSON.parse(service.branches) : []
 
-      // Get doctor details (assuming you have this data)
       const doctor_details = service.doctor_details || doctors_ids.map((id) => ({ id, name: `طبيب ${id}` }))
-      // Get branch details (assuming you have this data)
       const branch_details = service.branch_details || branches.map((id) => ({ id, name: `فرع ${id}` }))
 
       return {
@@ -94,6 +86,7 @@ const ServicePage = () => {
         department_name: service.department_name || `القسم ${service.department_id}`,
         doctor_details,
         branch_details,
+        branch_names: service.branch_names || [] // Keep the original branch names
       }
     } catch (e) {
       console.error("Error parsing service data:", e)
@@ -103,12 +96,52 @@ const ServicePage = () => {
         branches: [],
         doctor_details: [],
         branch_details: [],
+        branch_names: [],
         department_name: service.department_name || `القسم ${service.department_id}`,
       }
     }
   }
 
+const extractBranches = (services) => {
+    const branchMap = new Map()
+    
+    services.forEach(service => {
+      if (service.branch_names && service.branch_names.length > 0) {
+        service.branch_names.forEach((branchName, index) => {
+          const branchId = service.branches[index] || branchName
+          const normalizedName = branchName.trim()
+          if (!branchMap.has(branchId)) {
+            branchMap.set(branchId, {
+              id: branchId,
+              name: normalizedName
+            })
+          }
+        })
+      }
+    })
+    
+    return Array.from(branchMap.values())
+  }
+
   const parsedServices = services.map(parseServiceData)
+  const branches = extractBranches(parsedServices)
+
+  // Filter services based on selected department and branch
+  const filteredServices = useMemo(() => {
+    return parsedServices.filter(service => {
+      // Filter by department if selected
+      const departmentMatch = !selectedDepartment || service.department_id === selectedDepartment
+      
+      // Filter by branch if selected
+      let branchMatch = true
+      if (selectedBranch) {
+        branchMatch = service.branches.includes(selectedBranch) || 
+                     service.branch_names.some(name => name.trim() === selectedBranch)
+      }
+      
+      return departmentMatch && branchMatch
+    })
+  }, [parsedServices, selectedDepartment, selectedBranch])
 
   return (
     <Fragment>
@@ -158,15 +191,23 @@ const ServicePage = () => {
       ) : (
         <div className="container mx-auto px-4 py-8 flex flex-col-reverse lg:flex-row gap-8">
           <main className="lg:w-3/4">
-            <ServiceSection services={parsedServices} searchTerm={searchTerm} selectedDepartment={selectedDepartment} />
+            <ServiceSection 
+              services={filteredServices} 
+              searchTerm={searchTerm} 
+              selectedDepartment={selectedDepartment} 
+              selectedBranch={selectedBranch}
+            />
           </main>
           <aside className="lg:w-1/4">
             <ServiceSidebar
               services={parsedServices}
+              branches={branches}
               onSearchChange={setSearchTerm}
               onDepartmentChange={setSelectedDepartment}
+              onBranchChange={setSelectedBranch}
               currentSearch={searchTerm}
               currentDepartment={selectedDepartment}
+              currentBranch={selectedBranch}
             />
           </aside>
         </div>
