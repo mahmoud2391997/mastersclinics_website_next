@@ -98,8 +98,8 @@ const TestimonialArabic = (props) => {
                         {testitem.des}
                       </p>
 
-                      <div className="ath flex !flex-row-reverse lg:!flex-row items-center justify-center gap-1">
-                        <div className="image w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow">
+                      <div className=" flex !flex-row-reverse lg:!flex-row items-center justify-center gap-3">
+                        <div className="image w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
                           <img
                             className="w-full h-full object-cover"
                             src={getImageUrl(testitem.img) || "/placeholder.svg"}
