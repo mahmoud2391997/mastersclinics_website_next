@@ -6,7 +6,7 @@ export const fetchBlogs = createAsyncThunk(
     'blogs/fetchBlogs',
     async (_, thunkAPI) => {
         try {
-            const blogs = await get('/blogs');
+            const blogs = await get('/blogs/active');
             if (!blogs || blogs.length === 0) {
                 return localBlogs;
             }

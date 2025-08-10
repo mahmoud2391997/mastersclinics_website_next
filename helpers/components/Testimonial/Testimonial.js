@@ -25,7 +25,7 @@ const TestimonialArabic = (props) => {
   infinite: true,
   arrows: false,
   speed: 300,
-  slidesToShow: 3, // default for large screens
+  slidesToShow: testimonials.length > 2 ? 3 : 2, // default for large screens
   slidesToScroll: 1,
   rtl: true,
   responsive: [
@@ -52,6 +52,7 @@ const TestimonialArabic = (props) => {
   if (error) return <p className="text-center text-red-500 mt-10">حدث خطأ: {error}</p>
   if (!testimonials || testimonials.length === 0)
     return <p className="text-center mt-10">لا توجد تقييمات متاحة حاليًا.</p>
+console.log(testimonials);
 
   return (
     <section dir="rtl" className={`${props.tClass || ""} w-full overflow-hidden pt-5`}>

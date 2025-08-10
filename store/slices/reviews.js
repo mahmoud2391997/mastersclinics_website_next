@@ -32,10 +32,12 @@ export const fetchReviews = createAsyncThunk(
     'reviews/fetchReviews',
     async (_, thunkAPI) => {
         try {
-            const reviews = await get('/testimonials');
+            const reviews = await get('/testimonials/active');
             if (!reviews || reviews.length === 0) {
                 return localReviews;
             }
+            console.log(reviews);
+            
             return reviews;
         } catch (error) {
             return localReviews;
