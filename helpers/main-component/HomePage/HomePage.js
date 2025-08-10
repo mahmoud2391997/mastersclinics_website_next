@@ -16,7 +16,7 @@ import ImageSlider from '../../components/adsSlider/index';
 
 const HomePage = () => {
     return (
-        <div className="w-full relative">
+        <div className="w-full relative overflow-hidden">
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'} nav={true} />
             <Hero hclass={'static-hero'} />
             <ImageSlider />

@@ -78,7 +78,7 @@ const BlogSection = ({ tClass = '' }) => {
         {/* Slider Container */}
         <div className="row">
           <div className="col-12">
-            <Slider ref={sliderRef} {...settings} className="overflow-hidden">
+            <Slider ref={sliderRef} {...settings}>
                  {topBlogs.map((blog, index) => (
             <div className="col-lg-4 col-md-6 col-12" key={blog.id || index} dir="ltr">
               <div className="blog_card">
