@@ -107,8 +107,8 @@ const BlogList = ({ blRight = "", blLeft = "" }) => {
                         )}
                       </div>
                     )}
-                    <div className="entry-meta">
-                    <ul className="flex gap-6 text-gray-600" dir="rtl">
+                    <div className="entry-meta w-full">
+                    <ul className="flex gap-6 justify-around text-gray-600 w-full" dir="rtl">
     <li className="flex items-center gap-1">
       <span>
         بواسطة

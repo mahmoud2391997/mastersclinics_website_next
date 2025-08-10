@@ -5,7 +5,7 @@ import SectionTitle from '../SectionTitle/SectionTitle';
 
 const ProcessSection = (props) => {
     return (
-        <section className={"" + props.hclass}>
+        <section className={"" + props.hclass} dir='ltr'>
             <div className="container">
                 <div className="row justify-content-center">
                     <div className="col-lg-9 col-12">
