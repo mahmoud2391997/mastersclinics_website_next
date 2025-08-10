@@ -30,7 +30,7 @@ const ProjectSection = ({
     hclass,
     ShowSectionTitle = true,
     sliceStart = 0,
-    sliceEnd = 3,
+    sliceEnd = 6,
     branchId = null,
     showFilters = false,
     slider = true,
@@ -57,7 +57,11 @@ const ProjectSection = ({
         if (departmentNameFromParams) {
             setSelectedDepartment(departmentNameFromParams);
         }
-    }, [departmentNameFromParams]);
+        // If branchId is provided as prop, set it as the selected branch
+        if (branchId) {
+            setSelectedBranch(branchId);
+        }
+    }, [departmentNameFromParams, branchId]);
 
     const { 
         items: devices = [], 
@@ -74,9 +78,10 @@ const ProjectSection = ({
                 device.name?.toLowerCase().includes(searchNorm) || 
                 device.type?.toLowerCase().includes(searchNorm);
 
-            const matchesBranch = !selectedBranch || 
-                (device.branches_ids && 
-                 device.branches_ids.some(id => String(id) === String(selectedBranch)));
+            // If branchId prop is provided, only show devices from that branch
+            const matchesBranch = branchId 
+                ? (device.branches_ids && device.branches_ids.some(id => String(id) === String(branchId)))
+                : (!selectedBranch || (device.branches_ids && device.branches_ids.some(id => String(id) === String(selectedBranch))));
 
             const matchesDepartment = !selectedDepartment || 
                 (device.type && 
@@ -85,15 +90,22 @@ const ProjectSection = ({
 
             return matchesSearch && matchesBranch && matchesDepartment;
         });
-    }, [devices, searchTerm, selectedDepartment, selectedBranch]);
+    }, [devices, searchTerm, selectedDepartment, selectedBranch, branchId]);
 
     const resetFilters = () => {
         setSearchTerm("");
         setSelectedDepartment(null);
-        setSelectedBranch(null);
+        // Don't reset branch filter if branchId is provided as prop
+        if (!branchId) {
+            setSelectedBranch(null);
+        }
     };
 
     const getSectionTitle = () => {
+        if (branchId && allBranches.length > 0) {
+            const branch = allBranches.find(b => String(b.id) === String(branchId));
+            return branch ? `أجهزة فرع ${branch.name}` : "أجهزة الفرع";
+        }
         if (selectedDepartment === "أجهزة التغذية") {
             return "أجهزة التغذية ونحت القوام";
         } else if (selectedDepartment === "أجهزة الجلدية") {
@@ -103,6 +115,9 @@ const ProjectSection = ({
     };
 
     const getSectionSubtitle = () => {
+        if (branchId) {
+            return "الأجهزة المتاحة في هذا الفرع";
+        }
         if (selectedDepartment === "أجهزة التغذية") {
             return "أحدث الأجهزة لتحقيق القوام المثالي والصحة الغذائية";
         } else if (selectedDepartment === "أجهزة الجلدية") {
@@ -125,10 +140,11 @@ const ProjectSection = ({
             currentDepartment={selectedDepartment}
             currentBranch={selectedBranch}
             searchPlaceholder="ابحث عن الأجهزة..."
+            disableBranchFilter={!!branchId} // Disable branch filter if branchId is provided
         />
     );
 
-      const renderDeviceCard = (device, index) => (
+    const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
                 <img 
@@ -159,7 +175,7 @@ const ProjectSection = ({
                 
                 <span className="text-[#777] block mt-2">{device.type}</span>
                 
-                {device.branch_names && device.branch_names.length > 0 && (
+                {!branchId && device.branch_names && device.branch_names.length > 0 && (
                     <div className="mt-2">
                         <div className="text-sm text-gray-500 mb-1">الفروع المتاحة:</div>
                         <div className="flex flex-wrap gap-1">
@@ -190,7 +206,7 @@ const ProjectSection = ({
     if (filteredDevices.length === 0) return (
         <div className="text-center py-5">
             <p>لا توجد أجهزة متاحة</p>
-            {(searchTerm || selectedDepartment || selectedBranch) && (
+            {(searchTerm || selectedDepartment || (selectedBranch && !branchId)) && (
                 <button 
                     onClick={resetFilters}
                     className="text-[#CBA853] mt-2"
@@ -233,35 +249,37 @@ const ProjectSection = ({
                                 className="medical-devices-title"
                             />
                         </div>
-                        <div className="col-lg-6 col-12 order-lg-2 text-left">
-                            <div className="project_btn">
-                                <Link 
-                                    href="/devices" 
-                                    className="relative pl-16 inline-flex items-center justify-between
-                                               bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
-                                               text-white font-bold rounded-full py-3 px-6
-                                               hover:-translate-y-1 hover:shadow-md transition-all duration-300 gap-4"
-                                >
-                                    <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="#CBA853"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="transform rotate-0"
-                                        >
-                                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                                        </svg>
-                                    </span>
-                                    <span className="flex-1 text-end">عرض جميع الأجهزة</span>
-                                </Link>
+                        {!branchId && (
+                            <div className="col-lg-6 col-12 order-lg-2 text-left">
+                                <div className="project_btn">
+                                    <Link 
+                                        href="/devices" 
+                                        className="relative pl-16 inline-flex items-center justify-between
+                                                   bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
+                                                   text-white font-bold rounded-full py-3 px-6
+                                                   hover:-translate-y-1 hover:shadow-md transition-all duration-300 gap-4"
+                                    >
+                                        <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#CBA853"
+                                                strokeWidth="2"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="transform rotate-0"
+                                            >
+                                                <path d="M19 12H5M12 19l-7-7 7-7" />
+                                            </svg>
+                                        </span>
+                                        <span className="flex-1 text-end">عرض جميع الأجهزة</span>
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 

@@ -38,7 +38,7 @@ export default function DepartmentPage() {
       </Head>
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'}/>
-      <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={departmentImage}/>
+      <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={"/departments1.png"}/>
 
       <section className="py-12">
         <div className="container mx-auto">

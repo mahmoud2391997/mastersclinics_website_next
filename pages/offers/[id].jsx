@@ -1,9 +1,12 @@
+"use client"
+
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
+import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaPercentage, FaClinicMedical, FaUserMd } from 'react-icons/fa';
 
 import Navbar from '../../helpers/components/Navbar/Navbar';
 import PageTitle from '../../helpers/components/pagetitle/PageTitle';
@@ -11,6 +14,7 @@ import Footer from '../../helpers/components/footer/Footer';
 import SectionTitle from '../../helpers/components/SectionTitle/SectionTitle';
 import OffersSlider from '../../helpers/components/adsSlider/index';
 import CtafromSection from '../../helpers/components/Form';
+import Link from 'next/link';
 
 const OfferSinglePage = () => {
   const router = useRouter();
@@ -28,43 +32,74 @@ const OfferSinglePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">جاري تحميل العرض...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#dec06a] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xl mt-4 text-gray-700">جاري تحميل العرض...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-red-500">حدث خطأ أثناء تحميل العرض: {error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md text-center">
+          <div className="text-red-500 text-5xl mb-4">!</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">حدث خطأ</h2>
+          <p className="text-gray-600 mb-6">حدث خطأ أثناء تحميل العرض: {error}</p>
+          <button 
+            onClick={() => router.reload()}
+            className="bg-[#dec06a] hover:bg-[#d4b95a] text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!offer) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">العرض غير موجود</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md text-center">
+          <div className="text-gray-400 text-5xl mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">العرض غير موجود</h2>
+          <p className="text-gray-600 mb-6">عذراً، لا يمكن العثور على العرض المطلوب</p>
+          <button 
+            onClick={() => router.push('/offers')}
+            className="bg-[#dec06a] hover:bg-[#d4b95a] text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            تصفح العروض المتاحة
+          </button>
+        </div>
       </div>
     );
   }
 
   const images = [offer.image || '/default-image.jpg'];
-
-  const discountPercentage = Math.round(
-    ((offer.priceBefore - offer.priceAfter) / offer.priceBefore) * 100
-  );
+  const discountPercentage = Math.round(((offer.priceBefore - offer.priceAfter) / offer.priceBefore) * 100);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen ">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
-      <PageTitle pageTitle={offer.title} pagesub="تفاصيل العرض"  bgImage={ "/offers@0.5x.webp"}/>
+      
+      <PageTitle 
+        pageTitle={offer.title} 
+        pagesub="تفاصيل العرض"  
+        bgImage={"/offers@0.5x.webp"}
+      />
 
-      <main className="container mx-auto px-4 py-8" dir="rtl">
-        <div className="flex flex-col lg:flex-row-reverse gap-8">
-          {/* Image */}
-<div className="relative w-full h-[350px] md:h-[700px] bg-white rounded-xl shadow-md overflow-hidden">
+      <main className="container mx-auto px-4 py-8 md:py-12" dir="rtl">
+        {/* Offer Details Section */}
+        <div className="flex flex-col lg:flex-row-reverse gap-8 mb-12">
+          {/* Image Gallery */}
+          <div className="w-full lg:w-1/2">
+          <div className="relative w-full h-[350px] md:h-[700px] bg-white rounded-xl shadow-md overflow-hidden">
               <Image
                 src={getImageUrl(images[activeImage]) || '/default-image.jpg'}
                 alt={offer.title || 'عرض تجهيل نسائي'}
@@ -92,137 +127,155 @@ const OfferSinglePage = () => {
               {/* Clinic Name - Positioned like in reference */}
          
             </div>
-
-          {/* Content */}
-          <div className="lg:w-1/2">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">{offer.title}</h1>
-            <p className="text-gray-700 mb-6 leading-relaxed">{offer.description}</p>
-            
-            {/* Pricing */}
-            <div className="bg-gray-100 p-4 rounded-lg mb-6">
-              {offer.priceBefore > offer.priceAfter && (
-                <div className="flex items-center mb-2">
-                  <span className="text-gray-500 line-through ml-2">{offer.priceBefore} ر.س</span>
-                  <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
-                    وفر {offer.priceBefore - offer.priceAfter} ر.س
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center">
-                <span className="text-3xl font-bold text-[#dec06a]">{offer.priceAfter} ر.س</span>
-                {offer.priceBefore > offer.priceAfter && (
-                  <span className="text-green-600 text-sm mr-2">(شامل الضريبة)</span>
-                )}
-              </div>
-            </div>
-
-            {/* Booking Button */}
-            <button
-              className="w-full bg-[#dec06a] hover:bg-[#e8cf8c] text-white py-3 px-6 rounded-lg font-medium transition-colors mb-6"
-              onClick={() => {
-                const formSection = document.getElementById('appointment-form');
-                if (formSection) {
-                  formSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-            >
-              حجز موعد
-            </button>
-
-            {/* Offer details */}
-            <div className="border-t border-gray-200 pt-6 text-right">
-              <h3 className="text-lg font-semibold mb-3">تفاصيل العرض</h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">الفروع:</span>
-                  <span>
-                    {offer.branches && offer.branches.length > 0
-                      ? offer.branches.map(b => b.name).join('، ')
-                      : "غير محدد"}
-                  </span>
-                </li>
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">السعر الأصلي:</span>
-                  <span>{offer.priceBefore} ر.س</span>
-                </li>
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">السعر بعد الخصم:</span>
-                  <span>{offer.priceAfter} ر.س</span>
-                </li>
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">نسبة الخصم:</span>
-                  <span>{discountPercentage}%</span>
-                </li>
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">الخدمات:</span>
-                  <span>
-                    {offer.services_ids && offer.services_ids.length > 0
-                      ? offer.services_ids.map(service => service.title).join('، ')
-                      : "غير محدد"}
-                  </span>
-                </li>
-                <li className="flex">
-                  <span className="font-medium w-32 shrink-0">الأطباء:</span>
-                  <span>
-                    {offer.doctors_ids && offer.doctors_ids.length > 0
-                      ? offer.doctors_ids.map(doctor => doctor.name).join('، ')
-                      : "غير محدد"}
-                  </span>
-                </li>
-              </ul>
-            </div>
-            {/* Branches Section */}
-
           </div>
-        </div>
-      </main>
-<div className="mt-8 border-t border-gray-200 pt-6  px-4" dir="rtl">
-  <h3 className="text-lg font-semibold mb-4">الفروع المتاحة لهذا العرض</h3>
-  {offer.branches && offer.branches.length > 0 ? (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-end">
-      {offer.branches.map((branch) => (
-        <div 
-          key={branch.id} 
-          className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 text-right"
-        >
-          <h4 className="font-medium text-lg">{branch.name}</h4>
-          <p className="text-gray-600 mt-1">{branch.address}</p>
-          {branch.location_link && (
-            <a
-              href={branch.location_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-[#D4AF37] hover:underline mt-2 justify-end"
-            >
-              <span>عرض الموقع</span>
-              <svg 
-                className="w-4 h-4 ml-1 transform rotate-180" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+
+          {/* Content Section */}
+          <div className="w-full lg:w-1/2">
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h1 className="text-3xl font-bold text-gray-800 mb-4">{offer.title}</h1>
+              
+        
+              
+              <p className="text-gray-700 mb-6 leading-relaxed text-lg">
+                {offer.description || "عرض مميز يشمل مجموعة من الخدمات الطبية المقدمة بأعلى معايير الجودة والكفاءة."}
+              </p>
+              
+              {/* Pricing Section */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg mb-6 border border-gray-200">
+                {offer.priceBefore > offer.priceAfter && (
+                  <div className="flex items-center mb-2">
+                    <span className="text-gray-500 line-through ml-2 text-lg">{offer.priceBefore} ر.س</span>
+                    <span className="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full ml-2">
+                      وفر {offer.priceBefore - offer.priceAfter} ر.س
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-4xl font-bold text-[#D4AF37]">{offer.priceAfter} ر.س</span>
+                    {offer.priceBefore > offer.priceAfter && (
+                      <span className="text-green-600 text-sm mr-2 block mt-1">(شامل الضريبة)</span>
+                    )}
+                  </div>
+                  <button
+                    className="bg-gradient-to-r from-[#D4AF37] to-[#F4D03F] hover:from-[#C9A227] hover:to-[#E4C238] text-white py-3 px-8 rounded-lg font-medium transition-all transform hover:scale-105 shadow-md"
+                    onClick={() => {
+                      const formSection = document.getElementById('appointment-form');
+                      if (formSection) {
+                        formSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    <FaCalendarAlt className="inline ml-2" />
+                    حجز موعد
+                  </button>
+                </div>
+              </div>
+
+        
+
+           
+            </div>
+               <div className="bg-white rounded-xl shadow-lg p-6 mb-12 mt-2">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <FaMapMarkerAlt className="text-[#D4AF37] ml-2" />
+            الفروع المتاحة لهذا العرض
+          </h3>
+          
+          {offer.branches && offer.branches.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {offer.branches.map((branch) => (
+                <div 
+                  key={branch.id} 
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className="p-6">
+                    <h4 className="font-bold text-xl text-gray-800 mb-2">{branch.name}</h4>
+                    <p className="text-gray-600 mb-4">{branch.address}</p>
+                    
+           
+                    
+                    {branch.google_map_link && (
+                      <a
+                        href={branch.google_map_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center !text-[#dec06a] hover:!text-[#C9A227] font-medium"
+                      >
+                        <FaMapMarkerAlt className="ml-2" />
+                        عرض الموقع على الخريطة
+                      </a>
+                    )}
+                  </div>
+                  
+                   <div className="mr-6 mb-6">
+          
+              <a
+                href={`/branches/${branch.id}`}
+                className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
-                />
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" 
-                />
-              </svg>
-            </a>
+                المزيد من التفاصيل
+              </a>
+            </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-400 text-5xl mb-4">
+                <FaMapMarkerAlt className="inline-block" />
+              </div>
+              <h4 className="text-xl font-medium text-gray-700 mb-2">لا توجد فروع متاحة</h4>
+              <p className="text-gray-500">عذراً، لا توجد فروع متاحة لهذا العرض حالياً</p>
+            </div>
           )}
         </div>
-      ))}
-    </div>
-  ) : (
-    <p className="text-gray-500">لا توجد فروع متاحة لهذا العرض</p>
-  )}
-</div>
+          </div>
+        </div>
+
+        {/* Branches Section */}
+     
+
+        {/* Doctors Section */}
+        {offer.doctors_ids && offer.doctors_ids.length > 0 && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-12">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">الأطباء المتاحون</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {offer.doctors_ids.map((doctor) => (
+                <div key={doctor.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="p-6">
+                    <div className="flex items-center mb-4 gap-2">
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
+                        <Image
+                          src={getImageUrl(doctor.image) || '/default-doctor.jpg'}
+                          alt={doctor.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className='mt-4'>
+                        <h4 className="font-bold text-gray-800">{doctor.name}</h4>
+                        <p className="text-[#D4AF37] text-sm">{doctor.specialty}</p>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mb-4 text-sm">{doctor.services}</p>
+               
+                  </div>
+                  <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <button className="bg-[#D4AF37] hover:bg-[#C9A227] text-white font-medium py-2 px-6 rounded-lg w-full transition-colors">
+                     <Link href={`/doctors/${doctor.id}`} className='!text-white'>
+                      حجز مع الطبيب
+                     </Link>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Appointment Form */}
       <div id="appointment-form" className="AppointmentFrom mb-5">
         <div className="container">
           <div className="cta_form_s2">
@@ -235,8 +288,9 @@ const OfferSinglePage = () => {
         </div>
       </div>
 
-      <SectionTitle title="العروض الأخرى" />
-      <OffersSlider />
+      {/* Related Offers */}
+      <SectionTitle title={"عروض مشابهة"}/>
+        <OffersSlider />
       <Footer hclass={'wpo-site-footer'} />
     </div>
   );

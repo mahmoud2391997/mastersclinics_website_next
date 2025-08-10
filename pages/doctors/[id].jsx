@@ -89,7 +89,7 @@ console.log(currentMember);
           </a>
           <Link
             href={`/branches/${branch.id}`}
-            className="px-4 py-3 border-2 border-[#dec06a] text-[#dec06a] font-medium rounded-lg text-center hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="px-4 py-3 border-2 border-[#dec06a] !text-[#dec06a] font-medium rounded-lg text-center hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
           >
             <FaClinicMedical />
             المزيد عن الفرع
@@ -105,7 +105,7 @@ console.log(currentMember);
       <PageTitle
         pageTitle={currentMember.name || "الطبيب"}
         pagesub={currentMember.specialty || "أخصائي"}
-bgImage={currentMember.image ? getImageUrl(currentMember.image) :  '/doctors.png'}      />
+bgImage={  '/doctors.png'}      />
 
       <section className="team_single_page section-padding" dir="rtl">
         <div className="container">
@@ -141,34 +141,14 @@ bgImage={currentMember.image ? getImageUrl(currentMember.image) :  '/doctors.png
                             {currentMember.specialty}
                           </span>
                           <span className="bg-[#e8f0fe] text-[#1a73e8] px-3 py-1 rounded-full text-sm font-medium">
-                            {currentMember.department_name}
+                            {currentMember.department.name}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-6">
                           طبيب متخصص في {currentMember.specialty} مع سنوات من الخبرة في تقديم أفضل العلاجات والرعاية الطبية.
                         </p>
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-[#f8f3e6] p-2 rounded-full">
-                            <FaPhone className="text-[#dec06a]" />
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm">الهاتف</p>
-                            <p className="font-medium">+966 12 345 6789</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="bg-[#f8f3e6] p-2 rounded-full">
-                            <MdEmail className="text-[#dec06a]" />
-                          </div>
-                          <div>
-                            <p className="text-gray-500 text-sm">البريد الإلكتروني</p>
-                            <p className="font-medium">doctor@masters.com</p>
-                          </div>
-                        </div>
-                      </div>
+               
                     </div>
                   </div>
                 </div>

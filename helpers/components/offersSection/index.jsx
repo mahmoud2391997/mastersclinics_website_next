@@ -225,11 +225,11 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
                 ))}
               </div>
             ) : (
-              <div className="w-full aspect-[4/5] flex items-center justify-center bg-gray-200 rounded-lg">
-                {searchTerm || selectedBranch !== "all" || selectedDepartment
-                  ? "لا توجد عروض متطابقة مع بحثك" 
-                  : "لا توجد عروض متاحة حالياً"}
-              </div>
+             <div className="text-center py-12">
+            <h3 className="text-xl text-gray-600">لا توجد عروض متاحة</h3>
+            <p className="text-gray-500 mt-2">حاول تغيير فلتر البحث أو اختيار قسم آخر</p>
+          </div>
+                     
             )}
           </div>
         </div>
