@@ -162,9 +162,6 @@ console.log(branch);
           </div>
         )}
       </div>
-      <DepartmentsGrid branchId={id} />
-      <TeamSection branchId={id} />
-      <ProjectSection branchId={id} hclass="project_section section-padding" />
        <div id="appointment-form" className="AppointmentFrom mb-5">
         <div className="container">
           <div className="cta_form_s2">
@@ -176,6 +173,9 @@ console.log(branch);
           </div>
         </div>
       </div>
+      <DepartmentsGrid branchId={id} />
+      <TeamSection branchId={id} />
+      <ProjectSection branchId={id} hclass="project_section section-padding" />
       <Footer hclass={'wpo-site-footer'} />
                   <Scrollbar />
 

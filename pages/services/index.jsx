@@ -45,12 +45,13 @@ const ServicePage = () => {
   const { services = [], loading = false, error = null } = useSelector((state) => state.services || {})
   const searchParams = useSearchParams()
   const departmentIdFromUrl = searchParams.get("departmentId")
-
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState(
     departmentIdFromUrl ? Number.parseInt(departmentIdFromUrl, 10) : null,
   )
   const [selectedBranch, setSelectedBranch] = useState(null)
+  console.log(selectedDepartment);
 
   useEffect(() => {
     dispatch(fetchServices())
@@ -153,26 +154,7 @@ const extractBranches = (services) => {
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
       <PageTitle pageTitle={"خدماتنا"} pagesub={"الخدمات"} bgImage={"/services.webp"} />
       
-      {/* Add the new devices section buttons */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-center gap-4 mb-8">
-          <Link 
-            href="/devices?departmentName=أجهزة التغذية" 
-            className="bg-gradient-to-r from-[#CBA853] to-[#A58532] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <h3 className="text-xl font-bold mb-2">أجهزة التغذية ونحت القوام</h3>
-            <p className="text-sm">أحدث الأجهزة لتحقيق القوام المثالي</p>
-          </Link>
-          
-          <Link 
-            href="/devices?departmentName=أجهزة الجلدية" 
-            className="bg-gradient-to-r from-[#4a90e2] to-[#2a5a9a] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <h3 className="text-xl font-bold mb-2">أجهزة الجلدية والليزر</h3>
-            <p className="text-sm">أحدث تقنيات العناية بالبشرة وإزالة الشعر</p>
-          </Link>
-        </div>
-      </div>
+  
       
       {loading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
@@ -212,6 +194,26 @@ const extractBranches = (services) => {
           </aside>
         </div>
       )}
+          {/* Add the new devices section buttons */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-center gap-4 mb-8">
+     { selectedDepartment === 15 &&    <Link 
+            href="/devices?departmentName=أجهزة التغذية" 
+            className="bg-gradient-to-r from-[#CBA853] to-[#A58532] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <h3 className="text-xl font-bold mb-2">أجهزة التغذية ونحت القوام</h3>
+            <p className="text-sm">أحدث الأجهزة لتحقيق القوام المثالي</p>
+          </Link>
+} 
+      { selectedDepartment === 6 &&        <Link 
+            href="/devices?departmentName=أجهزة الجلدية" 
+            className="bg-gradient-to-r from-[#4a90e2] to-[#2a5a9a] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            <h3 className="text-xl font-bold mb-2">أجهزة الجلدية والليزر</h3>
+            <p className="text-sm">أحدث تقنيات العناية بالبشرة وإزالة الشعر</p>
+          </Link> }
+        </div>
+      </div>
       <Footer hclass={"wpo-site-footer"} />
       <Scrollbar />
     </Fragment>

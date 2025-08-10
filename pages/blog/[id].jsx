@@ -10,6 +10,7 @@ import Footer from "../../helpers/components/footer/Footer";
 import BlogSidebar from "../../helpers/components/BlogSidebar/BlogSidebar";
 import { fetchBlogById } from "../../store/slices/blogs"; // Adjust path if needed
 import { getImageUrl } from "../../helpers/hooks/imageUrl";
+import Scrollbar from "../../helpers/components/scrollbar/scrollbar";
 
 const imageUrlFallback = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPPnn7ieaDAQbvg_f37_pB_ILw8quxYBTXKw&s";
 
@@ -161,6 +162,8 @@ const BlogDetails = () => {
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
       <PageTitle pageTitle={"مدونة"} pagesub={"مقال"} bgImage={"/blogs.webp"} />
       <BlogSingle />
+              <Scrollbar />
+
       <Footer hclass={"wpo-site-footer_s2"} />
     </Fragment>
   );

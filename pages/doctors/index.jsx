@@ -260,112 +260,123 @@ useEffect(() => {
         )}
 
         {isTeamsPage ? (
-          <div className="flex flex-col lg:flex-row gap-8 mb-8 rtl">
-            <div className="lg:w-1/4">
-              <div className="service_sidebar space-y-6 sticky top-4 rtl">
-                <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
-                  <form onSubmit={(e) => e.preventDefault()} className="relative">
-                    <input
-                      className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                      type="text"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      placeholder="ابحث عن طبيب أو تخصص..."
-                    />
-                    <svg
-                      className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </form>
-                </div>
-                <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
-                  <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a]">الأقسام الطبية</h2>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    <button
-                      onClick={() => handleDepartmentChange(null)}
-                      className={`w-full text-right py-2 px-3 rounded transition ${
-                        !selectedDepartment ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"
-                      }`}
-                    >
-                      جميع الأقسام
-                    </button>
-                    {departments.map((department) => (
-                      <button
-                        key={department.id}
-                        onClick={() => handleDepartmentChange(department.id)}
-                        className={`w-full text-right py-2 px-3 rounded transition ${
-                          selectedDepartment === department.id
-                            ? "bg-[#dec06a] text-white"
-                            : "bg-gray-100 hover:bg-gray-200"
-                        }`}
-                      >
-                        {department.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
-                  <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a]">الفروع</h2>
-                  <select
-                    className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                    value={selectedBranch}
-                    onChange={handleBranchChange}
+  <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col lg:flex-row gap-8 mb-8 rtl">
+        {/* Sidebar */}
+        <div className="lg:w-1/4">
+          <div className="service_sidebar space-y-6 sticky top-4 rtl">
+            {/* Search Widget */}
+            <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
+              <form onSubmit={(e) => e.preventDefault()} className="relative">
+                <input
+                  className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="ابحث عن طبيب أو تخصص..."
+                />
+                <svg
+                  className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </form>
+            </div>
+
+            {/* Departments Widget */}
+            <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
+              <h2 className="text-xl font-bold mb-4 text-right text-amber-600">الأقسام الطبية</h2>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                <button
+                  onClick={() => handleDepartmentChange(null)}
+                  className={`w-full text-right py-2 px-3 rounded transition ${
+                    !selectedDepartment ? "bg-amber-600 text-white" : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  جميع الأقسام
+                </button>
+                {departments.map((department) => (
+                  <button
+                    key={department.id}
+                    onClick={() => handleDepartmentChange(department.id)}
+                    className={`w-full text-right py-2 px-3 rounded transition ${
+                      selectedDepartment === department.id
+                        ? "bg-amber-600 text-white"
+                        : "bg-gray-100 hover:bg-gray-200"
+                    }`}
                   >
-                    <option value="all">جميع الفروع</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {department.name}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="lg:w-3/4">
-              {loading && (
-                <div className="flex justify-center items-center py-10">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#dec06a]"></div>
+            {/* Branches Widget */}
+            <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
+              <h2 className="text-xl font-bold mb-4 text-right text-amber-600">الفروع</h2>
+              <select
+                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                value={selectedBranch}
+                onChange={handleBranchChange}
+              >
+                <option value="all">جميع الفروع</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="lg:w-3/4">
+          {loading && (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600"></div>
+            </div>
+          )}
+
+          {error && (
+            <div className="flex justify-center items-center py-10">
+              <div className="text-red-500">Error loading team: {error}</div>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              {filteredTeams.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
                 </div>
-              )}
-              {error && (
-                <div className="flex justify-center items-center py-10">
-                  <div className="text-red-500">Error loading team: {error}</div>
-                </div>
-              )}
-              {!loading && !error && (
+              ) : (
                 <>
-                  {filteredTeams.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
+                  {isMobile ? (
+                    <div className="team-slider-container py-4">
+                      <Slider ref={sliderRef} {...sliderSettings}>
+                        {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                      </Slider>
                     </div>
                   ) : (
-                    <>
-                      {slider ? (
-                        <div className="team-slider-container py-4">
-                          <Slider ref={sliderRef} {...sliderSettings}>
-                            {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                          </Slider>
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap ">
-                          {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                        </div>
-                      )}
-                    </>
+                    <div className="flex flex-wrap">
+                      {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                    </div>
                   )}
                 </>
               )}
-            </div>
-          </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
         ) : (
           <>
             {loading && (

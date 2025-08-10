@@ -13,7 +13,6 @@ import CtafromSection from '../../components/Form';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
 import ImageSlider from '../../components/adsSlider/index';
-import SocialMedia from '../whatsApp';
 
 const HomePage = () => {
     return (
@@ -28,7 +27,6 @@ const HomePage = () => {
             <FunFact hclass={'funfact_section '} />
             <BlogSection tClass={'blog_section section-padding'} slider={true}/>
             <Footer hclass={'wpo-site-footer'}/>
-            <SocialMedia />
             <Scrollbar />
         </div>
     )
