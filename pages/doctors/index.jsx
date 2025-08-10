@@ -66,7 +66,10 @@ const TeamSection = ({
   const [selectedBranch, setSelectedBranch] = useState(branchId || "all")
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
   const sliderRef = useRef(null)
-
+const [isMobile, setIsMobile] = useState(false);
+  const checkMobileView = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
   // Initialize state from URL params on first load
   useEffect(() => {
     if (!initialLoadComplete && urlDepartmentId) {
@@ -82,6 +85,8 @@ const TeamSection = ({
 useEffect(() => {
   // Only fetch once on mount (fetch all teams)
   dispatch(fetchTeams({}))
+    checkMobileView();
+    window.addEventListener('resize', checkMobileView);
 }, [dispatch])
 
 
@@ -269,7 +274,7 @@ useEffect(() => {
             <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
               <form onSubmit={(e) => e.preventDefault()} className="relative">
                 <input
-                  className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
                   type="text"
                   value={searchTerm}
                   onChange={handleSearchChange}
@@ -297,7 +302,7 @@ useEffect(() => {
                 <button
                   onClick={() => handleDepartmentChange(null)}
                   className={`w-full text-right py-2 px-3 rounded transition ${
-                    !selectedDepartment ? "bg-amber-600 text-white" : "bg-gray-100 hover:bg-gray-200"
+                    !selectedDepartment ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"
                   }`}
                 >
                   جميع الأقسام
@@ -322,7 +327,7 @@ useEffect(() => {
             <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
               <h2 className="text-xl font-bold mb-4 text-right text-amber-600">الفروع</h2>
               <select
-                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
                 value={selectedBranch}
                 onChange={handleBranchChange}
               >
