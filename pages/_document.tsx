@@ -1,4 +1,3 @@
-import Scrollbar from '@/helpers/components/scrollbar/scrollbar'
 import SocialMedia from '@/helpers/main-component/whatsApp'
 import { Html, Head, Main, NextScript } from 'next/document'
 
