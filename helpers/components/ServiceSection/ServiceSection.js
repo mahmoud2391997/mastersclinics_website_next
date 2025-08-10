@@ -148,7 +148,7 @@ const ServiceSection = ({
               autoplay={{
                 delay: 5000,
                 disableOnInteraction: false,
-              }}
+              }} 
             >
               {servicesToShow.map((service, index) => (
                 <SwiperSlide key={index} className="pb-10">

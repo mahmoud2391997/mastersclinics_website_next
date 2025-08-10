@@ -68,7 +68,7 @@ export default function OffersSlider() {
             slidesPerView: 3,
           },
         }}
-        className="w-[90%] relative mx-auto"
+        className="w-[90%] relative mx-auto "
       >
         {offers.length > 0 ? (
           offers.map((offer, index) => (

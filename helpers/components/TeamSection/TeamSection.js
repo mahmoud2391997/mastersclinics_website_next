@@ -262,7 +262,7 @@ const TeamSection = ({
               <>
                 {slider ? (
                   <div className="team-slider-container py-4">
-                    <Slider ref={sliderRef} {...sliderSettings}>
+                    <Slider ref={sliderRef} {...sliderSettings} className={"overflow-hidden"}>
                       {displayedTeams.map((team, index) => renderTeamCard(team, index))}
                     </Slider>
                   </div>

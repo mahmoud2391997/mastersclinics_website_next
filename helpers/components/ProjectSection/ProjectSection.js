@@ -328,7 +328,7 @@ const ProjectSection = ({
                                         .forEach(el => el.style.backgroundColor = '#CBA853');
                                 }, 0);
                             }}
-                            className="pb-12"
+                            className="pb-12 "
                         >
                             {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
                                 <SwiperSlide key={pitem}>

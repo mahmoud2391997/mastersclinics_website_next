@@ -65,7 +65,7 @@ console.log(testimonials);
         <div className="row">
           <div className="col-12 px-0">
             <div className="testimonial_slider w-full">
-              <Slider {...settings}>
+              <Slider {...settings} >
                 {testimonials.map((testitem, idx) => (
                   <div className="px-2 lg:px-1" key={testitem.id || idx}>
                     <div className="testimonial_card mx-2">
