@@ -20,17 +20,19 @@ const ClickHandler = () => {
     window.scrollTo(10, 0);
 };
 
-const DEPARTMENT_MAPPING = {
-    "أجهزة التغذية ونحت القوام": "أجهزة التغذية",
-    "ليزر إزالة الشعر": "أجهزة الجلدية",
-    "أجهزة معالجة البشرة": "أجهزة الجلدية"
+// Dynamic mapping function
+const getDepartment = (type) => {
+    if (type === "أجهزة التغذية ونحت القوام") {
+        return "أجهزة التغذية";
+    }
+    return "أجهزة الجلدية";
 };
 
 const ProjectSection = ({
     hclass,
     ShowSectionTitle = true,
     sliceStart = 0,
-    sliceEnd ,
+    sliceEnd,
     branchId = null,
     showFilters = false,
     slider = true,
@@ -57,36 +59,29 @@ const ProjectSection = ({
         if (departmentNameFromParams) {
             setSelectedDepartment(departmentNameFromParams);
         }
-        // If branchId is provided as prop, set it as the selected branch
         if (branchId) {
             setSelectedBranch(branchId);
         }
     }, [departmentNameFromParams, branchId]);
 
-    const { 
-        items: devices = [], 
-        loading: devicesLoading = false, 
-        error: devicesError = null 
-    } = useSelector(state => state.devices || {});
-
-    const { items: allBranches = [], loading: branchesLoading } = useSelector(state => state.branches || {});
+    const { items: devices = [], loading: devicesLoading = false, error: devicesError = null } =
+        useSelector(state => state.devices || {});
+    const { items: allBranches = [], loading: branchesLoading } =
+        useSelector(state => state.branches || {});
 
     const filteredDevices = useMemo(() => {
         return devices.filter(device => {
             const searchNorm = searchTerm.toLowerCase();
-            const matchesSearch = searchTerm === "" || 
-                device.name?.toLowerCase().includes(searchNorm) || 
+            const matchesSearch = searchTerm === "" ||
+                device.name?.toLowerCase().includes(searchNorm) ||
                 device.type?.toLowerCase().includes(searchNorm);
 
-            // If branchId prop is provided, only show devices from that branch
-            const matchesBranch = branchId 
+            const matchesBranch = branchId
                 ? (device.branches_ids && device.branches_ids.some(id => String(id) === String(branchId)))
                 : (!selectedBranch || (device.branches_ids && device.branches_ids.some(id => String(id) === String(selectedBranch))));
 
-            const matchesDepartment = !selectedDepartment || 
-                (device.type && 
-                 (DEPARTMENT_MAPPING[device.type] === selectedDepartment || 
-                  device.type === selectedDepartment));
+            const matchesDepartment = !selectedDepartment ||
+                (device.type && (getDepartment(device.type) === selectedDepartment || device.type === selectedDepartment));
 
             return matchesSearch && matchesBranch && matchesDepartment;
         });
@@ -95,7 +90,6 @@ const ProjectSection = ({
     const resetFilters = () => {
         setSearchTerm("");
         setSelectedDepartment(null);
-        // Don't reset branch filter if branchId is provided as prop
         if (!branchId) {
             setSelectedBranch(null);
         }
@@ -127,11 +121,11 @@ const ProjectSection = ({
     };
 
     const renderSidebar = () => (
-        <ServiceSidebar 
-            services={Object.entries(DEPARTMENT_MAPPING).map(([type, department]) => ({
-                department_id: department,
-                department_name: department
-            }))}
+        <ServiceSidebar
+            services={[
+                { department_id: "أجهزة التغذية", department_name: "أجهزة التغذية" },
+                { department_id: "أجهزة الجلدية", department_name: "أجهزة الجلدية" }
+            ]}
             branches={allBranches}
             onSearchChange={setSearchTerm}
             onDepartmentChange={setSelectedDepartment}
@@ -140,28 +134,26 @@ const ProjectSection = ({
             currentDepartment={selectedDepartment}
             currentBranch={selectedBranch}
             searchPlaceholder="ابحث عن الأجهزة..."
-            disableBranchFilter={!!branchId} // Disable branch filter if branchId is provided
+            disableBranchFilter={!!branchId}
         />
     );
 
     const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
-                <img 
-                    src={device.image_url ? getImageUrl(device.image_url) : "/download.png"} 
-                    alt={device.name || "Device"} 
+                <img
+                    src={device.image_url ? getImageUrl(device.image_url) : "/download.png"}
+                    alt={device.name || "Device"}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                        e.target.src = "/download.png";
-                    }}
+                    onError={(e) => { e.target.src = "/download.png"; }}
                 />
             </div>
             <div className="text p-4">
                 <div className="flex justify-between items-start">
                     {device._id ? (
                         <h2 className="text-lg font-bold flex-1">
-                            <Link 
-                                href={`/devices/${device._id}`} 
+                            <Link
+                                href={`/devices/${device._id}`}
                                 onClick={ClickHandler}
                                 className="text-[#333] hover:text-[#CBA853] transition-colors"
                             >
@@ -172,25 +164,19 @@ const ProjectSection = ({
                         <h2 className="text-lg font-bold flex-1">{device.name}</h2>
                     )}
                 </div>
-                
                 <span className="text-[#777] block mt-2">{device.type}</span>
-                
                 {!branchId && device.branch_names && device.branch_names.length > 0 && (
                     <div className="mt-2">
                         <div className="text-sm text-gray-500 mb-1">الفروع المتاحة:</div>
                         <div className="flex flex-wrap gap-1">
                             {device.branch_names.map((branch, i) => (
-                                <span 
-                                    key={i} 
-                                    className="bg-gray-100 text-black text-xs px-2 py-1 rounded"
-                                >
+                                <span key={i} className="bg-gray-100 text-black text-xs px-2 py-1 rounded">
                                     {branch.trim()}
                                 </span>
                             ))}
                         </div>
                     </div>
                 )}
-
                 {device.available_times && (
                     <div className="mt-2 text-xs text-gray-500">
                         <span>مواعيد العمل: </span>
@@ -207,10 +193,7 @@ const ProjectSection = ({
         <div className="text-center py-5">
             <p>لا توجد أجهزة متاحة</p>
             {(searchTerm || selectedDepartment || (selectedBranch && !branchId)) && (
-                <button 
-                    onClick={resetFilters}
-                    className="text-[#CBA853] mt-2"
-                >
+                <button onClick={resetFilters} className="text-[#CBA853] mt-2">
                     إعادة تعيين الفلاتر
                 </button>
             )}
@@ -222,12 +205,8 @@ const ProjectSection = ({
             <div className="container">
                 {showSidebar ? (
                     <div className="col">
-                        <div className="w-full">
-                            {renderSidebar()}
-                        </div>
-                        <div className="w-full">
-                            {renderContent()}
-                        </div>
+                        <div className="w-full">{renderSidebar()}</div>
+                        <div className="w-full">{renderContent()}</div>
                     </div>
                 ) : (
                     renderContent()
@@ -242,9 +221,9 @@ const ProjectSection = ({
                 {ShowSectionTitle && (
                     <div className="row align-items-center">
                         <div className="col-lg-6 col-12 order-lg-1">
-                            <SectionTitle 
-                                title={getSectionTitle()} 
-                                subtitle={getSectionSubtitle()} 
+                            <SectionTitle
+                                title={getSectionTitle()}
+                                subtitle={getSectionSubtitle()}
                                 dir="rtl"
                                 className="medical-devices-title"
                             />
@@ -252,8 +231,8 @@ const ProjectSection = ({
                         {!branchId && (
                             <div className="col-lg-6 col-12 order-lg-2 text-left">
                                 <div className="project_btn">
-                                    <Link 
-                                        href="/devices" 
+                                    <Link
+                                        href="/devices"
                                         className="relative pl-16 inline-flex items-center justify-between
                                                    bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
                                                    text-white font-bold rounded-full py-3 px-6
@@ -270,7 +249,6 @@ const ProjectSection = ({
                                                 strokeWidth="2"
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
-                                                className="transform rotate-0"
                                             >
                                                 <path d="M19 12H5M12 19l-7-7 7-7" />
                                             </svg>
@@ -282,7 +260,6 @@ const ProjectSection = ({
                         )}
                     </div>
                 )}
-
                 <div className="project_wrapper relative">
                     {slider ? (
                         <Swiper
@@ -303,15 +280,10 @@ const ProjectSection = ({
                                 el: '.swiper-pagination',
                                 type: 'bullets',
                                 renderBullet: (index, className) => {
-                                    return `<span class="${className}" 
-                                        style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;">
-                                    </span>`;
+                                    return `<span class="${className}" style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></span>`;
                                 }
                             }}
-                            autoplay={{
-                                delay: 5000,
-                                disableOnInteraction: false,
-                            }}
+                            autoplay={{ delay: 5000, disableOnInteraction: false }}
                             loop={true}
                             onInit={() => {
                                 setSwiperInitialized(true);
@@ -330,7 +302,7 @@ const ProjectSection = ({
                             }}
                             className="pb-12 "
                         >
-                            {filteredDevices.slice(sliceStart, sliceEnd  ? sliceEnd : filteredDevices.length ).map((device, pitem) => (
+                            {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, pitem) => (
                                 <SwiperSlide key={pitem}>
                                     {renderDeviceCard(device, pitem)}
                                 </SwiperSlide>
@@ -338,12 +310,11 @@ const ProjectSection = ({
                         </Swiper>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredDevices.slice(sliceStart,  sliceEnd  ? sliceEnd : filteredDevices.length).map((device, index) => (
+                            {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, index) => (
                                 renderDeviceCard(device, index)
                             ))}
                         </div>
                     )}
-
                     {slider && swiperInitialized && (
                         <>
                             <div className="swiper-button-prev !text-[#CBA853] !left-0 after:!text-xl"></div>
