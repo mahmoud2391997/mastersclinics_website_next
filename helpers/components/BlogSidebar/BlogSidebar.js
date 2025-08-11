@@ -52,7 +52,7 @@ const BlogSidebar = ({ blLeft = "" }) => {
 
   // Navigate to blog detail page
   const goToBlog = (id) => {
-    router.push(`/blogس/${id}`);
+    router.push(`/blogs/${id}`);
   };
 
   // Load blogs on mount
