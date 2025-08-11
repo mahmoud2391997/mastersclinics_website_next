@@ -12,7 +12,7 @@ const PageTitle = (props) => {
     } = props;
 
     return (
-        <div className="wpo-breadcumb-area min-h-[70vh] md:min-h-[450px] relative">
+        <div className="wpo-breadcumb-area min-h-[70vh] md:min-h-[500px] relative">
             {/* Background Image Section - Added with Tailwind */}
             {bgImage && (
                 <div className="absolute inset-0 -z-10">
