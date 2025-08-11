@@ -24,7 +24,7 @@ const HomePage = () => {
             <DepartmentsGrid isSwiper={true} slidesToShow={3} slidesToScroll={2} />
             <ServiceSection hclass={"service_section section-padding"} sliceEnd={6} slider={true}/>
             <TeamSection hclass={'team_section section-padding'} sliceEnd={6} slider={true}/>
-            <ProjectSection hclass={'project_section section-padding'} slider={true}/>
+            <ProjectSection hclass={'project_section section-padding'} slider={true} sliceStart={0} sliceEnd={6}/>
             <FunFact hclass={'funfact_section '} />
             <BlogSection tClass={'blog_section section-padding'} slider={true}/>
             <Testimonial tClass={'testimonial_section testimonial_section_slider'} />

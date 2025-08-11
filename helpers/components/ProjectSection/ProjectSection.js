@@ -30,7 +30,7 @@ const ProjectSection = ({
     hclass,
     ShowSectionTitle = true,
     sliceStart = 0,
-    sliceEnd = 6,
+    sliceEnd ,
     branchId = null,
     showFilters = false,
     slider = true,
@@ -330,7 +330,7 @@ const ProjectSection = ({
                             }}
                             className="pb-12 "
                         >
-                            {filteredDevices.slice(sliceStart, sliceEnd).map((device, pitem) => (
+                            {filteredDevices.slice(sliceStart, sliceEnd  ? sliceEnd : filteredDevices.length ).map((device, pitem) => (
                                 <SwiperSlide key={pitem}>
                                     {renderDeviceCard(device, pitem)}
                                 </SwiperSlide>
@@ -338,7 +338,7 @@ const ProjectSection = ({
                         </Swiper>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredDevices.slice(sliceStart, sliceEnd).map((device, index) => (
+                            {filteredDevices.slice(sliceStart,  sliceEnd  ? sliceEnd : filteredDevices.length).map((device, index) => (
                                 renderDeviceCard(device, index)
                             ))}
                         </div>
