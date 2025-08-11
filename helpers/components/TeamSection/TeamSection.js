@@ -18,6 +18,8 @@ const TeamSection = ({
   departmentId = null,
   isTeamsPage = false,
   slider = false, // New prop to enable/disable slider
+  sectionTitle=null,
+  sectionSubtitle=null,
 }) => {
   const dispatch = useDispatch();
   const { teams = [], loading = false, error = null } = useSelector(
@@ -171,16 +173,19 @@ const TeamSection = ({
       </div>
     </div>
   );
-
+{
+  if(teams.length === 0) return null
+}
   return (
+  
     <section className={hclass}>
       <div className="container mx-auto px-4">
         {showSectionTitle && (
           <div className="row justify-center">
             <div className="col-lg-9 col-12">
               <SectionTitle 
-                title={ branchId ? "اطباء الفرع" :"فريقنا" }
-                subtitle={isTeamsPage ? "أطباؤنا المتخصصون" : branchId ? "متاح بالفرع أطباؤنا المتخصصون":"تعرف على أخصائيينا"} 
+                title={ branchId ? "اطباء الفرع" : sectionTitle ? sectionTitle: "فريقنا" }
+                subtitle={isTeamsPage ? "أطباؤنا المتخصصون" : branchId ? "متاح بالفرع أطباؤنا المتخصصون": sectionSubtitle ? sectionSubtitle : "تعرف على أخصائيينا" } 
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState, useEffect, useCallback } from "react"
+import React, { useMemo,  useEffect, useCallback } from "react"
 
 const ServiceSidebar = ({
   services = [],
@@ -52,80 +52,74 @@ const ServiceSidebar = ({
     setLocalSearchTerm(e.target.value)
   }, [])
 
-  const handleDepartmentChange = useCallback((deptId) => {
-    onDepartmentChange(deptId)
-  }, [onDepartmentChange])
+ const handleBranchChange = useCallback((branchId) => {
+    const finalBranchId = branchId === "all" ? null : branchId;
+    onBranchChange(finalBranchId);
+  }, [onBranchChange]);
 
-  const handleBranchChange = useCallback((e) => {
-    const branchId = e.target.value === "all" ? null : e.target.value
-    onBranchChange(branchId)
-  }, [onBranchChange])
+  // Change this to accept direct value instead of event
+  const handleDepartmentChange = useCallback((deptId) => {
+    const finalDeptId = deptId === "all" ? null : deptId;
+    onDepartmentChange(finalDeptId);
+  }, [onDepartmentChange]);
 
   return (
-    <div className="service_sidebar space-y-6 sticky top-4 rtl">
-      {/* Search Widget */}
-      <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
-        <form onSubmit={(e) => e.preventDefault()} className="relative">
-          <input
-            className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
-            type="text"
-            value={localSearchTerm}
-            onChange={handleSearchChange}
-            placeholder={searchPlaceholder}
-          />
-          <svg
-            className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clipRule="evenodd"
+    <div className="service_sidebar w-full bg-white p-4 rounded-lg shadow-sm mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0 rtl">
+        {/* Search Widget */}
+        <div className="search_widget flex-1">
+          <form onSubmit={(e) => e.preventDefault()} className="relative">
+            <input
+              className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+              type="text"
+              value={localSearchTerm}
+              onChange={handleSearchChange}
+              placeholder={searchPlaceholder}
             />
-          </svg>
-        </form>
-      </div>
-
-      {/* Branches Filter Widget */}
-      {processedBranches.length > 0 && (
-        <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
-          <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a]">الفروع</h2>
-          <select
-            className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-            value={currentBranch || "all"}
-            onChange={handleBranchChange}
-          >
-            <option value="all">جميع الفروع</option>
-            {processedBranches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Departments Filter Widget */}
-      <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-bold mb-4 text-right text-[#dec06a]">الأقسام الطبية</h2>
-        <div className="space-y-2 max-h-60 overflow-y-auto">
-          <button
-            onClick={() => handleDepartmentChange(null)}
-            className={`w-full text-right py-2 px-3 rounded transition ${!currentDepartment ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
-          >
-            جميع الأقسام
-          </button>
-          {departments.map((department) => (
-            <button
-              key={department.id}
-              onClick={() => handleDepartmentChange(department.id)}
-              className={`w-full text-right py-2 px-3 rounded transition ${currentDepartment === department.id ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"}`}
+            <svg
+              className="absolute left-3 top-3 h-4 w-4 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
             >
-              {department.name}
-            </button>
-          ))}
+              <path
+                fillRule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </form>
+        </div>
+
+        {processedBranches.length > 0 && (
+          <div className="branches_widget flex-1">
+            <CustomSelect
+              options={[
+                { value: "all", label: "جميع الفروع" },
+                ...processedBranches.map(branch => ({
+                  value: branch.id,
+                  label: branch.name
+                }))
+              ]}
+              value={currentBranch || "all"}
+              onChange={handleBranchChange} // Now expects direct value
+            />
+          </div>
+        )}
+
+        {/* Departments Filter Widget */}
+        <div className="departments_widget flex-1">
+          <CustomSelect
+            options={[
+              { value: "all", label: "جميع الأقسام" },
+              ...departments.map(dept => ({
+                value: dept.id,
+                label: dept.name
+              }))
+            ]}
+            value={currentDepartment || "all"}
+            onChange={handleDepartmentChange} // Now expects direct value
+          />
         </div>
       </div>
     </div>
@@ -133,3 +127,83 @@ const ServiceSidebar = ({
 }
 
 export default React.memo(ServiceSidebar)
+import { useState, useRef } from "react";
+
+
+export  const CustomSelect = ({ 
+  options, 
+  value, 
+  onChange, 
+  placeholder = "Select..." 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  const handleOptionClick = (selectedValue) => {
+    onChange(selectedValue); // Pass the value directly, not an event
+    setIsOpen(false);
+  };
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMounted]);
+
+  // Find the selected option's label
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayValue = selectedOption?.label || placeholder;
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div
+        className={`flex items-center justify-between p-2 border-b-2 ${
+          isOpen ? "border-[#dec06a]" : "border-gray-300"
+        } cursor-pointer`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{displayValue}</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+ {isMounted && isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+          {options.map((option) => (
+            <div
+              key={option.value}
+              className={`px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200 last:border-b-0 ${
+                value === option.value ? "bg-[#dec06a] text-white" : ""
+              }`}
+              onClick={() => handleOptionClick(option.value)} // Pass value directly
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};

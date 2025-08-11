@@ -32,21 +32,13 @@ export default function DepartmentPage() {
 
   return (
     <>
-      <Head>
-        <title>{department?.name || 'القسم'} | مسترز</title>
-        <meta name="description" content={department?.description} />
-      </Head>
+
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'}/>
       <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={"/departments1.png"}/>
 
       <section className="py-12">
         <div className="container mx-auto">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold">{department?.name}</h2>
-            <p className="mt-4 text-gray-600">{department?.description}</p>
-          </div>
-
           <div className="flex justify-center mb-10">
             <img
               src={departmentImage}
@@ -54,14 +46,13 @@ export default function DepartmentPage() {
               className="max-w-md rounded-lg shadow-md"
             />
           </div>
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-bold">{department?.name}</h2>
+            <p className="mt-4 text-gray-600">{department?.description}</p>
+          </div>
+
         </div>
       </section>
-
-      <TeamSection
-        departmentId={id}
-        showSectionTitle={true}
-        hclass="py-12 bg-gray-50"
-      />
 
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4" dir="rtl">
@@ -145,6 +136,14 @@ export default function DepartmentPage() {
           )}
         </div>
       </section>
+      <TeamSection
+        departmentId={id}
+        showSectionTitle={true}
+        hclass="py-12 bg-gray-50"
+        sectionTitle={"اطباء القسم"}
+        sectionSubtitle={"الاطباء المتاحيين بالقسم "}
+      />
+
 
       <Footer hclass={'wpo-site-footer'} />
     </>

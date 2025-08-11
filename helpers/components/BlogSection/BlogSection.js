@@ -80,7 +80,7 @@ const BlogSection = ({ tClass = '' }) => {
           <div className="col-12">
             <Slider ref={sliderRef} {...settings}>
                  {topBlogs.map((blog, index) => (
-            <div className="col-lg-4 col-md-6 col-12" key={blog.id || index} dir="ltr">
+            <div className="col-lg-4 col-md-6 col-12 p-1" key={blog.id || index} dir="ltr">
               <div className="blog_card">
                 {blog.image && (
                   <img src={getImageUrl(blog.image)} alt={blog.title2} style={{ height: 200, objectFit: 'cover' }} />

@@ -1,15 +1,27 @@
 import Link from 'next/link';
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchDepartments } from '../../store/slices/departments';
 import { getImageUrl } from '@/helpers/hooks/imageUrl';
 import SectionTitle from '@/helpers/components/SectionTitle/SectionTitle';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) {
+export default function DepartmentsGrid({ 
+  branchId, 
+  isDepartmentPage = false, 
+  isSwiper = false,
+  slidesToShow = 3,
+  slidesToScroll = 1,
+  title = "أقسامنا الطبية",
+  subtitle = "اكتشف أقسامنا المتخصصة والخدمات المتميزة"
+}) {
   const dispatch = useDispatch();
   const { items: departments = [], loading, error } = useSelector(state => state.departments);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('all');
+  const sliderRef = useRef(null);
   
   // Get branches from all departments
   const allBranches = departments.reduce((acc, dept) => {
@@ -26,6 +38,35 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
   useEffect(() => {
     dispatch(fetchDepartments());
   }, [dispatch]);
+
+  // Swiper settings
+  const swiperSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: slidesToShow,
+    slidesToScroll: slidesToScroll,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: true,
+    rtl: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: Math.min(2, slidesToShow),
+          slidesToScroll: Math.min(1, slidesToScroll),
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
 
   // Filter logic
   const filteredDepartments = departments.filter(dept => {
@@ -56,7 +97,7 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
   });
 
   if (loading) {
-    return <div className="text-center py-8">Loading departments...</div>;
+    return <div className="text-center py-8">جاري التحميل...</div>;
   }
 
   if (error) {
@@ -64,14 +105,20 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
   }
 
   return (
-    <div>
-    {
-      branchId ?
+    <div className="relative mt-5 p-2">
+      {/* Show title and button when isSwiper is true */}
+      {isSwiper && (
+       <div className='m-auto mt-5'>
+          <SectionTitle title={title} subtitle={subtitle}/>
+        </div>
+      )}
+
+      {branchId && (
+        <div className='m-auto mt-5'>
+          <SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقسام التالية"}/>
+        </div>
+      )}  
       
-      <div className='m-auto mt-5'>
-<SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقسام التالية"}/>
-      </div> : null
-    }  
       {/* Search and Filter Section - Only shown if isDepartmentPage is true */}
       {isDepartmentPage && (
         <div className="flex flex-col md:flex-row gap-4 mb-8 px-8 mt-3" dir="rtl">
@@ -116,28 +163,71 @@ export default function DepartmentsGrid({ branchId, isDepartmentPage = false }) 
         </div>
       )}
 
-      {/* Departments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-        {filteredDepartments.length > 0 ? (
-          filteredDepartments.map(department => (
-            <DepartmentCard key={department.id} department={department} />
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12 text-gray-500">
-            لا توجد أقسام متطابقة مع معايير البحث
+      {/* Departments Grid or Swiper */}
+      {filteredDepartments.length > 0 ? (
+        isSwiper ? (
+          <div className="px-2 py-4">
+            <Slider ref={sliderRef} {...swiperSettings}>
+              {filteredDepartments.map(department => (
+                <div key={department.id} className="px-2">
+                  <DepartmentCard department={department} />
+                </div>
+              ))}
+            </Slider>
           </div>
-        )}
-      </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+            {filteredDepartments.map(department => (
+              <DepartmentCard key={department.id} department={department} />
+            ))}
+          </div>
+        )
+      ) : (
+        <div className="col-span-full text-center py-12 text-gray-500">
+          لا توجد أقسام متطابقة مع معايير البحث
+        </div>
+      )}
+
+      {/* Show "View All" button when isSwiper is true */}
+      {isSwiper && filteredDepartments.length > 0 && (
+        <div className="flex justify-center mt-12">
+            <Link
+              href="/departments"
+              className="relative pl-16 inline-flex items-center justify-between 
+                         bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
+                         text-white font-bold rounded-full py-3 px-8
+                         hover:-translate-y-1 hover:shadow-md transition-all duration-300 gap-4"
+            >
+              <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#CBA853"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </span>
+              <span className="flex-1 text-end">عرض جميع الاقسام</span>
+            </Link>
+          </div>
+      )}
     </div>
   );
 }
 
+// DepartmentCard component remains the same
 export function DepartmentCard({ department }) {
   const branchInfo = department.branches || [];
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+      className="bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-full"
       dir="rtl"
     >
       {department.image && (

@@ -4467,7 +4467,7 @@ Version:        1.0.0
   position: relative;
 }
 .wpo-site-footer .wpo-upper-footer, .wpo-site-footer_s2 .wpo-upper-footer {
-  padding: 100px 0;
+  padding: 50px 0;
 }
 @media (max-width: 991px) {
   .wpo-site-footer .wpo-upper-footer, .wpo-site-footer_s2 .wpo-upper-footer {

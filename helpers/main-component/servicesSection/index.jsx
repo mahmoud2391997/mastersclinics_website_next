@@ -7,7 +7,7 @@ import SectionTitle from "../../components/SectionTitle/SectionTitle";
 import getImageUrl from "../../../utilies/getImageUrl";
 import Image from "next/image";
 
-const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = null }) => {
+const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = null ,showTitle = true}) => {
   const router = useRouter();
 
   const getBranchName = (branchCode) => {
@@ -49,14 +49,14 @@ const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = n
   return (
     <section className="rtl w-full" dir="rtl">
       <div className="w-full py-8">
-        <div className="flex justify-center mb-8">
+      { showTitle ?  <div className="flex justify-center mb-8">
           <div className="w-full max-w-3xl text-center mx-auto">
             <SectionTitle
               title="خدمات الأقسام الطبية"
               subtitle="خدماتنا الصحية"
             />
           </div>
-        </div>
+        </div> : null}
 
         {filteredServices.length === 0 ? (
           <div className="text-center py-12">

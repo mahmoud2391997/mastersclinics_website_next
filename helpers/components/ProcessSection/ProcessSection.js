@@ -18,7 +18,7 @@ const ProcessSection = (props) => {
                             <div className="work_card">
                                 <div className="image">
                                     <img src={"https://medically-react.wpolive.com/static/media/1.33db3b316579275982d9.jpg"} alt="" />
-                                        <span className="number">01</span>
+                                        <span className="number">١</span>
                                 </div>
                                 <div className="text">
                                     <h3>حجز موعد</h3>
@@ -30,7 +30,7 @@ const ProcessSection = (props) => {
                             <div className="work_card">
                                 <div className="image">
                                     <img src={"https://medically-react.wpolive.com/static/media/2.69cfcc022c975f631617.jpg"} alt="" />
-                                        <span className="number">02</span>
+                                        <span className="number">٢</span>
                                 </div>
                                 <div className="text">
                                     <h3>استشارة الخبير</h3>
@@ -42,7 +42,7 @@ const ProcessSection = (props) => {
                             <div className="work_card">
                                 <div className="image">
                                     <img src={"https://medically-react.wpolive.com/static/media/3.0c358dde127930278c09.jpg"} alt="" />
-                                        <span className="number">03</span>
+                                        <span className="number">٣</span>
                                 </div>
                                 <div className="text">
                                     <h3>تلقي العلاج</h3>
@@ -54,7 +54,7 @@ const ProcessSection = (props) => {
                             <div className="work_card">
                                 <div className="image">
                                     <img src={"https://medically-react.wpolive.com/static/media/4.896e31350be9a380e08b.jpg"} alt="" />
-                                        <span className="number">04</span>
+                                        <span className="number">٤</span>
                                 </div>
                                 <div className="text">
                                     <h3>الحصول على الراحة</h3>
@@ -64,7 +64,7 @@ const ProcessSection = (props) => {
                         </div>
                     </div>
                     <div className="shape">
-                        <img src={"https://medically-react.wpolive.com/static/media/shape.5edd8922c81953a3c45652d466928c51.svg"} alt="" />
+                        <img src={"https://medically-react.wpolive.com/static/media/shape.5edd8922c81953a3c45652d466928c51.svg"} class="transform -scale-x-100" alt="mirrored" />
                     </div>
                 </div>
             </div>

@@ -124,11 +124,9 @@ const MobileMenu = ({ menuData }) => {
       id: 7, 
       title: 'الاطباء', 
       path: 'doctors', 
-      items: (menuData.doctors || []).map(doctor => ({
-        id: doctor.department_id,
-        title: normalizeDepartmentName(doctor.department_name, 'doctors'),
-        link: `/doctors?departmentId=${doctor.department_id}`
-      }))
+            link: '/doctors'
+
+    
     },
     { 
       id: 8, 

@@ -32,10 +32,11 @@ export default function OffersSlider() {
     <div className="w-full relative mt-5" dir="rtl">
       <div className="flex justify-center mb-12">
         <div className="w-full max-w-3xl text-center mx-auto">
-          <SectionTitle
-            title="خدمات الأقسام الطبية"
-            subtitle="خدماتنا الصحية"
-          />
+    <SectionTitle
+  title="عروضنا الخاصة"
+  subtitle="خصومات وخدمات مميزة"
+/>
+
         </div>
       </div>
       <Swiper

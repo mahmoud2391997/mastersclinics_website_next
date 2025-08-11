@@ -40,6 +40,7 @@ LoadingSpinner.propTypes = {
   size: PropTypes.oneOf(["small", "medium", "large"]),
   color: PropTypes.oneOf(["primary", "white", "gray"]),
 }
+
 const ServicePage = () => {
   const dispatch = useDispatch()
   const { services = [], loading = false, error = null } = useSelector((state) => state.services || {})
@@ -51,7 +52,6 @@ const ServicePage = () => {
     departmentIdFromUrl ? Number.parseInt(departmentIdFromUrl, 10) : null,
   )
   const [selectedBranch, setSelectedBranch] = useState(null)
-  console.log(selectedDepartment);
 
   useEffect(() => {
     dispatch(fetchServices())
@@ -87,7 +87,7 @@ const ServicePage = () => {
         department_name: service.department_name || `القسم ${service.department_id}`,
         doctor_details,
         branch_details,
-        branch_names: service.branch_names || [] // Keep the original branch names
+        branch_names: service.branch_names || []
       }
     } catch (e) {
       console.error("Error parsing service data:", e)
@@ -103,7 +103,7 @@ const ServicePage = () => {
     }
   }
 
-const extractBranches = (services) => {
+  const extractBranches = (services) => {
     const branchMap = new Map()
     
     services.forEach(service => {
@@ -127,19 +127,14 @@ const extractBranches = (services) => {
   const parsedServices = services.map(parseServiceData)
   const branches = extractBranches(parsedServices)
 
-  // Filter services based on selected department and branch
   const filteredServices = useMemo(() => {
     return parsedServices.filter(service => {
-      // Filter by department if selected
       const departmentMatch = !selectedDepartment || service.department_id === selectedDepartment
-      
-      // Filter by branch if selected
       let branchMatch = true
       if (selectedBranch) {
         branchMatch = service.branches.includes(selectedBranch) || 
                      service.branch_names.some(name => name.trim() === selectedBranch)
       }
-      
       return departmentMatch && branchMatch
     })
   }, [parsedServices, selectedDepartment, selectedBranch])
@@ -153,8 +148,6 @@ const extractBranches = (services) => {
       </Head>
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
       <PageTitle pageTitle={"خدماتنا"} pagesub={"الخدمات"} bgImage={"/services.webp"} />
-      
-  
       
       {loading ? (
         <div className="min-h-[50vh] flex items-center justify-center">
@@ -171,47 +164,50 @@ const extractBranches = (services) => {
           </button>
         </div>
       ) : (
-        <div className="container mx-auto px-4 py-8 flex flex-col-reverse lg:flex-row gap-8">
-          <main className="lg:w-3/4">
+        <div className="container mx-auto px-4 py-8">
+          <ServiceSidebar
+            services={parsedServices}
+            branches={branches}
+            onSearchChange={setSearchTerm}
+            onDepartmentChange={setSelectedDepartment}
+            onBranchChange={setSelectedBranch}
+            currentSearch={searchTerm}
+            currentDepartment={selectedDepartment}
+            currentBranch={selectedBranch}
+          />
+          
+          <main className="w-full">
             <ServiceSection 
               services={filteredServices} 
               searchTerm={searchTerm} 
               selectedDepartment={selectedDepartment} 
               selectedBranch={selectedBranch}
+              showTitle={false}
             />
           </main>
-          <aside className="lg:w-1/4">
-            <ServiceSidebar
-              services={parsedServices}
-              branches={branches}
-              onSearchChange={setSearchTerm}
-              onDepartmentChange={setSelectedDepartment}
-              onBranchChange={setSelectedBranch}
-              currentSearch={searchTerm}
-              currentDepartment={selectedDepartment}
-              currentBranch={selectedBranch}
-            />
-          </aside>
         </div>
       )}
-          {/* Add the new devices section buttons */}
+
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-center gap-4 mb-8">
-     { selectedDepartment === 15 &&    <Link 
-            href="/devices?departmentName=أجهزة التغذية" 
-            className="bg-gradient-to-r from-[#CBA853] to-[#A58532] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <h3 className="text-xl font-bold mb-2">أجهزة التغذية ونحت القوام</h3>
-            <p className="text-sm">أحدث الأجهزة لتحقيق القوام المثالي</p>
-          </Link>
-} 
-      { selectedDepartment === 6 &&        <Link 
-            href="/devices?departmentName=أجهزة الجلدية" 
-            className="bg-gradient-to-r from-[#4a90e2] to-[#2a5a9a] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <h3 className="text-xl font-bold mb-2">أجهزة الجلدية والليزر</h3>
-            <p className="text-sm">أحدث تقنيات العناية بالبشرة وإزالة الشعر</p>
-          </Link> }
+          {selectedDepartment === 15 && (
+            <Link 
+              href="/devices?departmentName=أجهزة التغذية" 
+              className="bg-gradient-to-r from-[#CBA853] to-[#A58532] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <h3 className="text-xl font-bold mb-2">أجهزة التغذية ونحت القوام</h3>
+              <p className="text-sm">أحدث الأجهزة لتحقيق القوام المثالي</p>
+            </Link>
+          )}
+          {selectedDepartment === 6 && (
+            <Link 
+              href="/devices?departmentName=أجهزة الجلدية" 
+              className="bg-gradient-to-r from-[#4a90e2] to-[#2a5a9a] text-white text-center py-4 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <h3 className="text-xl font-bold mb-2">أجهزة الجلدية والليزر</h3>
+              <p className="text-sm">أحدث تقنيات العناية بالبشرة وإزالة الشعر</p>
+            </Link>
+          )}
         </div>
       </div>
       <Footer hclass={"wpo-site-footer"} />

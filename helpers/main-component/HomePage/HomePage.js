@@ -13,6 +13,7 @@ import CtafromSection from '../../components/Form';
 import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
 import ImageSlider from '../../components/adsSlider/index';
+import DepartmentsGrid from '@/pages/departments/grid';
 
 const HomePage = () => {
     return (
@@ -20,12 +21,13 @@ const HomePage = () => {
             <Navbar hclass={'wpo-site-header wpo-site-header-s2'} nav={true} />
             <Hero hclass={'static-hero'} />
             <ImageSlider />
+            <DepartmentsGrid isSwiper={true} slidesToShow={3} slidesToScroll={2} />
             <ServiceSection hclass={"service_section section-padding"} sliceEnd={6} slider={true}/>
-            <ProjectSection hclass={'project_section section-padding'} slider={true}/>
-            <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
             <TeamSection hclass={'team_section section-padding'} sliceEnd={6} slider={true}/>
+            <ProjectSection hclass={'project_section section-padding'} slider={true}/>
             <FunFact hclass={'funfact_section '} />
             <BlogSection tClass={'blog_section section-padding'} slider={true}/>
+            <Testimonial tClass={'testimonial_section testimonial_section_slider'} />
             <Footer hclass={'wpo-site-footer'}/>
             <Scrollbar />
         </div>

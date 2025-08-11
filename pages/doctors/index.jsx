@@ -29,9 +29,9 @@ const TeamPage = () => {
   return (
     <Fragment>
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
-            <PageTitle pageTitle={'اطبائنا'} pagesub={'الاطباء'} bgImage={'/doctors.png'} />
+      <PageTitle pageTitle={'اطباؤنا'} pagesub={'الاطباء'} bgImage={'/doctors.png'} />
       <section className="section-padding">
-        <div >
+        <div>
           <TeamSection
             hclass="team_section_s2"
             isTeamsPage={true}
@@ -45,6 +45,85 @@ const TeamPage = () => {
     </Fragment>
   )
 }
+
+const CustomSelect = ({ 
+  options, 
+  value, 
+  onChange, 
+  placeholder = "Select..." 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleOptionClick = (selectedValue) => {
+    onChange(selectedValue);
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMounted]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayValue = selectedOption?.label || placeholder;
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div
+        className={`flex items-center justify-between p-2 border-b-2 ${
+          isOpen ? "border-[#dec06a]" : "border-gray-300"
+        } cursor-pointer`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{displayValue}</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+      {isMounted && isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+          {options.map((option) => (
+            <div
+              key={option.value}
+              className={`px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200 last:border-b-0 ${
+                value === option.value ? "bg-[#dec06a] text-white" : ""
+              }`}
+              onClick={() => handleOptionClick(option.value)}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const TeamSection = ({
   hclass = "",
@@ -66,10 +145,12 @@ const TeamSection = ({
   const [selectedBranch, setSelectedBranch] = useState(branchId || "all")
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
   const sliderRef = useRef(null)
-const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
   const checkMobileView = () => {
     setIsMobile(window.innerWidth < 768);
   };
+
   // Initialize state from URL params on first load
   useEffect(() => {
     if (!initialLoadComplete && urlDepartmentId) {
@@ -82,13 +163,13 @@ const [isMobile, setIsMobile] = useState(false);
   }, [urlDepartmentId, initialLoadComplete])
 
   // Fetch teams based on filters
-useEffect(() => {
-  // Only fetch once on mount (fetch all teams)
-  dispatch(fetchTeams({}))
+  useEffect(() => {
+    // Only fetch once on mount (fetch all teams)
+    dispatch(fetchTeams({}))
     checkMobileView();
     window.addEventListener('resize', checkMobileView);
-}, [dispatch])
-
+    return () => window.removeEventListener('resize', checkMobileView);
+  }, [dispatch])
 
   // Extract all possible departments (memoized)
   const departments = useMemo(() => {
@@ -178,8 +259,8 @@ useEffect(() => {
     setSelectedDepartment(deptId === selectedDepartment ? null : deptId)
   }, [selectedDepartment])
 
-  const handleBranchChange = useCallback((e) => {
-    setSelectedBranch(e.target.value)
+  const handleBranchChange = useCallback((branchId) => {
+    setSelectedBranch(branchId)
   }, [])
 
   // Render individual team card
@@ -250,7 +331,7 @@ useEffect(() => {
 
   return (
     <section className={hclass}>
-      <div >
+      <div>
         {showSectionTitle && (
           <div className="row justify-center">
             <div className="col-lg-9 col-12">
@@ -264,124 +345,111 @@ useEffect(() => {
           </div>
         )}
 
-        {isTeamsPage ? (
-  <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col lg:flex-row gap-8 mb-8 rtl">
-        {/* Sidebar */}
-        <div className="lg:w-1/4">
-          <div className="service_sidebar space-y-6 sticky top-4 rtl">
-            {/* Search Widget */}
-            <div className="search_widget widget bg-white p-4 rounded-lg shadow-sm">
-              <form onSubmit={(e) => e.preventDefault()} className="relative">
-                <input
-                  className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  placeholder="ابحث عن طبيب أو تخصص..."
-                />
-                <svg
-                  className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
+        {/* Horizontal Filter Bar */}
+        <div className="container mx-auto px-4 mb-8">
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 rtl">
+              {/* Search Widget */}
+              <div className="search_widget flex-1">
+                <form onSubmit={(e) => e.preventDefault()} className="relative">
+                  <input
+                    className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder="ابحث عن طبيب أو تخصص..."
                   />
-                </svg>
-              </form>
-            </div>
-
-            {/* Departments Widget */}
-            <div className="departments_widget widget bg-white p-4 rounded-lg shadow-sm">
-              <h2 className="text-xl font-bold mb-4 text-right text-amber-600">الأقسام الطبية</h2>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                <button
-                  onClick={() => handleDepartmentChange(null)}
-                  className={`w-full text-right py-2 px-3 rounded transition ${
-                    !selectedDepartment ? "bg-[#dec06a] text-white" : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  جميع الأقسام
-                </button>
-                {departments.map((department) => (
-                  <button
-                    key={department.id}
-                    onClick={() => handleDepartmentChange(department.id)}
-                    className={`w-full text-right py-2 px-3 rounded transition ${
-                      selectedDepartment === department.id
-                        ? "bg-amber-600 text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
+                  <svg
+                    className="absolute left-3 top-3 h-4 w-4 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    {department.name}
-                  </button>
-                ))}
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </form>
               </div>
-            </div>
 
-            {/* Branches Widget */}
-            <div className="branches_widget widget bg-white p-4 rounded-lg shadow-sm">
-              <h2 className="text-xl font-bold mb-4 text-right text-amber-600">الفروع</h2>
-              <select
-                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                value={selectedBranch}
-                onChange={handleBranchChange}
-              >
-                <option value="all">جميع الفروع</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.name}
-                  </option>
-                ))}
-              </select>
+              {/* Departments Filter */}
+              <div className="departments_widget flex-1">
+                <CustomSelect
+                  options={[
+                    { value: "all", label: "جميع الأقسام" },
+                    ...departments.map(department => ({
+                      value: department.id,
+                      label: department.name
+                    }))
+                  ]}
+                  value={selectedDepartment || "all"}
+                  onChange={(value) => handleDepartmentChange(value === "all" ? null : value)}
+                  placeholder="اختر القسم"
+                />
+              </div>
+
+              {/* Branches Filter */}
+              {branches.length > 0 && (
+                <div className="branches_widget flex-1">
+                  <CustomSelect
+                    options={[
+                      { value: "all", label: "جميع الفروع" },
+                      ...branches.map(branch => ({
+                        value: branch.id,
+                        label: branch.name
+                      }))
+                    ]}
+                    value={selectedBranch}
+                    onChange={handleBranchChange}
+                    placeholder="اختر الفرع"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="lg:w-3/4">
-          {loading && (
-            <div className="flex justify-center items-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600"></div>
-            </div>
-          )}
+        {isTeamsPage ? (
+          <div className="container mx-auto px-4">
+            {loading && (
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600"></div>
+              </div>
+            )}
 
-          {error && (
-            <div className="flex justify-center items-center py-10">
-              <div className="text-red-500">Error loading team: {error}</div>
-            </div>
-          )}
+            {error && (
+              <div className="flex justify-center items-center py-10">
+                <div className="text-red-500">Error loading team: {error}</div>
+              </div>
+            )}
 
-          {!loading && !error && (
-            <>
-              {filteredTeams.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
-                </div>
-              ) : (
-                <>
-                  {isMobile ? (
-                    <div className="team-slider-container py-4">
-                      <Slider ref={sliderRef} {...sliderSettings}>
+            {!loading && !error && (
+              <>
+                {filteredTeams.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
+                  </div>
+                ) : (
+                  <>
+                    {isMobile ? (
+                      <div className="team-slider-container py-4">
+                        <Slider ref={sliderRef} {...sliderSettings}>
+                          {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                        </Slider>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap">
                         {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                      </Slider>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap">
-                      {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
         ) : (
           <>
             {loading && (
@@ -409,7 +477,7 @@ useEffect(() => {
                         </Slider>
                       </div>
                     ) : (
-                      <div className="flex flex-wrap ">
+                      <div className="flex flex-wrap">
                         {displayedTeams.map((team, index) => renderTeamCard(team, index))}
                       </div>
                     )}

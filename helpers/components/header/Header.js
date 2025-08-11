@@ -80,7 +80,6 @@ const Header = (props) => {
   const [menuData, setMenuData] = useState({
     branches: [],
     departments: [],
-    doctors: [],
     offers: [],
     blogs: [],
     services: [],
@@ -278,7 +277,7 @@ const Header = (props) => {
         </li>
       ))}
       <div className="relative group/general">
-        <div className="px-4 py-2 flex justify-between items-center font-semibold text-black cursor-default">
+        <div className="px-4 py-2 flex justify-between items-center  text-black cursor-default">
           الأقسام العامة
           <FaChevronLeft className="mr-1 text-xs" />
         </div>
@@ -302,12 +301,12 @@ const Header = (props) => {
   return (
    <div className={"relative  w-[100vw]"}>
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-        <div className={`${props.hclass} m-auto w-full `}>
+        <div className={`${props.hclass} m-auto !w-full `}>
           <ContactBar />
-          <nav className="navigation w-full mx-auto px-2 relative mt-10" >
-            <div className="container-fluid flex flex-row items-center justify-between md:justify-center w-full px-2 md:!px-0 lg:px-8 py-2 mx-auto relative h-20">
+          <nav className="navigation !w-full mx-auto  relative mt-10" >
+            <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
               {/* logo - normal flow on mobile, absolute on md+ */}
-              <div className="flex-shrink-0 order-2 md:order-1 md:absolute md:right-4 lg:right-8 md:top-1/2 md:transform md:-translate-y-1/2">
+              <div className="flex-shrink-0 order-2 md:order-1 md:absolute right-0 md:top-1/2 md:transform md:-translate-y-1/2">
                 <Link href="/" className="navbar-brand">
         { props.nav ?   (    <img
                     src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
@@ -380,9 +379,8 @@ const Header = (props) => {
         className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
         style={{ color: props.nav ? 'black' : 'white' }}
       >
-        الاطباء <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
+        الاطباء 
       </Link>
-      {menuData.doctors.length > 0 && renderEntityDropdown(menuData.doctors, "doctors")}
     </li>
     
     <li className="relative group">
