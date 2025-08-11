@@ -180,7 +180,7 @@ const Header = (props) => {
   };
 
   const handleItemClick = (entity, id) => {
-    const route = entity === "doctors" ? `/doctors?departmentId=${id}` : `/${entity}?departmentId=${id}`;
+    const route = `/${entity}/${id}`;
     router.push(route);
     setShowSearch(false);
     setQuery("");
@@ -396,7 +396,7 @@ const Header = (props) => {
     
     <li>
       <Link 
-        href="/blog" 
+        href="/blogs" 
         className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
         style={{ color: props.nav ? 'black' : 'white' }}
       >

@@ -141,8 +141,8 @@ const MobileMenu = ({ menuData }) => {
     {
       id: 9,
       title: 'المقالات',
-      path: 'blog',
-      link: '/blog'
+      path: 'blogs',
+      link: '/blogs'
     }
   ];
 

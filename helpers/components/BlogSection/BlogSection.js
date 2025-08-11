@@ -127,7 +127,7 @@ const BlogSection = ({ tClass = '' }) => {
         <div className="row justify-content-center mt-5">
           <div className="col-12 text-center">
             <Link
-              href="/blog"
+              href="/blogs"
               className="relative pl-16 inline-flex items-center justify-between 
                          bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
                          text-white font-bold rounded-full py-3 px-8
