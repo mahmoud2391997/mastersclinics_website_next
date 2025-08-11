@@ -221,11 +221,11 @@ const ProjectSection = ({
         <section className={hclass} dir="rtl">
             <div className="container">
                 {showSidebar ? (
-                    <div className="row">
-                        <div className="col-lg-3">
+                    <div className="col">
+                        <div className="w-full">
                             {renderSidebar()}
                         </div>
-                        <div className="col-lg-9">
+                        <div className="w-full">
                             {renderContent()}
                         </div>
                     </div>
