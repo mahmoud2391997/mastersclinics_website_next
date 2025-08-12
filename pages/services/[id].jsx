@@ -17,6 +17,7 @@ import getImageUrl from "../../utilies/getImageUrl";
 import { DepartmentCard } from '../departments/grid';
 import Link from 'next/link';
 import { fetchDepartmentById } from '../../store/slices/departments'; // Add this import
+import SectionTitle from '../../helpers/components/SectionTitle/SectionTitle';
 
 const LoadingSpinner = ({ text = 'جاري التحميل...', size = 'medium', color = 'primary' }) => {
   const sizeClasses = {
@@ -301,39 +302,19 @@ useEffect(() => {
   }
 
   return (
-    <Fragment>
+    <div>
   
-console.log(serviceData);
 
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
       <PageTitle pageTitle={serviceData?.name_ar || 'الخدمة'} pagesub={'تفاصيل الخدمة'} bgImage={serviceData.image ? serviceData.image  : "/services.webp"}/>
 
-      <section dir="rtl" className="service_single section-padding">
+      <section dir="rtl" className="service_single section-padding mt-2">
         <div className="container mx-auto px-4">
           <div className="flex flex-col">
             {/* Service Header */}
             <div className="mb-12">
-              <div className="relative w-full h-96 rounded-xl overflow-hidden mb-8 shadow-lg">
-                <Image
-                  src={imageSrc}
-                  alt={serviceData?.name_ar || 'الخدمة'}
-                  layout="fill"
-                  objectFit="cover"
-                  quality={90}
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white">
-                    {serviceData?.name_ar}
-                  </h1>
-                </div>
-              </div>
-
-              <div className="prose prose-lg max-w-none text-right">
-                <p className="text-gray-700 leading-relaxed">
-                  {serviceData?.description}
-                </p>
-              </div>
+              <SectionTitle subtitle={serviceData?.name_ar} title={serviceData?.description} />
+             
             </div>
 
             {/* Service Capabilities */}
@@ -412,7 +393,7 @@ console.log(serviceData);
 
       <Footer hclass={'wpo-site-footer_s2'} />
       <Scrollbar />
-    </Fragment>
+    </div>
   );
 };
 

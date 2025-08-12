@@ -151,29 +151,12 @@ const ServiceSection = ({
               }} 
             >
               {servicesToShow.map((service, index) => (
-                <SwiperSlide key={index} className="pb-10">
+                <SwiperSlide key={index} className="py-2">
                   <div
                     className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group mx-2"
                     onClick={() => handleServiceClick(service.id)}
                   >
-                    {/* Service Image or Icon */}
-                    <div
-                      className="mb-4 flex justify-center items-center w-full"
-                      style={{ minHeight: 120 }}
-                    >
-                      {service.image ? (
-                        <img
-                          src={getImageUrl(service.image)}
-                          alt={service.name}
-                          className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
-                          <i className="flaticon-health text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a]"></i>
-                        </div>
-                      )}
-                    </div>
-
+            
                     <div className="flex-grow">
                       <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
                         {service.name_ar}

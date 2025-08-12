@@ -71,21 +71,7 @@ const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = n
                 className="bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full flex flex-col cursor-pointer group"
                 onClick={() => handleServiceClick(service.id)}
               >
-                <div className="mb-4 flex justify-center items-center w-full min-h-[120px]">
-                  {service.image ? (
-                    <Image
-                      src={getImageUrl(service.image)}
-                      alt={service.name_ar || service.name_en || "Service"}
-                      width={400}
-                      height={300}
-                      className="w-full h-48 object-cover border border-[#dec06a]/30 bg-gray-50 rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
-                      <i className="flaticon-health text-4xl text-primary transition-colors duration-300 group-hover:text-[#dec06a]"></i>
-                    </div>
-                  )}
-                </div>
+       
 
                 <div className="flex-grow">
                   <div className="flex justify-between items-start mb-2">
