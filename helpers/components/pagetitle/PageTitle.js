@@ -8,28 +8,29 @@ const PageTitle = (props) => {
         pagesub, 
         bgImage, 
         bgImageAlt = "Background", 
-        overlayColor = "rgba(0,0,0,0.5)" 
+        overlayColor = "rgba(0,0,0,0.6)" 
     } = props;
 
     return (
-        <div className="wpo-breadcumb-area min-h-[70vh] md:min-h-[500px] relative">
+        <div className="wpo-breadcumb-area min-h-[150px] md:min-h-[500px] relative">
             {/* Background Image Section - Added with Tailwind */}
-            {bgImage && (
-                <div className="absolute inset-0 -z-10">
+                  {bgImage && (
+                <div className="absolute inset-0 -z-10 w-full">
                     <Image
                         src={bgImage}
                         alt={bgImageAlt}
                         fill
-                        className="object-cover "
+                        className="object-cover w-full"
                         priority
+                        quality={100}
+                        sizes="100vw"
                     />
                     <div 
-                        className="absolute inset-0"
+                        className="absolute inset-0 w-full"
                         style={{ backgroundColor: overlayColor }}
                     />
                 </div>
             )}
-            
             {/* Original Content Structure */}
             <div className="container">
                 <div className="row">

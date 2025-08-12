@@ -6,12 +6,22 @@ import ContactBar from "./socialMedia";
 import { FaChevronDown, FaChevronLeft, FaSearch, FaTimes } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 const Logo = () => (
+  <div>
+
+   <img
+                    src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
+                    alt="logo"
+                    onClick={() => {
+    window.scrollTo(10, 0);
+  }}
+                    className="w-[200px] md:hidden"
+                    />
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 80 80"
-    className="w-[200px] md:w-[150px] xl:w-[187px] mr-2"
+    className="hidden md:flex md:w-[150px] xl:w-[187px] mr-2"
     aria-label="Masters Clinics Logo"
-  >
+    >
     {/* Background (optional, if needed) */}
     <rect width="80" height="80" fill="transparent" />
 
@@ -75,6 +85,7 @@ const Logo = () => (
     <path fill="white" d="M65.31,61.72h1.89v.78h-1.89v-.78Z"/>
     <path fill="white" d="M66.97,62.5v-.78h1.6c-.53-.16-.8-.53-.8-1.11v-.75c0-.42.14-.74.43-.97.3-.24.73-.36,1.28-.36.35,0,.65.05.91.16.35.15.53.37.53.68,0,.25-.08.5-.25.75,0-.22-.1-.42-.3-.59-.17-.14-.38-.22-.62-.22-.26,0-.45.04-.57.13-.18.12-.27.35-.27.68v.92c.02.17.08.3.17.39.17.19.44.29.79.29h1.2c0,.11-.03.23-.08.37-.11.28-.29.42-.56.42h-3.46Z"/>
   </svg>
+    </div>
 );
 const Header = (props) => {
   const [menuData, setMenuData] = useState({

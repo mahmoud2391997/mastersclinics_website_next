@@ -14,17 +14,17 @@ import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
 
 const AboutPage = () => {
     return (
-        <Fragment  className="w-full relative">
+        <div  className="w-full relative overflow-hidden">
             <Navbar hclass={'wpo-site-header wpo-site-header-s2 w-[100vw]'}  />
             <PageTitle pageTitle={'من نحن'} pagesub={'من نحن'} bgImage={'/about.webp'}   />
             <About hclass={'about_section section-padding s4'} />
             <ProcessSection hclass={"work_section_s2 section-padding"} />
             <FunFact hclass={'funfact_section'} />
-            <BlogSection tClass={'blog_section section-padding'} />
+            <BlogSection tClass={'blog_section section-padding'} slider={true} />
             <Footer hclass={'wpo-site-footer'} />
             <Scrollbar />
 
-        </Fragment>
+        </div>
     )
 };
 export default AboutPage;

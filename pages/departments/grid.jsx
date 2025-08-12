@@ -105,7 +105,7 @@ export default function DepartmentsGrid({
   }
 
   return (
-    <div className="relative mt-5 p-2">
+    <div className="relative mt-2 p-2">
       {/* Show title and button when isSwiper is true */}
       {isSwiper && (
        <div className='m-auto mt-5'>
@@ -176,7 +176,7 @@ export default function DepartmentsGrid({
             </Slider>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:p-5">
             {filteredDepartments.map(department => (
               <DepartmentCard key={department.id} department={department} />
             ))}
