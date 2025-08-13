@@ -93,7 +93,6 @@ const Header = (props) => {
     departments: [],
     offers: [],
     blogs: [],
-    services: [],
   });
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
@@ -379,9 +378,8 @@ const Header = (props) => {
         className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
         style={{ color: props.nav ? 'black' : 'white' }}
       >
-        الخدمات <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
+        الخدمات 
       </Link>
-      {menuData.services.length > 0 && renderEntityDropdown(menuData.services, "services")}
     </li>
     
     <li className="relative group">

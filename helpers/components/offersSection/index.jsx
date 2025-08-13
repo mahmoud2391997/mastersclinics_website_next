@@ -21,7 +21,19 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [filteredOffers, setFilteredOffers] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
   
+  // Check if mobile view
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobileView();
+    window.addEventListener('resize', checkMobileView);
+    return () => window.removeEventListener('resize', checkMobileView);
+  }, []);
+
   // Extract all unique branches and departments
   const { branches, departments } = useMemo(() => {
     const branchesMap = new Map();
@@ -131,6 +143,36 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
           {/* Horizontal Filter Bar */}
           <div className="container mx-auto px-4 mb-8">
             <div className="bg-white p-4 rounded-lg shadow-sm">
+              {/* Desktop Department Tabs - Hidden on mobile */}
+              <div className="hidden md:block mb-4">
+                <div className="flex border-b border-gray-200">
+                  <button
+                    onClick={() => handleDepartmentChange("all")}
+                    className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                      !selectedDepartment
+                        ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    الكل
+                  </button>
+
+                  {departments.map((department) => (
+                    <button
+                      key={department.id}
+                      onClick={() => handleDepartmentChange(department.id)}
+                      className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                        selectedDepartment === department.id
+                          ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {department.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 rtl">
                 {/* Search Widget */}
                 <div className="search_widget flex-1">
@@ -157,21 +199,23 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
                   </form>
                 </div>
 
-                {/* Departments Filter */}
-                <div className="departments_widget flex-1">
-                  <CustomSelect
-                    options={[
-                      { value: "all", label: "جميع الأقسام" },
-                      ...departments.map(department => ({
-                        value: department.id,
-                        label: department.name
-                      }))
-                    ]}
-                    value={selectedDepartment || "all"}
-                    onChange={handleDepartmentChange}
-                    placeholder="اختر القسم"
-                  />
-                </div>
+                {/* Departments Filter - Only on mobile */}
+                {isMobile && (
+                  <div className="departments_widget flex-1">
+                    <CustomSelect
+                      options={[
+                        { value: "all", label: "جميع الأقسام" },
+                        ...departments.map(department => ({
+                          value: department.id,
+                          label: department.name
+                        }))
+                      ]}
+                      value={selectedDepartment || "all"}
+                      onChange={handleDepartmentChange}
+                      placeholder="اختر القسم"
+                    />
+                  </div>
+                )}
 
                 {/* Branches Filter */}
                 {branches.length > 0 && (
