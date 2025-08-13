@@ -3,8 +3,9 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import MobileMenu from "../MobileMenu/MobileMenu";
 import ContactBar from "./socialMedia";
-import { FaChevronDown, FaChevronLeft, FaSearch, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaChevronLeft, FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+
 const Logo = () => (
   <div>
 
@@ -87,6 +88,7 @@ const Logo = () => (
   </svg>
     </div>
 );
+
 const Header = (props) => {
   const [menuData, setMenuData] = useState({
     branches: [],
@@ -97,6 +99,18 @@ const Header = (props) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [authStep, setAuthStep] = useState(1); // 1: email, 2: verification, 3: user info
+  const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [userInfo, setUserInfo] = useState({
+    firstName: "",
+    lastName: "",
+    phoneNumber: ""
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const authPopupRef = useRef();
   const searchRef = useRef();
   const router = useRouter();
   const debounceRef = useRef();
@@ -155,6 +169,123 @@ const Header = (props) => {
     general: (menuData.departments || []).filter(dept => !mainDepartments.includes(dept.name))
   };
 
+  // Authentication handlers
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    try {
+      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/authorize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+console.log(response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        throw new Error(errorData.message || 'Failed to send verification code');
+      }
+
+      const data = await response.json();
+      console.log(data)
+      setAuthStep(2);
+    } catch (error) {
+      console.log(err);
+      
+      console.error("Error sending verification code:", error);
+      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.");
+    }
+  };
+
+  const handleVerificationSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    try {
+      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          code: verificationCode
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Invalid verification code');
+      }
+
+      const data = await response.json();
+      if (data.requiresUserInfo) {
+        setAuthStep(3);
+      } else {
+        // If no additional info needed, mark as authenticated
+        setIsAuthenticated(true);
+        setShowAuthPopup(false);
+        resetAuthForm();
+      }
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.");
+    }
+  };
+
+  const handleUserInfoSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    
+    try {
+      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: userInfo.firstName,
+          lastName: userInfo.lastName,
+          phoneNumber: userInfo.phoneNumber,
+          email: email,
+          code: verificationCode
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create user');
+      }
+
+      const data = await response.json();
+      setIsAuthenticated(true);
+      setShowAuthPopup(false);
+      resetAuthForm();
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+    }
+  };
+
+  const resetAuthForm = () => {
+    setAuthStep(1);
+    setEmail("");
+    setVerificationCode("");
+    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" });
+    setAuthError("");
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setShowAuthPopup(false);
+    resetAuthForm();
+  };
+
+  // Search functionality
   const handleSearch = async (searchQuery) => {
     if (!searchQuery.trim()) {
       setResults(null);
@@ -197,17 +328,7 @@ const Header = (props) => {
     setResults(null);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setShowSearch(false);
-        setResults(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+  // Click handlers
   const ClickHandler = () => {
     window.scrollTo(10, 0);
   };
@@ -220,6 +341,23 @@ const Header = (props) => {
     }
   };
 
+  // Close popups when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearch(false);
+        setResults(null);
+      }
+      if (authPopupRef.current && !authPopupRef.current.contains(e.target)) {
+        setShowAuthPopup(false);
+      }
+    };
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Dropdown rendering functions
   const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
     if (!acc[branch.region_name]) {
       acc[branch.region_name] = [];
@@ -287,7 +425,7 @@ const Header = (props) => {
         </li>
       ))}
       <div className="relative group/general">
-        <div className="px-4 py-2 flex justify-between items-center  text-black cursor-default">
+        <div className="px-4 py-2 flex justify-between items-center text-black cursor-default">
           الأقسام العامة
           <FaChevronLeft className="mr-1 text-xs" />
         </div>
@@ -309,124 +447,121 @@ const Header = (props) => {
   );
 
   return (
-   <div className={"relative  w-[100vw]"}>
+    <div className="relative w-[100vw]">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-        <div className={`${props.hclass} m-auto !w-full `}>
+        <div className={`${props.hclass} m-auto !w-full`}>
           <ContactBar />
-          <nav className="navigation !w-full mx-auto  relative mt-10" >
+          <nav className="navigation !w-full mx-auto relative mt-10">
             <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
-              {/* logo - normal flow on mobile, absolute on md+ */}
+              {/* Logo */}
               <div className="flex-shrink-0 order-2 md:order-1 md:absolute right-0 md:top-1/2 md:transform md:-translate-y-1/2">
                 <Link href="/" className="navbar-brand">
-        { props.nav ?   (    <img
-                    src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
-                    alt="logo"
-                    onClick={ClickHandler}
-                    className="w-[200px] md:!w-[150px] xl:!w-[187px] xl:mr-10"
-                  />
-            ) :    <Logo />}
+                  {props.nav ? (
+                    <img
+                      src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
+                      alt="logo"
+                      onClick={ClickHandler}
+                      className="w-[200px] md:!w-[150px] xl:!w-[187px] xl:mr-10"
+                    />
+                  ) : (
+                    <Logo />
+                  )}
                 </Link>
               </div>
 
-              {/* main nav - hidden on mobile, centered on md+ */}
+              {/* Main Navigation */}
               <div className="hidden md:flex w-full max-w-[800px] mx-auto order-2">
-  <ul className="flex justify-center text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap gap-2 lg:gap-4 w-full">
-    <li>
-      <Link 
-        href="/" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        الرئيسية
-      </Link>
-    </li>
-    <li>
-      <Link 
-        href="/about" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        من نحن
-      </Link>
-    </li>
+                <ul className="flex justify-center text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap gap-2 lg:gap-4 w-full">
+                  <li>
+                    <Link 
+                      href="/" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      الرئيسية
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      href="/about" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      من نحن
+                    </Link>
+                  </li>
+                  <li className="relative group">
+                    <Link 
+                      href="/branches" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      الفروع <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
+                    </Link>
+                    {menuData.branches.length > 0 && renderBranchesDropdown()}
+                  </li>
+                  <li className="relative group">
+                    <Link 
+                      href="/departments" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      الاقسام <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
+                    </Link>
+                    {menuData.departments.length > 0 && renderDepartmentsDropdown()}
+                  </li>
+                  <li className="relative group">
+                    <Link 
+                      href="/services" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      الخدمات 
+                    </Link>
+                  </li>
+                  <li className="relative group">
+                    <Link 
+                      href="/doctors" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      الاطباء 
+                    </Link>
+                  </li>
+                  <li className="relative group">
+                    <Link 
+                      href="/offers" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      العروض <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
+                    </Link>
+                    {menuData.offers.length > 0 && renderEntityDropdown(menuData.offers, "offers")}
+                  </li>
+                  <li>
+                    <Link 
+                      href="/blogs" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      المقالات
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      href="/contact" 
+                      className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
+                      style={{ color: props.nav ? 'black' : 'white' }}
+                    >
+                      اتصل بنا
+                    </Link>
+                  </li>
+                </ul>
+              </div>
 
-    <li className="relative group">
-      <Link 
-        href="/branches" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        الفروع <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
-      </Link>
-      {menuData.branches.length > 0 && renderBranchesDropdown()}
-    </li>
-    
-    <li className="relative group">
-      <Link 
-        href="/departments" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        الاقسام <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
-      </Link>
-      {menuData.departments.length > 0 && renderDepartmentsDropdown()}
-    </li>
-    
-    <li className="relative group">
-      <Link 
-        href="/services" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        الخدمات 
-      </Link>
-    </li>
-    
-    <li className="relative group">
-      <Link 
-        href="/doctors" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        الاطباء 
-      </Link>
-    </li>
-    
-    <li className="relative group">
-      <Link 
-        href="/offers" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853] flex items-center" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        العروض <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
-      </Link>
-      {menuData.offers.length > 0 && renderEntityDropdown(menuData.offers, "offers")}
-    </li>
-    
-    <li>
-      <Link 
-        href="/blogs" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        المقالات
-      </Link>
-    </li>
-    
-    <li>
-      <Link 
-        href="/contact" 
-        className="py-2 px-2 lg:px-3 hover:!text-[#CBA853]" 
-        style={{ color: props.nav ? 'black' : 'white' }}
-      >
-        اتصل بنا
-      </Link>
-    </li>
-  </ul>
-</div>
-
-              {/* search icon - normal flow on mobile, absolute on md+ */}
-              <div className="flex items-center order-1 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2">
+              {/* Search and Account Icons */}
+              <div className="flex items-center order-1 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2 gap-4">
+                {/* Search Icon */}
                 <div className="bg-white rounded-full p-2">
                   {showSearch ? (
                     <FaTimes onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
@@ -434,15 +569,150 @@ const Header = (props) => {
                     <FaSearch onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
                   )}
                 </div>
+                
+                {/* Account Icon */}
+                <div className="relative">
+                  <div 
+                    onClick={() => setShowAuthPopup(!showAuthPopup)}
+                    className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer"
+                  >
+                    <FaUser className="text-[#dec06a]" size={24} />
+                    {isAuthenticated && (
+                      <span className="text-black text-sm hidden md:inline">{email}</span>
+                    )}
+                  </div>
+                  
+                  {/* Authentication Popup */}
+                  {showAuthPopup && (
+                    <div 
+                      ref={authPopupRef}
+                      className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-lg p-4 z-50"
+                    >
+                      {!isAuthenticated ? (
+                        <>
+                          {authStep === 1 && (
+                            <form onSubmit={handleEmailSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">تسجيل الدخول</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">البريد الإلكتروني</label>
+                                <input
+                                  type="email"
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                  placeholder="example@example.com"
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                إرسال رمز التحقق
+                              </button>
+                            </form>
+                          )}
+                          
+                          {authStep === 2 && (
+                            <form onSubmit={handleVerificationSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رمز التحقق</label>
+                                <input
+                                  type="text"
+                                  value={verificationCode}
+                                  onChange={(e) => setVerificationCode(e.target.value)}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                  placeholder="أدخل الرمز المكون من 6 أرقام"
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                تأكيد
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setAuthStep(1)}
+                                className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
+                              >
+                                تغيير البريد الإلكتروني
+                              </button>
+                            </form>
+                          )}
+                          
+                          {authStep === 3 && (
+                            <form onSubmit={handleUserInfoSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأول</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.firstName}
+                                  onChange={(e) => setUserInfo({...userInfo, firstName: e.target.value})}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأخير</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.lastName}
+                                  onChange={(e) => setUserInfo({...userInfo, lastName: e.target.value})}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رقم الهاتف</label>
+                                <input
+                                  type="tel"
+                                  value={userInfo.phoneNumber}
+                                  onChange={(e) => setUserInfo({...userInfo, phoneNumber: e.target.value})}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                حفظ
+                              </button>
+                            </form>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-right">
+                          <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
+                          <p className="mb-4">البريد الإلكتروني: {email}</p>
+                          <button
+                            onClick={handleLogout}
+                            className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
+                          >
+                            تسجيل الخروج
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* mobile nav - normal flow on mobile, hidden on md+ */}
+              {/* Mobile Navigation */}
               <div className="flex md:hidden order-3 md:order-none">
                 <MobileMenu menuData={menuData} />
               </div>
             </div>
 
-            {/* search bar */}
+            {/* Search Bar */}
             {showSearch && (
               <div ref={searchRef} className="w-full absolute top-[-20] px-4 bg-transparent">
                 <div className="relative w-full max-w-[600px] m-auto">
