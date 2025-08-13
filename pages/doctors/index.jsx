@@ -6,8 +6,7 @@ import Link from "next/link"
 import Slider from "react-slick"
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
-
-// Components
+import ServiceSidebar from "../../helpers/main-component/ServiceSinglePage/sidebar"
 import Navbar from "../../helpers/components/Navbar/Navbar"
 import PageTitle from "../../helpers/components/pagetitle/PageTitle"
 import CtafromSection from "../../helpers/components/CtafromSection/CtafromSection"
@@ -15,7 +14,6 @@ import Footer from "../../helpers/components/footer/Footer"
 import Scrollbar from "../../helpers/components/scrollbar/scrollbar"
 import SectionTitle from "../../helpers/components/SectionTitle/SectionTitle"
 
-// Redux
 import { useSelector, useDispatch } from "react-redux"
 import { fetchTeams } from "@/store/slices/doctor"
 import { getImageUrl } from "@/helpers/hooks/imageUrl"
@@ -30,7 +28,7 @@ const TeamPage = () => {
     <Fragment>
       <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
       <PageTitle pageTitle={'اطباؤنا'} pagesub={'الاطباء'} bgImage={'/doctors.png'} />
-      <section className="section-padding">
+      <section className="">
         <div>
           <TeamSection
             hclass="team_section_s2"
@@ -46,85 +44,6 @@ const TeamPage = () => {
   )
 }
 
-const CustomSelect = ({ 
-  options, 
-  value, 
-  onChange, 
-  placeholder = "Select..." 
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const handleOptionClick = (selectedValue) => {
-    onChange(selectedValue);
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    if (!isMounted) return;
-    
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMounted]);
-
-  const selectedOption = options.find((opt) => opt.value === value);
-  const displayValue = selectedOption?.label || placeholder;
-
-  return (
-    <div className="relative w-full" ref={dropdownRef}>
-      <div
-        className={`flex items-center justify-between p-2 border-b-2 ${
-          isOpen ? "border-[#dec06a]" : "border-gray-300"
-        } cursor-pointer`}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span>{displayValue}</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </div>
-      {isMounted && isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-          {options.map((option) => (
-            <div
-              key={option.value}
-              className={`px-4 py-2 cursor-pointer hover:bg-gray-100 border-b border-gray-200 last:border-b-0 ${
-                value === option.value ? "bg-[#dec06a] text-white" : ""
-              }`}
-              onClick={() => handleOptionClick(option.value)}
-            >
-              {option.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const TeamSection = ({
   hclass = "",
   urlDepartmentId = null,
@@ -139,19 +58,17 @@ const TeamSection = ({
   const dispatch = useDispatch()
   const { teams = [], loading = false, error = null } = useSelector((state) => state.teams || {})
 
-  // State management
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState(departmentId || null)
   const [selectedBranch, setSelectedBranch] = useState(branchId || "all")
   const [initialLoadComplete, setInitialLoadComplete] = useState(false)
   const sliderRef = useRef(null)
   const [isMobile, setIsMobile] = useState(false);
-  
+
   const checkMobileView = () => {
     setIsMobile(window.innerWidth < 768);
   };
 
-  // Initialize state from URL params on first load
   useEffect(() => {
     if (!initialLoadComplete && urlDepartmentId) {
       const deptId = Number.parseInt(urlDepartmentId, 10)
@@ -162,16 +79,13 @@ const TeamSection = ({
     }
   }, [urlDepartmentId, initialLoadComplete])
 
-  // Fetch teams based on filters
   useEffect(() => {
-    // Only fetch once on mount (fetch all teams)
     dispatch(fetchTeams({}))
     checkMobileView();
     window.addEventListener('resize', checkMobileView);
     return () => window.removeEventListener('resize', checkMobileView);
   }, [dispatch])
 
-  // Extract all possible departments (memoized)
   const departments = useMemo(() => {
     const deptMap = new Map()
     teams.forEach((doctor) => {
@@ -187,7 +101,6 @@ const TeamSection = ({
     return Array.from(deptMap.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [teams])
 
-  // Extract all possible branches (memoized)
   const branches = useMemo(() => {
     const branchMap = new Map()
     teams.forEach((doctor) => {
@@ -203,7 +116,6 @@ const TeamSection = ({
     return Array.from(branchMap.values()).sort((a, b) => a.name.localeCompare(b.name))
   }, [teams])
 
-  // Filter teams based on current state (memoized)
   const filteredTeams = useMemo(() => {
     return teams.filter((team) => {
       const matchesSearch =
@@ -221,7 +133,6 @@ const TeamSection = ({
 
   const displayedTeams = sliceEnd ? filteredTeams.slice(sliceStart, sliceEnd) : filteredTeams.slice(sliceStart)
 
-  // Slider settings
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -233,37 +144,11 @@ const TeamSection = ({
     arrows: true,
     rtl: true,
     responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
+      { breakpoint: 1024, settings: { slidesToShow: 2, slidesToScroll: 1 } },
+      { breakpoint: 768, settings: { slidesToShow: 1, slidesToScroll: 1 } },
     ],
   }
 
-  // Event handlers (memoized)
-  const handleSearchChange = useCallback((e) => {
-    setSearchTerm(e.target.value)
-  }, [])
-
-  const handleDepartmentChange = useCallback((deptId) => {
-    setSelectedDepartment(deptId === selectedDepartment ? null : deptId)
-  }, [selectedDepartment])
-
-  const handleBranchChange = useCallback((branchId) => {
-    setSelectedBranch(branchId)
-  }, [])
-
-  // Render individual team card
   const renderTeamCard = (team, index) => (
     <div className={slider ? "px-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"} key={index}>
       <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col">
@@ -289,13 +174,12 @@ const TeamSection = ({
         </div>
         <div className="content p-6 text-center flex-grow flex flex-col">
           <div className="mb-4">
-            <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">{team.name}</h3>
+            <h3 className="text-xl font-bold mb-2 text-gray-900">{team.name}</h3>
             <span className="text-[#dec06a] block font-medium">
               {team.specialty || ""}
               {team.department_name && ` - ${team.department_name}`}
             </span>
           </div>
-          
           {team.branch_name && (
             <div className="mb-4">
               <p className="text-xs text-gray-500 mb-2 font-medium">الفرع:</p>
@@ -306,24 +190,13 @@ const TeamSection = ({
               </div>
             </div>
           )}
-          
           <div className="mt-auto">
             <Link
               href={`/doctors/${team.id}`}
               className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
             >
               <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
               </span>
@@ -343,77 +216,56 @@ const TeamSection = ({
             <div className="col-lg-9 col-12">
               <SectionTitle
                 title={branchId ? "اطباء الفرع" : "فريقنا"}
-                subtitle={
-                  isTeamsPage ? "أطباؤنا المتخصصون" : branchId ? "متاح بالفرع أطباؤنا المتخصصون" : "تعرف على أخصائيينا"
-                }
+                subtitle={isTeamsPage ? "أطباؤنا المتخصصون" : branchId ? "متاح بالفرع أطباؤنا المتخصصون" : "تعرف على أخصائيينا"}
               />
             </div>
           </div>
         )}
 
-        {/* Horizontal Filter Bar */}
+        {/* Department Tabs */}
         <div className="container mx-auto px-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 rtl">
-              {/* Search Widget */}
-              <div className="search_widget flex-1">
-                <form onSubmit={(e) => e.preventDefault()} className="relative">
-                  <input
-                    className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    placeholder="ابحث عن طبيب أو تخصص..."
-                  />
-                  <svg
-                    className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+            <div className="hidden md:block mb-4">
+              <div className="flex border-b border-gray-200">
+                <button
+                  onClick={() => setSelectedDepartment(null)}
+                  className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                    !selectedDepartment
+                      ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  الكل
+                </button>
+                {departments.map((department) => (
+                  <button
+                    key={department.id}
+                    onClick={() => setSelectedDepartment(department.id)}
+                    className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                      selectedDepartment === department.id
+                        ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </form>
+                    {department.name}
+                  </button>
+                ))}
               </div>
-
-              {/* Departments Filter */}
-              <div className="departments_widget flex-1">
-                <CustomSelect
-                  options={[
-                    { value: "all", label: "جميع الأقسام" },
-                    ...departments.map(department => ({
-                      value: department.id,
-                      label: department.name
-                    }))
-                  ]}
-                  value={selectedDepartment || "all"}
-                  onChange={(value) => handleDepartmentChange(value === "all" ? null : value)}
-                  placeholder="اختر القسم"
-                />
-              </div>
-
-              {/* Branches Filter */}
-              {branches.length > 0 && (
-                <div className="branches_widget flex-1">
-                  <CustomSelect
-                    options={[
-                      { value: "all", label: "جميع الفروع" },
-                      ...branches.map(branch => ({
-                        value: branch.id,
-                        label: branch.name
-                      }))
-                    ]}
-                    value={selectedBranch}
-                    onChange={handleBranchChange}
-                    placeholder="اختر الفرع"
-                  />
-                </div>
-              )}
             </div>
+
+              <ServiceSidebar
+                services={teams}
+                branches={branches}
+                onSearchChange={setSearchTerm}
+                onDepartmentChange={setSelectedDepartment}
+                onBranchChange={setSelectedBranch}
+                currentSearch={searchTerm}
+                currentDepartment={selectedDepartment}
+                currentBranch={selectedBranch}
+                departments={departments}
+                showDepartmentDropdown={isMobile}
+                searchPlaceholder={"ابحث عن الطبيب"}
+              />
           </div>
         </div>
 
@@ -425,35 +277,21 @@ const TeamSection = ({
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600"></div>
               </div>
             )}
-
             {error && (
               <div className="flex justify-center items-center py-10">
                 <div className="text-red-500">Error loading team: {error}</div>
               </div>
             )}
-
             {!loading && !error && (
-              <>
-                {filteredTeams.length === 0 ? (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
-                  </div>
-                ) : (
-                  <>
-                    {isMobile ? (
-                      <div className="team-slider-container py-4">
-                        <Slider ref={sliderRef} {...sliderSettings}>
-                          {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                        </Slider>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap">
-                        {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
+              filteredTeams.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-gray-500 text-lg">لا توجد نتائج مطابقة للبحث</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap">
+                  {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                </div>
+              )
             )}
           </div>
         ) : (
@@ -469,52 +307,23 @@ const TeamSection = ({
               </div>
             )}
             {!loading && !error && (
-              <>
-                {filteredTeams.length === 0 ? (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500 text-lg">لا يوجد أطباء متاحون حالياً</p>
+              filteredTeams.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-gray-500 text-lg">لا يوجد أطباء متاحون حالياً</p>
+                </div>
+              ) : (
+                slider ? (
+                  <div className="team-slider-container py-4">
+                    <Slider ref={sliderRef} {...sliderSettings}>
+                      {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                    </Slider>
                   </div>
                 ) : (
-                  <>
-                    {slider ? (
-                      <div className="team-slider-container py-4">
-                        <Slider ref={sliderRef} {...sliderSettings}>
-                          {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                        </Slider>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap">
-                        {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                      </div>
-                    )}
-                    {!branchId && (
-                      <div className="flex justify-center mt-12">
-                        <Link
-                          href="/teams"
-                          className="relative pl-16 inline-flex items-center justify-between bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83] text-white font-bold rounded-full py-3 px-8 hover:-translate-y-1 hover:shadow-md transition-all duration-300 gap-4"
-                        >
-                          <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center flex-shrink-0">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#CBA853"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M19 12H5M12 19l-7-7 7-7" />
-                            </svg>
-                          </span>
-                          <span className="flex-1 text-end">عرض جميع الأطباء</span>
-                        </Link>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
+                  <div className="flex flex-wrap">
+                    {displayedTeams.map((team, index) => renderTeamCard(team, index))}
+                  </div>
+                )
+              )
             )}
           </>
         )}

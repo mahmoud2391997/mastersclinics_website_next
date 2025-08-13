@@ -41,6 +41,70 @@ LoadingSpinner.propTypes = {
   color: PropTypes.oneOf(["primary", "white", "gray"]),
 }
 
+const parseServiceData = (service) => {
+  try {
+    const doctors_ids = service.doctors_ids ? JSON.parse(service.doctors_ids) : []
+    const branches = service.branches ? JSON.parse(service.branches) : []
+
+    return {
+      ...service,
+      doctors_ids,
+      branches,
+      doctor_details: service.doctor_details || doctors_ids.map((id) => ({ id, name: `طبيب ${id}` })),
+      branch_details: service.branch_details || branches.map((id) => ({ id, name: `فرع ${id}` })),
+      branch_names: service.branch_names || []
+    }
+  } catch (e) {
+    console.error("Error parsing service data:", e)
+    return {
+      ...service,
+      doctors_ids: [],
+      branches: [],
+      doctor_details: [],
+      branch_details: [],
+      branch_names: []
+    }
+  }
+}
+
+const extractBranches = (services) => {
+  const branchMap = new Map()
+  
+  services.forEach(service => {
+    if (service.branch_names && service.branch_names.length > 0) {
+      service.branch_names.forEach((branchName, index) => {
+        const branchId = service.branches[index] || branchName
+        const normalizedName = branchName.trim()
+        if (!branchMap.has(branchId)) {
+          branchMap.set(branchId, {
+            id: branchId,
+            name: normalizedName
+          })
+        }
+      })
+    }
+  })
+  
+  return Array.from(branchMap.values())
+}
+
+const extractDepartments = (services) => {
+  const departmentMap = new Map()
+  
+  services.forEach(service => {
+    if (service.department_id && service.department_name) {
+      if (!departmentMap.has(service.department_id)) {
+        departmentMap.set(service.department_id, {
+          id: service.department_id,
+          name: service.department_name.trim()
+        })
+      }
+    }
+  })
+  
+  return Array.from(departmentMap.values()).sort((a, b) => a.name.localeCompare(b.name))
+}
+
 const ServicePage = () => {
   const dispatch = useDispatch()
   const { services = [], loading = false, error = null } = useSelector((state) => state.services || {})
@@ -62,82 +126,26 @@ const ServicePage = () => {
     setSelectedDepartment(newDepartmentId ? Number.parseInt(newDepartmentId, 10) : null)
   }, [searchParams])
 
-  const parseServiceData = (service) => {
-    try {
-      const doctors_ids = service.doctors_ids ? JSON.parse(service.doctors_ids) : []
-      const branches = service.branches ? JSON.parse(service.branches) : []
-
-      const doctor_details = service.doctor_details || doctors_ids.map((id) => ({ id, name: `طبيب ${id}` }))
-      const branch_details = service.branch_details || branches.map((id) => ({ id, name: `فرع ${id}` }))
-
-      return {
-        id: service.id,
-        department_id: service.department_id,
-        category_id: service.category_id,
-        name_ar: service.name_ar || "",
-        name_en: service.name_en || "",
-        description: service.description || "خدمة مقدمة من قسم علاجى",
-        doctors_ids,
-        branches,
-        image: service.image || null,
-        is_active: service.is_active || 0,
-        priority: service.priority || 0,
-        created_at: service.created_at,
-        updated_at: service.updated_at,
-        department_name: service.department_name || `القسم ${service.department_id}`,
-        doctor_details,
-        branch_details,
-        branch_names: service.branch_names || []
-      }
-    } catch (e) {
-      console.error("Error parsing service data:", e)
-      return {
-        ...service,
-        doctors_ids: [],
-        branches: [],
-        doctor_details: [],
-        branch_details: [],
-        branch_names: [],
-        department_name: service.department_name || `القسم ${service.department_id}`,
-      }
-    }
-  }
-
-  const extractBranches = (services) => {
-    const branchMap = new Map()
-    
-    services.forEach(service => {
-      if (service.branch_names && service.branch_names.length > 0) {
-        service.branch_names.forEach((branchName, index) => {
-          const branchId = service.branches[index] || branchName
-          const normalizedName = branchName.trim()
-          if (!branchMap.has(branchId)) {
-            branchMap.set(branchId, {
-              id: branchId,
-              name: normalizedName
-            })
-          }
-        })
-      }
-    })
-    
-    return Array.from(branchMap.values())
-  }
-
-  const parsedServices = services.map(parseServiceData)
-  const branches = extractBranches(parsedServices)
+  const parsedServices = useMemo(() => services.map(parseServiceData), [services])
+  const branches = useMemo(() => extractBranches(parsedServices), [parsedServices])
+  const departments = useMemo(() => extractDepartments(parsedServices), [parsedServices])
 
   const filteredServices = useMemo(() => {
     return parsedServices.filter(service => {
       const departmentMatch = !selectedDepartment || service.department_id === selectedDepartment
       let branchMatch = true
-      if (selectedBranch) {
-        branchMatch = service.branches.includes(selectedBranch) || 
-                     service.branch_names.some(name => name.trim() === selectedBranch)
+      
+      if (selectedBranch && selectedBranch !== "all") {
+        branchMatch = service.branches.some(branch => branch.toString() === selectedBranch.toString()) || 
+                     service.branch_names.some(name => {
+                       const branchId = branches.find(b => b.name.trim() === name.trim())?.id
+                       return branchId?.toString() === selectedBranch.toString()
+                     })
       }
+      
       return departmentMatch && branchMatch
     })
-  }, [parsedServices, selectedDepartment, selectedBranch])
+  }, [parsedServices, selectedDepartment, selectedBranch, branches])
 
   return (
     <Fragment>
@@ -165,6 +173,37 @@ const ServicePage = () => {
         </div>
       ) : (
         <div className="container mx-auto px-4 py-8">
+          {/* Desktop Department Tabs - Hidden on mobile */}
+          <div className="hidden md:block mb-8">
+        <div className="flex flex-wrap border-b border-gray-200">
+  <button
+    onClick={() => setSelectedDepartment(null)}
+    className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+      !selectedDepartment
+        ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+        : 'text-gray-500 hover:text-gray-700'
+    }`}
+  >
+    الكل
+  </button>
+
+  {departments.map((department) => (
+    <button
+      key={department.id}
+      onClick={() => setSelectedDepartment(department.id)}
+      className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+        selectedDepartment === department.id
+          ? 'text-[#dec06a] border-b-2 border-[#dec06a]'
+          : 'text-gray-500 hover:text-gray-700'
+      }`}
+    >
+      {department.name}
+    </button>
+  ))}
+</div>
+
+          </div>
+
           <ServiceSidebar
             services={parsedServices}
             branches={branches}
@@ -174,13 +213,15 @@ const ServicePage = () => {
             currentSearch={searchTerm}
             currentDepartment={selectedDepartment}
             currentBranch={selectedBranch}
+            departments={departments}
+            showDepartmentDropdown={false}
           />
           
           <main className="w-full">
             <ServiceSection 
-              services={filteredServices} 
-              searchTerm={searchTerm} 
-              selectedDepartment={selectedDepartment} 
+              services={filteredServices}
+              searchTerm={searchTerm}
+              selectedDepartment={selectedDepartment}
               selectedBranch={selectedBranch}
               showTitle={false}
             />
