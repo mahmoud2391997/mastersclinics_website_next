@@ -95,25 +95,33 @@ const Header = (props) => {
     departments: [],
     offers: [],
     blogs: [],
-  });
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showAuthPopup, setShowAuthPopup] = useState(false);
-  const [authStep, setAuthStep] = useState(1); // 1: email, 2: verification, 3: user info
-  const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
+  })
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState(null)
+  const [showSearch, setShowSearch] = useState(false)
+  const [showAuthPopup, setShowAuthPopup] = useState(false)
+    const [clientName, setClientName] = useState("");
+
+  const [authStep, setAuthStep] = useState(1) // 1: email, 2: verification, 3: user info
+  const [email, setEmail] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
   const [userInfo, setUserInfo] = useState({
     firstName: "",
     lastName: "",
-    phoneNumber: ""
-  });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const authPopupRef = useRef();
-  const searchRef = useRef();
-  const router = useRouter();
-  const debounceRef = useRef();
+    phoneNumber: "",
+  })
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authError, setAuthError] = useState("")
+  const [clientInfo, setClientInfo] = useState(null)
+  const [codeExpirationTime, setCodeExpirationTime] = useState(null)
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [isCodeExpired, setIsCodeExpired] = useState(false)
+  const [isResending, setIsResending] = useState(false)
+  const authPopupRef = useRef()
+  const searchRef = useRef()
+  const router = useRouter()
+  const debounceRef = useRef()
+  const timerRef = useRef()
 
   const entityNames = {
     branches: "الفروع",
@@ -122,249 +130,449 @@ const Header = (props) => {
     doctors: "الأطباء",
     offers: "العروض",
     blogs: "المقالات",
-  };
+  }
 
   const normalizeDepartmentName = (name, type) => {
     const prefixMap = {
       doctors: "أطباء",
       services: "خدمات",
       offers: "عروض",
-    };
-    const prefix = prefixMap[type];
-    if (!prefix) return name;
-    const cleanedName = name.replace(/^قسم\s+/, "").trim();
-    return `${prefix} ${cleanedName}`;
-  };
+    }
+    const prefix = prefixMap[type]
+    if (!prefix) return name
+    const cleanedName = name.replace(/^قسم\s+/, "").trim()
+    return `${prefix} ${cleanedName}`
+  }
 
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
-        const data = await res.json();
+        const res = await fetch("https://www.ss.mastersclinics.com/navbar-data")
+        const data = await res.json()
         setMenuData({
           branches: data.branches || [],
           departments: data.departments || [],
           doctors: data.doctors || [],
           offers: data.offers || [],
           blogs: data.blogs || [],
-          services: data.services || []
-        });
+          services: data.services || [],
+        })
       } catch (error) {
-        console.error("Failed to fetch navbar data", error);
+        console.error("Failed to fetch navbar data", error)
       }
-    };
+    }
 
-    fetchMenuData();
-  }, []);
+    fetchMenuData()
+  }, [])
 
-  const mainDepartments = [
-    "قسم الجلدية",
-    "قسم الاسنان",
-    "قسم النساء والولادة",
-    "قسم التغذية"
-  ];
+  const mainDepartments = ["قسم الجلدية", "قسم الاسنان", "قسم النساء والولادة", "قسم التغذية"]
 
   const groupedDepartments = {
-    main: (menuData.departments || []).filter(dept => mainDepartments.includes(dept.name)),
-    general: (menuData.departments || []).filter(dept => !mainDepartments.includes(dept.name))
-  };
+    main: (menuData.departments || []).filter((dept) => mainDepartments.includes(dept.name)),
+    general: (menuData.departments || []).filter((dept) => !mainDepartments.includes(dept.name)),
+  }
 
-  // Authentication handlers
-  const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    
-    try {
-      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/authorize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-console.log(response);
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("userEmail")
+    const savedAuthState = localStorage.getItem("isAuthenticated")
+    const savedClientInfo = localStorage.getItem("clientInfo")
 
-      if (!response.ok) {
-        const errorData = await response.json();
+    if (savedEmail && savedAuthState === "true") {
+      setEmail(savedEmail)
+      setIsAuthenticated(true)
 
-        throw new Error(errorData.message || 'Failed to send verification code');
+      if (savedClientInfo) {
+        try {
+          const parsedClientInfo = JSON.parse(savedClientInfo)
+          setClientName(parsedClientInfo.first_name + " " + parsedClientInfo.last_name)
+          setClientInfo(parsedClientInfo)
+          console.log("Restored client info from localStorage:", {
+            clientData: parsedClientInfo,
+            timestamp: new Date().toISOString(),
+            source: "localStorage",
+          })
+        } catch (error) {
+          console.error("Error parsing saved client info:", error)
+          localStorage.removeItem("clientInfo")
+        }
       }
 
-      const data = await response.json();
-      console.log(data)
-      setAuthStep(2);
-    } catch (error) {
-      console.log(err);
-      
-      console.error("Error sending verification code:", error);
-      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.");
+      console.log("User session restored on page load:", {
+        email: savedEmail,
+        isAuthenticated: true,
+        hasClientInfo: !!savedClientInfo,
+        timestamp: new Date().toISOString(),
+      })
     }
-  };
+  }, [])
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (isAuthenticated && email) {
+        try {
+          localStorage.setItem("userEmail", email)
+          localStorage.setItem("isAuthenticated", "true")
+          if (clientInfo) {
+            localStorage.setItem("clientInfo", JSON.stringify(clientInfo))
+          }
+
+          console.log("Saved user session before page unload:", {
+            email,
+            isAuthenticated,
+            clientInfo: clientInfo ? "saved" : "none",
+            timestamp: new Date().toISOString(),
+          })
+        } catch (error) {
+          console.error("Error saving user session:", error)
+        }
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [isAuthenticated, email, clientInfo])
+
+  useEffect(() => {
+    if (codeExpirationTime && authStep === 2) {
+      const updateTimer = () => {
+        const now = Date.now()
+        const remaining = Math.max(0, codeExpirationTime - now)
+        setTimeRemaining(remaining)
+
+        if (remaining === 0) {
+          setIsCodeExpired(true)
+          if (timerRef.current) {
+            clearInterval(timerRef.current)
+          }
+        }
+      }
+
+      updateTimer()
+      timerRef.current = setInterval(updateTimer, 1000)
+
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current)
+        }
+      }
+    }
+  }, [codeExpirationTime, authStep])
+
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault()
+    setAuthError("")
+
+    try {
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to send verification code")
+      }
+
+      const data = await response.json()
+      console.log("Authorization response:", {
+        response: data,
+        email,
+        timestamp: new Date().toISOString(),
+      })
+
+      const expirationTime = Date.now() + 5 * 60 * 1000
+      setCodeExpirationTime(expirationTime)
+      setIsCodeExpired(false)
+      setTimeRemaining(5 * 60 * 1000)
+
+      setAuthStep(2)
+    } catch (error) {
+      console.error("Error sending verification code:", error)
+      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.")
+    }
+  }
 
   const handleVerificationSubmit = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    
+    e.preventDefault()
+    setAuthError("")
+
+    if (isCodeExpired) {
+      setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.")
+      return
+    }
+
     try {
-      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/verify', {
-        method: 'POST',
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/verify", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email,
-          code: verificationCode
+          code: verificationCode,
         }),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Invalid verification code');
+        const errorData = await response.json()
+        if (errorData.message?.includes("expired") || errorData.code === "CODE_EXPIRED") {
+          setIsCodeExpired(true)
+          setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.")
+          return
+        }
+        throw new Error(errorData.message || "Invalid verification code")
       }
 
-      const data = await response.json();
+      const data = await response.json()
+      console.log("Verification response:", {
+        response: data,
+        email,
+        timestamp: new Date().toISOString(),
+      })
+
       if (data.requiresUserInfo) {
-        setAuthStep(3);
+        setAuthStep(3)
       } else {
-        // If no additional info needed, mark as authenticated
-        setIsAuthenticated(true);
-        setShowAuthPopup(false);
-        resetAuthForm();
+        if (data.client) {
+          setClientInfo(data.client)
+          console.log("Fetched existing client info:", {
+            clientData: data.client,
+            timestamp: new Date().toISOString(),
+          })
+          localStorage.setItem("clientInfo", JSON.stringify(data.client))
+        }
+
+        setIsAuthenticated(true)
+        localStorage.setItem("userEmail", email)
+        localStorage.setItem("isAuthenticated", "true")
+
+        console.log("User authenticated successfully:", {
+          email,
+          clientInfo: data.client ? "loaded" : "none",
+          timestamp: new Date().toISOString(),
+        })
+
+        setShowAuthPopup(false)
+        resetAuthForm()
       }
     } catch (error) {
-      console.error("Error verifying code:", error);
-      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.");
+      console.error("Error verifying code:", error)
+      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.")
     }
-  };
+  }
 
   const handleUserInfoSubmit = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    
+    e.preventDefault()
+    setAuthError("")
+
     try {
-      const response = await fetch('https://www.ss.mastersclinics.com/api/client-auth/authenticate', {
-        method: 'POST',
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           firstName: userInfo.firstName,
           lastName: userInfo.lastName,
           phoneNumber: userInfo.phoneNumber,
           email: email,
-          code: verificationCode
+          code: verificationCode,
         }),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create user');
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to create user")
       }
 
-      const data = await response.json();
-      setIsAuthenticated(true);
-      setShowAuthPopup(false);
-      resetAuthForm();
+      const data = await response.json()
+      console.log("User creation response:", {
+        response: data,
+        email,
+        timestamp: new Date().toISOString(),
+      })
+
+      const newClientInfo = {
+        email,
+        first_name: userInfo.firstName,
+        last_name: userInfo.lastName,
+        phone_number: userInfo.phoneNumber,
+        unique_number: data.uniqueNumber,
+        created_at: new Date().toISOString(),
+      }
+
+      setClientInfo(newClientInfo)
+      setIsAuthenticated(true)
+
+      localStorage.setItem("userEmail", email)
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("clientInfo", JSON.stringify(newClientInfo))
+
+      console.log("New user created and authenticated:", {
+        email,
+        clientInfo: newClientInfo,
+        timestamp: new Date().toISOString(),
+      })
+
+      setShowAuthPopup(false)
+      resetAuthForm()
     } catch (error) {
-      console.error("Error creating user:", error);
-      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+      console.error("Error creating user:", error)
+      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.")
     }
-  };
+  }
+
+  const handleResendCode = async () => {
+    setIsResending(true)
+    setAuthError("")
+
+    try {
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to resend verification code")
+      }
+
+      const data = await response.json()
+      console.log("Resend verification code response:", {
+        response: data,
+        email,
+        timestamp: new Date().toISOString(),
+      })
+
+      const expirationTime = Date.now() + 5 * 60 * 1000
+      setCodeExpirationTime(expirationTime)
+      setIsCodeExpired(false)
+      setTimeRemaining(5 * 60 * 1000)
+      setVerificationCode("")
+
+      setAuthError("")
+      setAuthError("تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني.")
+      setTimeout(() => setAuthError(""), 3000)
+    } catch (error) {
+      console.error("Error resending verification code:", error)
+      setAuthError(error.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق.")
+    } finally {
+      setIsResending(false)
+    }
+  }
 
   const resetAuthForm = () => {
-    setAuthStep(1);
-    setEmail("");
-    setVerificationCode("");
-    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" });
-    setAuthError("");
-  };
+    setAuthStep(1)
+    setEmail("")
+    setVerificationCode("")
+    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" })
+    setAuthError("")
+    setCodeExpirationTime(null)
+    setTimeRemaining(0)
+    setIsCodeExpired(false)
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+    }
+  }
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    setShowAuthPopup(false);
-    resetAuthForm();
-  };
+    localStorage.removeItem("userEmail")
+    localStorage.removeItem("isAuthenticated")
+    localStorage.removeItem("clientInfo")
 
-  // Search functionality
+    console.log("User logged out:", {
+      email,
+      timestamp: new Date().toISOString(),
+    })
+
+    setIsAuthenticated(false)
+    setClientInfo(null)
+    setShowAuthPopup(false)
+    resetAuthForm()
+  }
+
   const handleSearch = async (searchQuery) => {
     if (!searchQuery.trim()) {
-      setResults(null);
-      return;
+      setResults(null)
+      return
     }
     try {
-      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      setResults(data);
+      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`)
+      const data = await res.json()
+      setResults(data)
     } catch (err) {
-      console.error("Search failed", err);
+      console.error("Search failed", err)
     }
-  };
+  }
 
   const debouncedSearch = useCallback((value) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      handleSearch(value);
-    }, 500);
-  }, []);
+      handleSearch(value)
+    }, 500)
+  }, [])
 
   const handleInputChange = (e) => {
-    const value = e.target.value;
-    setQuery(value);
-    debouncedSearch(value);
-  };
+    const value = e.target.value
+    setQuery(value)
+    debouncedSearch(value)
+  }
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      handleSearch(query);
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      handleSearch(query)
     }
-  };
+  }
 
   const handleItemClick = (entity, id) => {
-    const route = `/${entity}/${id}`;
-    router.push(route);
-    setShowSearch(false);
-    setQuery("");
-    setResults(null);
-  };
+    const route = `/${entity}/${id}`
+    router.push(route)
+    setShowSearch(false)
+    setQuery("")
+    setResults(null)
+  }
 
-  // Click handlers
   const ClickHandler = () => {
-    window.scrollTo(10, 0);
-  };
+    window.scrollTo(10, 0)
+  }
 
   const toggleSearch = () => {
-    setShowSearch(!showSearch);
+    setShowSearch(!showSearch)
     if (showSearch) {
-      setQuery("");
-      setResults(null);
+      setQuery("")
+      setResults(null)
     }
-  };
+  }
 
-  // Close popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setShowSearch(false);
-        setResults(null);
+        setShowSearch(false)
+        setResults(null)
       }
       if (authPopupRef.current && !authPopupRef.current.contains(e.target)) {
-        setShowAuthPopup(false);
+        setShowAuthPopup(false)
       }
-    };
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }
 
-  // Dropdown rendering functions
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
     if (!acc[branch.region_name]) {
-      acc[branch.region_name] = [];
+      acc[branch.region_name] = []
     }
-    acc[branch.region_name].push(branch);
-    return acc;
-  }, {});
+    acc[branch.region_name].push(branch)
+    return acc
+  }, {})
 
   const renderEntityDropdown = (items, entityType) => (
     <ul 
@@ -578,7 +786,10 @@ console.log(response);
                   >
                     <FaUser className="text-[#dec06a]" size={24} />
                     {isAuthenticated && (
-                      <span className="text-black text-sm hidden md:inline">{email}</span>
+                      <div className="flex flex-col">
+                        <span className="text-black text-sm hidden md:inline">مرحبًا</span>
+                      <span className="text-black text-sm hidden md:inline">{clientName}</span>
+                      </div>
                     )}
                   </div>
                   
