@@ -696,7 +696,7 @@ const Header = (props) => {
           </div>
         </div>
 
-          <nav className="navigation !w-full mx-auto relative mt-[35px] md:mt-[15px]">
+          <nav className="navigation !w-full mx-auto relative mt-[35px] md:mt-0">
             <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
               {/* Logo */}
               <div className="flex-shrink-0 order-2 md:order-1 md:absolute right-0 md:top-1/2 md:transform md:-translate-y-1/2">
@@ -933,7 +933,18 @@ const Header = (props) => {
                       ) : (
                         <div className="text-right">
                           <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
+                          <p className="mb-4">الاسم: {clientName}</p>
                           <p className="mb-4">البريد الإلكتروني: {email}</p>
+                          <button
+                            className="w-full gradient  py-2 rounded transition mb-1 "
+                          >
+                          <Link
+                          href={"/profile"}
+                          className="!text-white"
+                          >
+                          حسابي
+                          </Link>
+                          </button>
                           <button
                             onClick={handleLogout}
                             className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"

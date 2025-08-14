@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Clock, Heart, User, Phone, Mail, Edit, Save, X, Plus, Trash2 } from "lucide-react"
+import { Calendar, Clock, Heart, User, Phone, Mail, Edit, Save, X, Plus, Trash2, Loader2 } from "lucide-react"
 import Header from "@/helpers/components/header/Header"
 
 interface ClientInfo {
@@ -44,55 +44,56 @@ export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedInfo, setEditedInfo] = useState<Partial<ClientInfo>>({})
+  const [editState, setEditState] = useState({
+    isEditing: false,
+    isLoading: false,
+    errors: {} as Record<string, string>,
+    tempData: {} as Partial<ClientInfo>
+  })
   const [newWishlistItem, setNewWishlistItem] = useState({ name: "", description: "", type: "service" as const })
   const [isAddingWishlistItem, setIsAddingWishlistItem] = useState(false)
   const router = useRouter()
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("userEmail")
-    const savedAuthState = localStorage.getItem("isAuthenticated")
-    const savedClientInfo = localStorage.getItem("clientInfo")
+useEffect(() => {
+  const loadData = async () => {
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedAuthState = localStorage.getItem("isAuthenticated");
+    const savedClientInfo = localStorage.getItem("clientInfo");
 
     if (!savedEmail || savedAuthState !== "true") {
-      router.push("/")
-      return
+      router.push("/");
+      return;
     }
 
-    if (savedClientInfo) {
-      const parsedClientInfo = JSON.parse(savedClientInfo)
-      console.log("Fetched client info:", {
-        clientData: parsedClientInfo,
-        timestamp: new Date().toISOString(),
-        source: "localStorage",
-      })
-      setClientInfo(parsedClientInfo)
-    } else {
-      fetchClientInfo(savedEmail)
-    }
-
-    // Load mock data for appointments and wishlist
-    loadMockData()
-  }, [router])
-
-  const fetchClientInfo = async (email: string) => {
     try {
-      const response = await fetch(`https://www.ss.mastersclinics.com/api/client-info?email=${email}`)
+      // Always try to get fresh data first
+      const response = await fetch("/api/client-auth/get-client", {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
       if (response.ok) {
-        const data = await response.json()
-        console.log("Fetched client info from API:", {
-          clientData: data,
-          timestamp: new Date().toISOString(),
-          source: "API",
-        })
-        setClientInfo(data)
-        localStorage.setItem("clientInfo", JSON.stringify(data))
+        const data = await response.json();
+        localStorage.setItem("clientInfo", JSON.stringify(data.client));
+        setClientInfo(data.client);
+      } else {
+        // Fallback to localStorage if API fails
+        if (savedClientInfo) {
+          setClientInfo(JSON.parse(savedClientInfo));
+        }
       }
     } catch (error) {
-      console.error("Error fetching client info:", error)
+      console.error("Failed to fetch fresh data:", error);
+      if (savedClientInfo) {
+        setClientInfo(JSON.parse(savedClientInfo));
+      }
     }
-  }
+
+    loadMockData(); // Your existing mock data loader
+  };
+
+  loadData();
+}, [router]);
 
   const loadMockData = () => {
     // Mock appointments data
@@ -158,39 +159,135 @@ export default function ProfilePage() {
     setWishlist(mockWishlist)
   }
 
-  const handleEditProfile = () => {
-    setIsEditing(true)
-    setEditedInfo(clientInfo || {})
-  }
-
-  const handleSaveProfile = async () => {
-    if (!clientInfo) return
-
-    try {
-      const response = await fetch("https://www.ss.mastersclinics.com/api/update-client", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editedInfo),
-      })
-
-      if (response.ok) {
-        const updatedInfo = { ...clientInfo, ...editedInfo }
-        setClientInfo(updatedInfo)
-        localStorage.setItem("clientInfo", JSON.stringify(updatedInfo))
-        console.log("Updated client info:", {
-          updatedData: updatedInfo,
-          timestamp: new Date().toISOString(),
-        })
-        setIsEditing(false)
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error)
+  const validateFields = (data: Partial<ClientInfo>) => {
+    const errors: Record<string, string> = {}
+    
+    if (data.first_name && data.first_name.length < 2) {
+      errors.first_name = "يجب أن يكون الاسم الأول أكثر من حرفين"
     }
+    
+    if (data.last_name && data.last_name.length < 2) {
+      errors.last_name = "يجب أن يكون الاسم الأخير أكثر من حرفين"
+    }
+    
+    if (data.phone_number && !/^\+?\d{10,15}$/.test(data.phone_number)) {
+      errors.phone_number = "رقم الهاتف غير صحيح"
+    }
+    
+    return errors
   }
+
+  const handleEditProfile = () => {
+    if (!clientInfo) return
+    
+    setEditState({
+      isEditing: true,
+      isLoading: false,
+      errors: {},
+      tempData: { ...clientInfo }
+    })
+  }
+const handleSaveProfile = async () => {
+  if (!clientInfo) return;
+
+  const errors = validateFields(editState.tempData);
+  if (Object.keys(errors).length > 0) {
+    setEditState(prev => ({ ...prev, errors }));
+    return;
+  }
+
+  setEditState(prev => ({ ...prev, isLoading: true }));
+
+  try {
+    const payload = {
+      email: clientInfo.email,
+      firstName: editState.tempData.first_name || undefined,
+      lastName: editState.tempData.last_name || undefined,
+      phoneNumber: editState.tempData.phone_number || undefined,
+    };
+
+    // Remove unchanged fields
+    Object.keys(payload).forEach(key => {
+      if (key !== 'email' && (
+        payload[key as keyof typeof payload] === undefined || 
+        payload[key as keyof typeof payload] === clientInfo[key as keyof ClientInfo]
+      )) {
+        delete payload[key as keyof typeof payload];
+      }
+    });
+
+    if (Object.keys(payload).length <= 1) {
+      setEditState(prev => ({ ...prev, isLoading: false }));
+      alert("⚠️ لم يتم تغيير أي بيانات");
+      return;
+    }
+
+    const response = await fetch(
+      "https://www.ss.mastersclinics.com/api/client-auth/edit-client",
+      {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || "فشل تحديث بيانات العميل");
+    }
+
+    // ✅ CRITICAL: Update localStorage with the EXACT server response
+    localStorage.setItem("clientInfo", JSON.stringify(data.client));
+    
+    // Update React state
+    setClientInfo(data.client);
+    setEditState({
+      isEditing: false,
+      isLoading: false,
+      errors: {},
+      tempData: {}
+    });
+
+    alert("✅ تم تحديث البيانات بنجاح");
+    
+  } catch (error) {
+    console.error("Update error:", error);
+    alert(error instanceof Error ? error.message : "حدث خطأ أثناء التحديث");
+    setEditState(prev => ({ ...prev, isLoading: false }));
+  }
+};
+
 
   const handleCancelEdit = () => {
-    setIsEditing(false)
-    setEditedInfo({})
+    if (Object.keys(editState.tempData).length > 0) {
+      const confirm = window.confirm("هل تريد بالتأكيد تجاهل التغييرات؟")
+      if (!confirm) return
+    }
+    
+    setEditState({
+      isEditing: false,
+      isLoading: false,
+      errors: {},
+      tempData: {}
+    })
+  }
+
+  const handleFieldChange = (field: keyof ClientInfo, value: string) => {
+    setEditState(prev => ({
+      ...prev,
+      tempData: {
+        ...prev.tempData,
+        [field]: value
+      },
+      errors: {
+        ...prev.errors,
+        [field]: ""
+      }
+    }))
   }
 
   const addToWishlist = () => {
@@ -202,13 +299,13 @@ export default function ProfilePage() {
       addedAt: new Date().toISOString().split("T")[0],
     }
 
-    setWishlist((prev) => [newItem, ...prev])
+    setWishlist(prev => [newItem, ...prev])
     setNewWishlistItem({ name: "", description: "", type: "service" })
     setIsAddingWishlistItem(false)
   }
 
   const removeFromWishlist = (id: string) => {
-    setWishlist((prev) => prev.filter((item) => item.id !== id))
+    setWishlist(prev => prev.filter(item => item.id !== id))
   }
 
   const getStatusColor = (status: string) => {
@@ -294,18 +391,32 @@ export default function ProfilePage() {
                     <User className="w-5 h-5 text-[#CBA853]" />
                     المعلومات الشخصية
                   </CardTitle>
-                  {!isEditing ? (
+                  {!editState.isEditing ? (
                     <Button onClick={handleEditProfile} variant="outline" size="sm">
                       <Edit className="w-4 h-4 ml-2" />
                       تعديل
                     </Button>
                   ) : (
                     <div className="flex gap-2">
-                      <Button onClick={handleSaveProfile} size="sm" className="bg-[#CBA853] hover:bg-[#A58532]">
-                        <Save className="w-4 h-4 ml-2" />
+                      <Button 
+                        onClick={handleSaveProfile} 
+                        size="sm" 
+                        className="bg-[#CBA853] hover:bg-[#A58532]"
+                        disabled={editState.isLoading}
+                      >
+                        {editState.isLoading ? (
+                          <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 ml-2" />
+                        )}
                         حفظ
                       </Button>
-                      <Button onClick={handleCancelEdit} variant="outline" size="sm">
+                      <Button 
+                        onClick={handleCancelEdit} 
+                        variant="outline" 
+                        size="sm"
+                        disabled={editState.isLoading}
+                      >
                         <X className="w-4 h-4 ml-2" />
                         إلغاء
                       </Button>
@@ -316,13 +427,18 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="firstName">الاسم الأول</Label>
-                      {isEditing ? (
-                        <Input
-                          id="firstName"
-                          value={editedInfo.first_name || ""}
-                          onChange={(e) => setEditedInfo((prev) => ({ ...prev, first_name: e.target.value }))}
-                          className="mt-1"
-                        />
+                      {editState.isEditing ? (
+                        <div>
+                          <Input
+                            id="firstName"
+                            value={editState.tempData.first_name || ""}
+                            onChange={(e) => handleFieldChange("first_name", e.target.value)}
+                            className="mt-1"
+                          />
+                          {editState.errors.first_name && (
+                            <p className="mt-1 text-sm text-red-600">{editState.errors.first_name}</p>
+                          )}
+                        </div>
                       ) : (
                         <p className="mt-1 p-2 bg-gray-50 rounded">{clientInfo.first_name}</p>
                       )}
@@ -330,13 +446,18 @@ export default function ProfilePage() {
 
                     <div>
                       <Label htmlFor="lastName">الاسم الأخير</Label>
-                      {isEditing ? (
-                        <Input
-                          id="lastName"
-                          value={editedInfo.last_name || ""}
-                          onChange={(e) => setEditedInfo((prev) => ({ ...prev, last_name: e.target.value }))}
-                          className="mt-1"
-                        />
+                      {editState.isEditing ? (
+                        <div>
+                          <Input
+                            id="lastName"
+                            value={editState.tempData.last_name || ""}
+                            onChange={(e) => handleFieldChange("last_name", e.target.value)}
+                            className="mt-1"
+                          />
+                          {editState.errors.last_name && (
+                            <p className="mt-1 text-sm text-red-600">{editState.errors.last_name}</p>
+                          )}
+                        </div>
                       ) : (
                         <p className="mt-1 p-2 bg-gray-50 rounded">{clientInfo.last_name}</p>
                       )}
@@ -352,13 +473,18 @@ export default function ProfilePage() {
 
                     <div>
                       <Label htmlFor="phone">رقم الهاتف</Label>
-                      {isEditing ? (
-                        <Input
-                          id="phone"
-                          value={editedInfo.phone_number || ""}
-                          onChange={(e) => setEditedInfo((prev) => ({ ...prev, phone_number: e.target.value }))}
-                          className="mt-1"
-                        />
+                      {editState.isEditing ? (
+                        <div>
+                          <Input
+                            id="phone"
+                            value={editState.tempData.phone_number || ""}
+                            onChange={(e) => handleFieldChange("phone_number", e.target.value)}
+                            className="mt-1"
+                          />
+                          {editState.errors.phone_number && (
+                            <p className="mt-1 text-sm text-red-600">{editState.errors.phone_number}</p>
+                          )}
+                        </div>
                       ) : (
                         <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
                           <Phone className="w-4 h-4 text-gray-500" />
@@ -380,70 +506,6 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="schedule">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-[#CBA853]" />
-                    جدول المواعيد
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {appointments.map((appointment) => (
-                      <div key={appointment.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="font-semibold text-lg">{appointment.service}</h3>
-                              <Badge className={getStatusColor(appointment.status)}>
-                                {getStatusText(appointment.status)}
-                              </Badge>
-                            </div>
-                            <div className="space-y-1 text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>{new Date(appointment.date).toLocaleDateString("ar-SA")}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4" />
-                                <span>{appointment.time}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
-                                <span>{appointment.doctor}</span>
-                              </div>
-                              <div className="text-sm text-gray-500">{appointment.branch}</div>
-                            </div>
-                          </div>
-                          {appointment.status === "upcoming" && (
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                تعديل
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 bg-transparent"
-                              >
-                                إلغاء
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t">
-                    <Button className="w-full bg-[#CBA853] hover:bg-[#A58532]">
-                      <Plus className="w-4 h-4 ml-2" />
-                      حجز موعد جديد
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="wishlist">
               <Card>
