@@ -122,6 +122,7 @@ const Header = (props) => {
   const router = useRouter()
   const debounceRef = useRef()
   const timerRef = useRef()
+  const [isMobile, setIsMobile] = useState(false);
 
   const entityNames = {
     branches: "الفروع",
@@ -565,7 +566,16 @@ const Header = (props) => {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+  useEffect(() => {
+    // Run only on client
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
+    checkScreenSize(); // initial check
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
   const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
     if (!acc[branch.region_name]) {
       acc[branch.region_name] = []
@@ -659,7 +669,34 @@ const Header = (props) => {
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
         <div className={`${props.hclass} m-auto !w-full`}>
           <ContactBar />
-          <nav className="navigation !w-full mx-auto relative mt-10">
+       
+        <div
+          ref={searchRef}
+          className={`w-full px-4 bg-transparent 
+            mt-3
+          `}
+        >
+          <div className="relative w-full max-w-[600px] m-auto">
+            <input
+              type="text"
+              placeholder="ابحث هنا..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
+            />
+            <FaSearch
+              className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
+              size={20}
+            />
+            {results && (
+              <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
+                {/* your search results mapping */}
+              </div>
+            )}
+          </div>
+        </div>
+
+          <nav className="navigation !w-full mx-auto relative mt-[35px] md:mt-[15px]">
             <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
               {/* Logo */}
               <div className="flex-shrink-0 order-2 md:order-1 md:absolute right-0 md:top-1/2 md:transform md:-translate-y-1/2">
@@ -768,15 +805,8 @@ const Header = (props) => {
               </div>
 
               {/* Search and Account Icons */}
-              <div className="flex items-center order-1 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2 gap-4">
-                {/* Search Icon */}
-                <div className="bg-white rounded-full p-2">
-                  {showSearch ? (
-                    <FaTimes onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
-                  ) : (
-                    <FaSearch onClick={toggleSearch} className="text-[#dec06a] cursor-pointer" size={24} />
-                  )}
-                </div>
+              <div className="flex items-center order-3 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2 gap-4">
+       
                 
                 {/* Account Icon */}
                 <div className="relative">
@@ -918,54 +948,14 @@ const Header = (props) => {
               </div>
 
               {/* Mobile Navigation */}
-              <div className="flex md:hidden order-3 md:order-none">
+              <div className="flex md:hidden order-1 md:order-none">
                 <MobileMenu menuData={menuData} />
               </div>
             </div>
 
             {/* Search Bar */}
-            {showSearch && (
-              <div ref={searchRef} className="w-full absolute top-[-20] px-4 bg-transparent">
-                <div className="relative w-full max-w-[600px] m-auto">
-                  <input
-                    type="text"
-                    placeholder="ابحث هنا..."
-                    value={query}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyPress}
-                    className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
-                  />
-                  <FaSearch className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]" size={20} />
+     
 
-                  {results && (
-                    <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
-                      {Object.entries(results).some(([, items]) => items.length > 0) ? (
-                        Object.entries(results).map(([entity, items]) =>
-                          items.length > 0 && (
-                            <div key={entity} className="border-b last:border-b-0">
-                              <div className="font-semibold text-[#dec06a] px-4 py-2">
-                                {entityNames[entity] || entity}
-                              </div>
-                              {items.map((item) => (
-                                <div
-                                  key={item.id}
-                                  onClick={() => handleItemClick(entity, item.id)}
-                                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                                >
-                                  {item.title || item.name || item.position || item.author || item.content}
-                                </div>
-                              ))}
-                            </div>
-                          )
-                        )
-                      ) : query ? (
-                        <div className="px-4 py-2 text-sm">لا توجد نتائج</div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </nav>
         </div>
       </header>
