@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchTeams } from "@/store/slices/doctor";
@@ -8,28 +9,259 @@ import { getImageUrl } from "@/helpers/hooks/imageUrl";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import ServiceSidebar from "../../../helpers/main-component/ServiceSinglePage/sidebar"
+
+const V0_PLACEHOLDER_IMAGE = "/download.png";
 
 const TeamSection = ({
   hclass = "",
+  urlDepartmentId = null,
   sliceStart = 0,
   sliceEnd = null,
   showSectionTitle = true,
   branchId = null,
   departmentId = null,
   isTeamsPage = false,
-  slider = false, // New prop to enable/disable slider
-  sectionTitle=null,
-  sectionSubtitle=null,
+  slider = false,
+  sectionTitle = null,
+  sectionSubtitle = null,
 }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { teams = [], loading = false, error = null } = useSelector(
     (state) => state.teams || {}
   );
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState(departmentId || null);
   const [selectedBranch, setSelectedBranch] = useState(branchId || "all");
-  const [branches, setBranches] = useState([]);
-  const placeholder = "/download.png";
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [optimisticWishlist, setOptimisticWishlist] = useState({});
+  
   const sliderRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const itemsPerPage = 6;
+
+  // Check mobile view
+  const checkMobileView = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+// State to toggle full team view
+const [showAllTeams, setShowAllTeams] = useState(false);
+
+// Determine which teams to display
+
+// Initial load for URL department ID
+useEffect(() => {
+  if (!initialLoadComplete && urlDepartmentId) {
+    const deptId = Number.parseInt(urlDepartmentId, 10);
+    if (!isNaN(deptId)) {
+      setSelectedDepartment(deptId);
+    }
+    setInitialLoadComplete(true);
+  }
+}, [urlDepartmentId, initialLoadComplete]);
+
+// Fetch teams and check auth on mount
+useEffect(() => {
+  dispatch(fetchTeams({}));
+  checkMobileView();
+  window.addEventListener("resize", checkMobileView);
+  
+  // Check authentication
+  const authStatus = localStorage.getItem("isAuthenticated") === "true";
+  const userData = JSON.parse(localStorage.getItem("user"));
+  setIsAuthenticated(authStatus);
+  setUser(userData);
+  
+  if (authStatus && userData) {
+    fetchWishlistItems(userData.id);
+  }
+  
+  return () => {
+    window.removeEventListener("resize", checkMobileView);
+    clearTimeout(timeoutRef.current);
+  };
+}, [dispatch]);
+
+// Extract departments from teams
+const departments = useMemo(() => {
+  const deptMap = new Map();
+  teams.forEach((doctor) => {
+    if (doctor.department_id) {
+      if (!deptMap.has(doctor.department_id)) {
+        deptMap.set(doctor.department_id, {
+          id: doctor.department_id,
+          name: doctor.department_name || `القسم ${doctor.department_id}`,
+        });
+      }
+    }
+  });
+  return Array.from(deptMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+);
+}, [teams]);
+
+// Extract branches from teams
+const branches = useMemo(() => {
+  const branchMap = new Map();
+  teams.forEach((doctor) => {
+    if (doctor.branch_id && doctor.branch_name) {
+      if (!branchMap.has(doctor.branch_id)) {
+        branchMap.set(doctor.branch_id, {
+          id: doctor.branch_id,
+          name: doctor.branch_name,
+        });
+      }
+    }
+  });
+  return Array.from(branchMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+);
+}, [teams]);
+
+// Filter teams based on search, branch and department
+const filteredTeams = useMemo(() => {
+  return teams.filter((team) => {
+    const matchesSearch =
+    searchTerm === "" ||
+    team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    team.specialty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    team.department_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesBranch =
+    selectedBranch === "all" ||
+    team.branch_id?.toString() === selectedBranch?.toString();
+    const matchesDepartment =
+    !selectedDepartment ||
+    team.department_id?.toString() === selectedDepartment?.toString();
+    
+    return matchesSearch && matchesBranch && matchesDepartment;
+  });
+}, [teams, searchTerm, selectedBranch, selectedDepartment]);
+
+const displayedTeams = useMemo(() => {
+  if (isTeamsPage || showAllTeams) {
+    return filteredTeams;
+  }
+  // Show limited number when not on TeamsPage and "show all" not clicked
+  return filteredTeams.slice(0, 6); // example: show 6 initially
+}, [filteredTeams, isTeamsPage, showAllTeams]);
+// Pagination logic
+const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredTeams.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Determine which teams to display
+ 
+
+  // Fetch wishlist items
+  const fetchWishlistItems = async (clientId) => {
+    try {
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch wishlist items");
+      const data = await response.json();
+      setWishlistItems(data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err);
+      toast.error("فشل في تحميل المفضلة");
+      setWishlistItems([]);
+    }
+  };
+
+  // Check if item is in wishlist
+  const isWishlisted = (itemId) => {
+    if (optimisticWishlist[itemId] !== undefined) {
+      return optimisticWishlist[itemId];
+    }
+    return wishlistItems.some(
+      (item) => item.item_id === itemId && item.item_type === "doctor"
+    );
+  };
+
+  // Toggle wishlist item
+  const toggleWishlist = async (itemId, e) => {
+    e.stopPropagation();
+
+    if (!isAuthenticated || !user) {
+      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
+      router.push("/auth/login");
+      return;
+    }
+
+    const currentStatus = isWishlisted(itemId);
+    const newStatus = !currentStatus;
+
+    // Optimistic update
+    setOptimisticWishlist((prev) => ({ ...prev, [itemId]: newStatus }));
+
+    try {
+      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
+      const method = newStatus ? "POST" : "DELETE";
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: user.id,
+          item_type: "doctor",
+          item_id: itemId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`فشل في ${newStatus ? "الإضافة" : "الإزالة"} من المفضلة`);
+      }
+
+      // Update actual wishlist items
+      if (newStatus) {
+        setWishlistItems((prev) => [
+          ...prev,
+          { item_id: itemId, item_type: "doctor" },
+        ]);
+      } else {
+        setWishlistItems((prev) =>
+          prev.filter(
+            (item) =>
+              !(item.item_id === itemId && item.item_type === "doctor")
+          )
+        );
+      }
+
+      toast.success(
+        newStatus ? "تمت إضافة الطبيب إلى المفضلة" : "تمت إزالة الطبيب من المفضلة"
+      );
+    } catch (err) {
+      console.error("Wishlist error:", err);
+      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
+      // Rollback optimistic update
+      setOptimisticWishlist((prev) => ({
+        ...prev,
+        [itemId]: currentStatus,
+      }));
+    } finally {
+      // Clear optimistic update after a delay
+      timeoutRef.current = setTimeout(() => {
+        setOptimisticWishlist((prev) => {
+          const newState = { ...prev };
+          delete newState[itemId];
+          return newState;
+        });
+      }, 1000);
+    }
+  };
 
   // Slider settings
   const sliderSettings = {
@@ -48,92 +280,98 @@ const TeamSection = ({
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-        }
+        },
       },
       {
         breakpoint: 768,
         settings: {
           slidesToShow: 1,
-          slidesToScroll: 1
-        }
-      }
-    ]
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
 
-  // Extract unique branches with names from teams data
-  useEffect(() => {
-    if (teams.length > 0) {
-      const branchMap = new Map();
+  // Render team card
+const renderTeamCard = (team, index) => (
+  <div
+    className={slider ? "px-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"}
+    key={index}
+  >
+    <div className="relative flex flex-col h-full bg-white rounded-[30px] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
       
-      teams.forEach(doctor => {
-        if (doctor.branch_id && doctor.branch_name) {
-          if (!branchMap.has(doctor.branch_id)) {
-            branchMap.set(doctor.branch_id, {
-              id: doctor.branch_id,
-              name: doctor.branch_name
-            });
-          }
+      {/* Wishlist Button OUTSIDE overflow-hidden */}
+      <button
+        onClick={(e) => toggleWishlist(team.id, e)}
+        className="absolute top-6 left-6 z-20 p-2 bg-white rounded-full shadow-lg border border-[#dec06a]/30 hover:bg-gray-100 transition-colors"
+        aria-label={
+          isWishlisted(team.id) ? "إزالة من المفضلة" : "إضافة إلى المفضلة"
         }
-      });
+      >
+        {isWishlisted(team.id) ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-red-500"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-gray-400 hover:text-red-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+        )}
+      </button>
 
-      setBranches(Array.from(branchMap.values()));
-    }
-  }, [teams]);
-
-  // Filter teams based on search term and selected branch
-  const filteredTeams = teams.filter(team => {
-    const matchesSearch = 
-      team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      team.specialty?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesBranch = 
-      selectedBranch === "all" || 
-      team.branch_id?.toString() === selectedBranch;
-    
-    return matchesSearch && matchesBranch;
-  });
-
-  const displayedTeams = sliceEnd
-    ? filteredTeams.slice(sliceStart, sliceEnd)
-    : filteredTeams.slice(sliceStart);
-
-  useEffect(() => {
-    dispatch(fetchTeams({ branchId, departmentId }));
-  }, [dispatch, branchId, departmentId]);
-
-  // Render team card component
-  const renderTeamCard = (team, index) => (
-    <div className={slider ? "px-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"} key={index}>
-      <div className="team_card bg-white rounded-[30px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 h-full">
-        <div className="relative p-4">
-          <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
-            <div className="relative overflow-hidden rounded-[20px]">
-              <img
-                src={team.image ? getImageUrl(team.image) : placeholder}
-                alt={team.name || "Team Member"}
-                className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.src = placeholder;
-                }}
-              />
-            </div>
-
-            {team.branch_name && (
-              <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
-                {team.branch_name}
-              </div>
-            )}
+      {/* Image container WITH overflow-hidden */}
+      <div className="relative p-4 flex-shrink-0 overflow-hidden rounded-t-[30px]">
+        <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
+          <div className="relative overflow-hidden rounded-[20px] aspect-w-3 aspect-h-2">
+            <img
+              src={team.image ? getImageUrl(team.image) : V0_PLACEHOLDER_IMAGE}
+              alt={team.name || "Team Member"}
+              className="w-full h-full object-cover transform transition-transform duration-500"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = V0_PLACEHOLDER_IMAGE;
+              }}
+            />
           </div>
+          {team.branch_name && (
+            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
+              {team.branch_name}
+            </div>
+          )}
         </div>
+      </div>
 
-        <div className="content p-6 text-center">
-          <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
-            {team.name}
-          </h3>
-          <span className="text-[#dec06a] mb-4 block font-medium">
-            {team.specialty || ""}
-          </span>
+        {/* Content */}
+        <div className="content p-6 text-center flex-grow flex flex-col">
+          <div className="mb-4">
+            <h3 className="text-xl font-bold mb-2 text-gray-900 font-['IBM_Plex_Sans_Arabic_bold']">
+              {team.name}
+            </h3>
+            <span className="text-[#dec06a] block font-medium">
+              {team.specialty || ""}
+              {team.department_name && ` - ${team.department_name}`}
+            </span>
+          </div>
 
           {team.branch_name && (
             <div className="mb-4">
@@ -146,112 +384,118 @@ const TeamSection = ({
             </div>
           )}
 
-          <Link
-            href={`/doctors/${team.id}`}
-            className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
-          >
-            <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </span>
-            <span className="flex-1 text-end text-white">
-              {isTeamsPage ? "حجز موعد" : "عرض الملف"}
-            </span>
-          </Link>
+          <div className="mt-auto">
+            <Link
+              href={`/doctors/${team.id}`}
+              className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
+            >
+              <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </span>
+              <span className="flex-1 text-end text-white">
+                {isTeamsPage ? "حجز موعد" : "عرض الملف"}
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
-{
-  if(teams.length === 0) return null
-}
+
   return (
-  
     <section className={hclass}>
-      <div className="container mx-auto px-4">
+      <div>
         {showSectionTitle && (
           <div className="row justify-center">
             <div className="col-lg-9 col-12">
-              <SectionTitle 
-                title={ branchId ? "اطباء الفرع" : sectionTitle ? sectionTitle: "فريقنا" }
-                subtitle={isTeamsPage ? "أطباؤنا المتخصصون" : branchId ? "متاح بالفرع أطباؤنا المتخصصون": sectionSubtitle ? sectionSubtitle : "تعرف على أخصائيينا" } 
+              <SectionTitle
+                title={branchId ? "اطباء الفرع" : sectionTitle || "فريقنا"}
+                subtitle={
+                  isTeamsPage
+                    ? "أطباؤنا المتخصصون"
+                    : branchId
+                    ? "متاح بالفرع أطباؤنا المتخصصون"
+                    : sectionSubtitle || "تعرف على أخصائيينا"
+                }
               />
             </div>
           </div>
         )}
 
-        {/* Conditionally render search and filter only on teams page */}
-        {isTeamsPage && (
-          <div className="flex flex-col md:flex-row gap-4 mb-8" dir="rtl">
-            <div className="flex-1">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="ابحث عن طبيب أو تخصص..."
-                  className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <svg
-                  className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-            
-            <div className="w-full md:w-64">
-              <select
-                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
-              >
-                <option value="all">جميع الفروع</option>
-                {branches.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
+      {/* Filters & Search */}
+{isTeamsPage && (
+  <div className="container mx-auto px-4 mb-8">
+    <div className="bg-white p-4 rounded-lg shadow-sm">
+      {/* Desktop Department Tabs */}
+      <div className="hidden md:block mb-4">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setSelectedDepartment(null)}
+            className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+              !selectedDepartment
+                ? "text-[#dec06a] border-b-2 border-[#dec06a]"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            الكل
+          </button>
+          {departments.map((department) => (
+            <button
+              key={department.id}
+              onClick={() => setSelectedDepartment(department.id)}
+              className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                selectedDepartment === department.id
+                  ? "text-[#dec06a] border-b-2 border-[#dec06a]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {department.name}
+            </button>
+          ))}
+        </div>
+      </div>
 
+      {/* Search and Filters */}
+      <ServiceSidebar
+        services={teams}
+        branches={branches}
+        onSearchChange={setSearchTerm}
+        onDepartmentChange={setSelectedDepartment}
+        onBranchChange={setSelectedBranch}
+        currentSearch={searchTerm}
+        currentDepartment={selectedDepartment}
+        currentBranch={selectedBranch}
+        departments={departments}
+        showDepartmentDropdown={isMobile}
+        searchPlaceholder={"ابحث عن الطبيب"}
+      />
+    </div>
+  </div>
+)}
+
+
+        {/* Main Content */}
         {loading && (
           <div className="flex justify-center items-center py-10">
-            <div
-              className="spinner-border text-primary"
-              style={{ width: "3rem", height: "3rem" }}
-              role="status"
-            >
-              <span className="visually-hidden">Loading...</span>
-            </div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#dec06a]"></div>
           </div>
         )}
 
         {error && (
           <div className="flex justify-center items-center py-10">
-            <div className="alert alert-danger" role="alert">
-              Error loading team: {error}
-            </div>
+            <div className="text-red-500">Error loading team: {error}</div>
           </div>
         )}
 
@@ -260,28 +504,23 @@ const TeamSection = ({
             {filteredTeams.length === 0 ? (
               <div className="text-center py-10">
                 <p className="text-gray-500 text-lg">
-                  {isTeamsPage ? "لا توجد نتائج مطابقة للبحث" : "لا يوجد أطباء متاحون حالياً"}
+                  {isTeamsPage
+                    ? "لا توجد نتائج مطابقة للبحث"
+                    : "لا يوجد أطباء متاحون حالياً"}
                 </p>
               </div>
-            ) : (
-              <>
-                {slider ? (
-                  <div className="team-slider-container py-4">
-                    <Slider ref={sliderRef} {...sliderSettings}>
-                      {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                    </Slider>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap -mx-4">
-                    {displayedTeams.map((team, index) => renderTeamCard(team, index))}
-                  </div>
-                )}
-
-                {/* Add View All Teams button when not on teams page */}
-                {!isTeamsPage & !branchId ? (
+            ) : slider ? (
+              <div className="team-slider-container py-4">
+                <Slider ref={sliderRef} {...sliderSettings}>
+                  {displayedTeams.map((team, index) =>
+                    renderTeamCard(team, index)
+                  )}
+                </Slider>
+                    {/* View All Button for non-teams page */}
+                {!isTeamsPage && !branchId && (
                   <div className="flex justify-center mt-12">
-                    <Link 
-                      href="/doctors" 
+                    <Link
+                      href="/doctors"
                       className="relative pl-16 inline-flex items-center justify-between
                                  bg-gradient-to-b from-[#A58532] via-[#CBA853] to-[#f0db83]
                                  text-white font-bold rounded-full py-3 px-8
@@ -305,12 +544,68 @@ const TeamSection = ({
                       <span className="flex-1 text-end">عرض جميع الأطباء</span>
                     </Link>
                   </div>
-                ) : null}
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap">
+                  {displayedTeams.map((team, index) =>
+                    renderTeamCard(team, index)
+                  )}
+                </div>
+
+                {/* Pagination for Teams Page */}
+                {/* {isTeamsPage && totalPages > 1 && (
+                  <div className="flex justify-center mt-8">
+                    <nav className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          paginate(Math.max(1, currentPage - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded-full border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        السابق
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (number) => (
+                          <button
+                            key={number}
+                            onClick={() => paginate(number)}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              currentPage === number
+                                ? "bg-[#dec06a] text-white"
+                                : "border border-gray-300 hover:bg-gray-100"
+                            }`}
+                          >
+                            {number}
+                          </button>
+                        )
+                      )}
+
+                      <button
+                        onClick={() =>
+                          paginate(Math.min(totalPages, currentPage + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded-full border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        التالي
+                      </button>
+                    </nav>
+                  </div>
+                )} */}
+
+            
               </>
             )}
           </>
         )}
+
+
       </div>
+      
     </section>
   );
 };
