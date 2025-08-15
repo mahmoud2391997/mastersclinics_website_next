@@ -20,11 +20,11 @@ const TourCard = memo(({
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true) // Initial loading state
+  const [isLoading, setIsLoading] = useState(true)
   const [wishlistItems, setWishlistItems] = useState([])
+  const [optimisticWishlist, setOptimisticWishlist] = useState(null) // For optimistic UI
 
   useEffect(() => {
-    // Check authentication status
     const checkAuth = () => {
       const authStatus = localStorage.getItem("isAuthenticated") === "true"
       const userData = JSON.parse(localStorage.getItem("user"))
@@ -43,12 +43,12 @@ const TourCard = memo(({
   }, [])
 
   useEffect(() => {
-    // Update wishlist status when wishlistItems or item_id changes
     if (wishlistItems.length > 0) {
       const isItemWishlisted = wishlistItems.some(
         item => item.item_id === item_id && item.item_type === "offer"
       )
       setIsWishlisted(isItemWishlisted)
+      setOptimisticWishlist(null) // Reset optimistic state when we have actual data
     }
   }, [wishlistItems, item_id])
 
@@ -104,49 +104,64 @@ const TourCard = memo(({
     router.push(`/offers/${item_id}`)
   }
 
-  const toggleWishlist = async (e) => {
-    e.stopPropagation()
+const toggleWishlist = async (e) => {
+  e.stopPropagation()
 
-    if (!isAuthenticated || !user) {
-      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
-      router.push("/auth/login")
-      return
-    }
-
-    setIsLoading(true)
-    
-    try {
-      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist"
-
-      const response = await fetch(endpoint, {
-        method: isWishlisted ? "DELETE" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: user.id,
-          item_type: "offer",
-          item_id
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${isWishlisted ? "remove from" : "add to"} wishlist`)
-      }
-
-      // Refresh the wishlist after modification
-      await fetchWishlistItems(user.id)
-      
-      toast.success(
-        isWishlisted 
-          ? "تمت إزالة العنصر من المفضلة" 
-          : "تمت إضافة العنصر إلى المفضلة"
-      )
-    } catch (err) {
-      console.error("Wishlist error:", err)
-      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة")
-    } finally {
-      setIsLoading(false)
-    }
+  if (!isAuthenticated || !user) {
+    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
+    router.push("/auth/login")
+    return
   }
+
+  const newWishlistStatus = !isWishlisted
+
+  // Apply optimistic change immediately
+  setIsWishlisted(newWishlistStatus)
+
+  try {
+    const endpoint = "https://www.ss.mastersclinics.com/api/wishlist"
+    const method = newWishlistStatus ? "POST" : "DELETE"
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: user.id,
+        item_type: "offer",
+        item_id
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`فشل في ${newWishlistStatus ? "الإضافة" : "الإزالة"} من المفضلة`)
+    }
+
+    toast.success(
+      newWishlistStatus 
+        ? "تمت إضافة العنصر إلى المفضلة" 
+        : "تمت إزالة العنصر من المفضلة"
+    )
+  } catch (err) {
+    console.error("Wishlist error:", err)
+    toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة")
+    // Rollback optimistic change
+    setIsWishlisted(!newWishlistStatus)
+  }
+}
+
+
+  // Determine the icon state with optimistic updates
+  const getWishlistIconState = () => {
+    if (isLoading) {
+      return "loading"
+    }
+    if (optimisticWishlist !== null) {
+      return optimisticWishlist ? "active" : "inactive"
+    }
+    return isWishlisted ? "active" : "inactive"
+  }
+
+  const wishlistState = getWishlistIconState()
 
   const imageUrl = typeof image === "string" ? image : "/placeholder.svg"
 
@@ -156,28 +171,24 @@ const TourCard = memo(({
       onClick={handleCardClick}
     >
       {/* Wishlist Button */}
-      <button
-        onClick={toggleWishlist}
-        disabled={isLoading}
-        className="absolute top-3 left-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
-        aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
-      >
-        {isLoading ? (
-          <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        ) : isWishlisted ? (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        )}
-      </button>
+<button
+  onClick={toggleWishlist}
+  className="absolute top-3 left-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
+  aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
+>
+  {isWishlisted ? (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  )}
+</button>
 
+
+      {/* Rest of the component remains the same */}
       {/* Image Section */}
       <div className="relative overflow-hidden">
         <div className="aspect-w-4 aspect-h-3 w-full">

@@ -6,7 +6,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
-import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaPercentage, FaClinicMedical, FaUserMd } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaPercentage, FaClinicMedical, FaUserMd, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 import Navbar from '../../helpers/components/Navbar/Navbar';
 import PageTitle from '../../helpers/components/pagetitle/PageTitle';
@@ -23,12 +24,101 @@ const OfferSinglePage = () => {
 
   const { selectedOffer: offer, loading, error } = useSelector((state) => state.offers);
   const [activeImage, setActiveImage] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authStatus = localStorage.getItem("isAuthenticated") === "true";
+      const userData = JSON.parse(localStorage.getItem("user"));
+      
+      setIsAuthenticated(authStatus);
+      setUser(userData);
+    };
+
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchOfferById(id));
     }
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (isAuthenticated && user && offer) {
+      checkWishlistStatus();
+    }
+  }, [isAuthenticated, user, offer]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      setWishlistLoading(true);
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/wishlist/${user.id}`
+      );
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch wishlist items");
+      }
+      
+      const data = await response.json();
+      const isItemWishlisted = data.data?.some(
+        item => item.item_id === offer.id && item.item_type === "offer"
+      );
+      setIsWishlisted(isItemWishlisted);
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err);
+      toast.error("Failed to load wishlist status");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const toggleWishlist = async (e) => {
+    e.stopPropagation();
+
+    if (!isAuthenticated || !user) {
+      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
+      router.push("/auth/login");
+      return;
+    }
+
+    const newWishlistStatus = !isWishlisted;
+    setIsWishlisted(newWishlistStatus); // Optimistic update
+
+    try {
+      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
+      const method = newWishlistStatus ? "POST" : "DELETE";
+
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: user.id,
+          item_type: "offer",
+          item_id: offer.id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${newWishlistStatus ? "add to" : "remove from"} wishlist`);
+      }
+
+      toast.success(
+        newWishlistStatus 
+          ? "تمت إضافة العرض إلى المفضلة" 
+          : "تمت إزالة العرض من المفضلة"
+      );
+    } catch (err) {
+      console.error("Wishlist error:", err);
+      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
+      // Rollback optimistic update
+      setIsWishlisted(!newWishlistStatus);
+    }
+  };
 
   if (loading) {
     return (
@@ -99,7 +189,7 @@ const OfferSinglePage = () => {
         <div className="flex flex-col lg:flex-row-reverse gap-8 mb-12">
           {/* Image Gallery */}
           <div className="w-full lg:w-1/2">
-          <div className="relative w-full h-[350px] md:h-[700px] bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="relative w-full h-[350px] md:h-[700px] bg-white rounded-xl shadow-md overflow-hidden">
               <Image
                 src={getImageUrl(images[activeImage]) || '/default-image.jpg'}
                 alt={offer.title || 'عرض تجهيل نسائي'}
@@ -117,15 +207,31 @@ const OfferSinglePage = () => {
                 }}
               />
               
-              {/* Discount Badge - Matches reference style */}
+              {/* Discount Badge */}
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-[#D4AF37] text-white font-bold rounded-full w-14 h-14 flex items-center justify-center text-lg shadow-lg">
                   {discountPercentage}%
                 </div>
               )}
               
-              {/* Clinic Name - Positioned like in reference */}
-         
+              {/* Wishlist Button */}
+              <button
+                onClick={toggleWishlist}
+                className="absolute top-4 right-4 z-10 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
+                aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
+                disabled={wishlistLoading}
+              >
+                {wishlistLoading ? (
+                  <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : isWishlisted ? (
+                  <FaHeart className="h-6 w-6 text-red-500" />
+                ) : (
+                  <FaRegHeart className="h-6 w-6 text-gray-400 hover:text-red-400" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -133,8 +239,6 @@ const OfferSinglePage = () => {
           <div className="w-full lg:w-1/2">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h1 className="text-3xl font-bold text-gray-800 mb-4">{offer.title}</h1>
-              
-        
               
               <p className="text-gray-700 mb-6 leading-relaxed text-lg">
                 {offer.description || "عرض مميز يشمل مجموعة من الخدمات الطبية المقدمة بأعلى معايير الجودة والكفاءة."}
@@ -171,70 +275,61 @@ const OfferSinglePage = () => {
                   </button>
                 </div>
               </div>
-
-        
-
-           
             </div>
-               <div className="bg-white rounded-xl shadow-lg p-6 mb-12 mt-2">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-            <FaMapMarkerAlt className="text-[#D4AF37] ml-2" />
-            الفروع المتاحة لهذا العرض
-          </h3>
-          
-          {offer.branches && offer.branches.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {offer.branches.map((branch) => (
-                <div 
-                  key={branch.id} 
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="p-6">
-                    <h4 className="font-bold text-xl text-gray-800 mb-2">{branch.name}</h4>
-                    <p className="text-gray-600 mb-4">{branch.address}</p>
-                    
-           
-                    
-                    {branch.google_map_link && (
-                      <a
-                        href={branch.google_map_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center !text-[#dec06a] hover:!text-[#C9A227] font-medium"
-                      >
-                        <FaMapMarkerAlt className="ml-2" />
-                        عرض الموقع على الخريطة
-                      </a>
-                    )}
-                  </div>
-                  
-                   <div className="mr-6 mb-6">
-          
-              <a
-                href={`/branches/${branch.id}`}
-                className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
-              >
-                المزيد من التفاصيل
-              </a>
-            </div>
+            
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-12 mt-2">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <FaMapMarkerAlt className="text-[#D4AF37] ml-2" />
+                الفروع المتاحة لهذا العرض
+              </h3>
+              
+              {offer.branches && offer.branches.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {offer.branches.map((branch) => (
+                    <div 
+                      key={branch.id} 
+                      className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                    >
+                      <div className="p-6">
+                        <h4 className="font-bold text-xl text-gray-800 mb-2">{branch.name}</h4>
+                        <p className="text-gray-600 mb-4">{branch.address}</p>
+                        
+                        {branch.google_map_link && (
+                          <a
+                            href={branch.google_map_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center !text-[#dec06a] hover:!text-[#C9A227] font-medium"
+                          >
+                            <FaMapMarkerAlt className="ml-2" />
+                            عرض الموقع على الخريطة
+                          </a>
+                        )}
+                      </div>
+                      
+                      <div className="mr-6 mb-6">
+                        <a
+                          href={`/branches/${branch.id}`}
+                          className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
+                        >
+                          المزيد من التفاصيل
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 text-5xl mb-4">
+                    <FaMapMarkerAlt className="inline-block" />
+                  </div>
+                  <h4 className="text-xl font-medium text-gray-700 mb-2">لا توجد فروع متاحة</h4>
+                  <p className="text-gray-500">عذراً، لا توجد فروع متاحة لهذا العرض حالياً</p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-gray-400 text-5xl mb-4">
-                <FaMapMarkerAlt className="inline-block" />
-              </div>
-              <h4 className="text-xl font-medium text-gray-700 mb-2">لا توجد فروع متاحة</h4>
-              <p className="text-gray-500">عذراً، لا توجد فروع متاحة لهذا العرض حالياً</p>
-            </div>
-          )}
-        </div>
           </div>
         </div>
-
-        {/* Branches Section */}
-     
 
         {/* Doctors Section */}
         {offer.doctors_ids && offer.doctors_ids.length > 0 && (
@@ -259,13 +354,12 @@ const OfferSinglePage = () => {
                       </div>
                     </div>
                     <p className="text-gray-600 mb-4 text-sm">{doctor.services}</p>
-               
                   </div>
                   <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
                     <button className="bg-[#D4AF37] hover:bg-[#C9A227] text-white font-medium py-2 px-6 rounded-lg w-full transition-colors">
-                     <Link href={`/doctors/${doctor.id}`} className='!text-white'>
-                      حجز مع الطبيب
-                     </Link>
+                      <Link href={`/doctors/${doctor.id}`} className='!text-white'>
+                        حجز مع الطبيب
+                      </Link>
                     </button>
                   </div>
                 </div>
