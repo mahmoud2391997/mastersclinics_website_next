@@ -1,10 +1,79 @@
 "use client"
 
-import React, { memo } from "react"
+import React, { memo, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { getImageUrl } from "@/helpers/hooks/imageUrl"
+import { toast } from "react-toastify"
 
-const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, branches = [], doctors = [], onSelect }) => {
+const TourCard = memo(({ 
+  image, 
+  name, 
+  priceBefore, 
+  priceAfter, 
+  id: item_id, 
+  description, 
+  branches = [], 
+  doctors = [], 
+  onSelect 
+}) => {
+  const router = useRouter()
+  const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
+  const [isLoading, setIsLoading] = useState(true) // Initial loading state
+  const [wishlistItems, setWishlistItems] = useState([])
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const authStatus = localStorage.getItem("isAuthenticated") === "true"
+      const userData = JSON.parse(localStorage.getItem("user"))
+      
+      setIsAuthenticated(authStatus)
+      setUser(userData)
+      
+      if (authStatus && userData) {
+        fetchWishlistItems(userData.id)
+      } else {
+        setIsLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    // Update wishlist status when wishlistItems or item_id changes
+    if (wishlistItems.length > 0) {
+      const isItemWishlisted = wishlistItems.some(
+        item => item.item_id === item_id && item.item_type === "offer"
+      )
+      setIsWishlisted(isItemWishlisted)
+    }
+  }, [wishlistItems, item_id])
+
+  const fetchWishlistItems = async (clientId) => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
+      )
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch wishlist items")
+      }
+      
+      const data = await response.json()
+      setWishlistItems(data.data || [])
+    } catch (err) {
+      console.error("Failed to fetch wishlist:", err)
+      toast.error("Failed to load wishlist items")
+      setWishlistItems([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const getBranchName = (branchName) => {
     const branchMap = {
       "فرع العوالي": "فرع العوالي",
@@ -16,8 +85,6 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
     }
     return branchMap[branchName] || branchName
   }
-
-  const router = useRouter()
 
   const handleOfferSelect = () => {
     if (onSelect) {
@@ -34,25 +101,95 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
   }
 
   const handleCardClick = () => {
-    router.push(`/offers/${id}`)
+    router.push(`/offers/${item_id}`)
+  }
+
+  const toggleWishlist = async (e) => {
+    e.stopPropagation()
+
+    if (!isAuthenticated || !user) {
+      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
+      router.push("/auth/login")
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist"
+
+      const response = await fetch(endpoint, {
+        method: isWishlisted ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client_id: user.id,
+          item_type: "offer",
+          item_id
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${isWishlisted ? "remove from" : "add to"} wishlist`)
+      }
+
+      // Refresh the wishlist after modification
+      await fetchWishlistItems(user.id)
+      
+      toast.success(
+        isWishlisted 
+          ? "تمت إزالة العنصر من المفضلة" 
+          : "تمت إضافة العنصر إلى المفضلة"
+      )
+    } catch (err) {
+      console.error("Wishlist error:", err)
+      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const imageUrl = typeof image === "string" ? image : "/placeholder.svg"
 
   return (
-    <div className="tour-card group bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col h-full">
+    <div 
+      className="tour-card group bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col h-full relative cursor-pointer"
+      onClick={handleCardClick}
+    >
+      {/* Wishlist Button */}
+      <button
+        onClick={toggleWishlist}
+        disabled={isLoading}
+        className="absolute top-3 left-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
+        aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
+      >
+        {isLoading ? (
+          <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        ) : isWishlisted ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        )}
+      </button>
+
       {/* Image Section */}
       <div className="relative overflow-hidden">
         <div className="aspect-w-4 aspect-h-3 w-full">
          <img
-          src={getImageUrl(imageUrl) || "/download.png"}
-          alt={name}
-          className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
-          onError={(e) => {
-            e.target.src = "/download.png"
-          }}
-        />
+            src={getImageUrl(imageUrl) || "/download.png"}
+            alt={name}
+            className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            onError={(e) => {
+              e.target.src = "/download.png"
+            }}
+          />
         </div>
         {branches.length > 0 && (
           <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
@@ -119,7 +256,10 @@ const TourCard = memo(({ image, name, priceBefore, priceAfter, id, description, 
 
         <div className="mt-auto pt-4 border-t border-gray-200">
           <button
-            onClick={handleCardClick}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleCardClick()
+            }}
             className="w-full py-2 gradient text-white font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-[#dec06a]/50"
             aria-label={`احجز العرض: ${name}`}
             style={{ borderRadius: "12px" }}
