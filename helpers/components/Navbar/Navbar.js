@@ -15,10 +15,10 @@ export default function Navbar(props) {
 
   return (
     <div 
-      className={`${className} w-full top-0 ${props.nav ? "!h-[250px]  md:!h-[167px] lg:!h-[165px] xl:!h-[160px] bg-[#f6eecd]" : "!h-[210px] md:!h-auto bg-[#f6eecd] md:bg-transparent"}`} 
+      className={`${className} w-full top-0 ${props.nav ? "!h-[250px]  md:!h-[167px] lg:!h-[165px] xl:!h-[190px] bg-[#f6eecd]" : "!h-[210px] md:!h-auto bg-[#f6eecd] md:bg-transparent"}`} 
       id='scrool'
     >
-      <Header hclass={props.hclass} Logo={props.Logo} topbarClass={props.topbarClass} nav={props.nav}/>
+      <Header hclass={props.hclass} Logo={props.Logo} topbarClass={props.topbarClass} nav={props.nav} showAuthprop={props.showAuthPopup}/>
     </div>
   );
 }

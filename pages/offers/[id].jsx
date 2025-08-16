@@ -16,11 +16,13 @@ import SectionTitle from '../../helpers/components/SectionTitle/SectionTitle';
 import OffersSlider from '../../helpers/components/adsSlider/index';
 import CtafromSection from '../../helpers/components/Form';
 import Link from 'next/link';
+import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
 
 const OfferSinglePage = () => {
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch();
+      const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   const { selectedOffer: offer, loading, error } = useSelector((state) => state.offers);
   const [activeImage, setActiveImage] = useState(0);
@@ -32,7 +34,7 @@ const OfferSinglePage = () => {
   useEffect(() => {
     const checkAuth = () => {
       const authStatus = localStorage.getItem("isAuthenticated") === "true";
-      const userData = JSON.parse(localStorage.getItem("user"));
+      const userData = JSON.parse(localStorage.getItem("clientInfo"));
       
       setIsAuthenticated(authStatus);
       setUser(userData);
@@ -80,11 +82,17 @@ const OfferSinglePage = () => {
   const toggleWishlist = async (e) => {
     e.stopPropagation();
 
-    if (!isAuthenticated || !user) {
-      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-      router.push("/auth/login");
-      return;
-    }
+  if (!isAuthenticated || !user) {
+     toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
+     // Scroll to top
+     window.scrollTo({
+       top: 0,
+       behavior: 'smooth'
+     });
+     // Show auth popup (you'll need to pass down the setShowAuthPopup function from Header)
+     setShowAuthPopup(true);
+     return;
+   }
 
     const newWishlistStatus = !isWishlisted;
     setIsWishlisted(newWishlistStatus); // Optimistic update
@@ -176,7 +184,7 @@ const OfferSinglePage = () => {
 
   return (
     <div className="min-h-screen ">
-      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
+      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} showAuthPopup={showAuthPopup}/>
       
       <PageTitle 
         pageTitle={offer.title} 
@@ -227,7 +235,7 @@ const OfferSinglePage = () => {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : isWishlisted ? (
-                  <FaHeart className="h-6 w-6 text-red-500" />
+                  <FaHeart className="h-6 w-6 text-[#dec06a]" />
                 ) : (
                   <FaRegHeart className="h-6 w-6 text-gray-400 hover:text-red-400" />
                 )}
@@ -384,7 +392,9 @@ const OfferSinglePage = () => {
 
       {/* Related Offers */}
       <SectionTitle title={"عروض مشابهة"}/>
-        <OffersSlider />
+        <OffersSlider setShowAuthPopup={setShowAuthPopup}/>
+              <Scrollbar />
+        
       <Footer hclass={'wpo-site-footer'} />
     </div>
   );

@@ -824,7 +824,7 @@ const Header = (props) => {
                   </div>
                   
                   {/* Authentication Popup */}
-                  {showAuthPopup && (
+                  {(showAuthPopup || props.showAuthprop) && (
                     <div 
                       ref={authPopupRef}
                       className="absolute top-full left-0 mt-2 w-80 bg-white rounded-lg shadow-lg p-4 z-50"

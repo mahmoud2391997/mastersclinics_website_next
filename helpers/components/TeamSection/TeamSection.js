@@ -77,11 +77,11 @@ useEffect(() => {
   
   // Check authentication
   const authStatus = localStorage.getItem("isAuthenticated") === "true";
-  const userData = JSON.parse(localStorage.getItem("user"));
+  const userData = JSON.parse(localStorage.getItem("clientInfo"));
   setIsAuthenticated(authStatus);
   setUser(userData);
   
-  if (authStatus && userData) {
+  if (authStatus ) {
     fetchWishlistItems(userData.id);
   }
   
@@ -195,11 +195,17 @@ const indexOfLastItem = currentPage * itemsPerPage;
   const toggleWishlist = async (itemId, e) => {
     e.stopPropagation();
 
-    if (!isAuthenticated || !user) {
-      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-      router.push("/auth/login");
-      return;
-    }
+  if (!isAuthenticated || !user) {
+    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
+    // Scroll to top
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    // Show auth popup (you'll need to pass down the setShowAuthPopup function from Header)
+    setShowAuthPopup(true);
+    return;
+  }
 
     const currentStatus = isWishlisted(itemId);
     const newStatus = !currentStatus;
@@ -295,7 +301,7 @@ const indexOfLastItem = currentPage * itemsPerPage;
   // Render team card
 const renderTeamCard = (team, index) => (
   <div
-    className={slider ? "px-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"}
+    className={slider ? "px-2 mb-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"}
     key={index}
   >
     <div className="relative flex flex-col h-full bg-white rounded-[30px] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
@@ -313,7 +319,7 @@ const renderTeamCard = (team, index) => (
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5 text-red-500"
             viewBox="0 0 20 20"
-            fill="currentColor"
+            fill="#dec06a"
           >
             <path
               fillRule="evenodd"
@@ -327,7 +333,7 @@ const renderTeamCard = (team, index) => (
             className="h-5 w-5 text-gray-400 hover:text-red-400"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
+            stroke="#dec06a"
           >
             <path
               strokeLinecap="round"
@@ -389,14 +395,14 @@ const renderTeamCard = (team, index) => (
               href={`/doctors/${team.id}`}
               className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
             >
-              <span className="absolute left-3 w-8 h-8 bg-white text-gradient rounded-full flex items-center justify-center">
+        <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="currentColor"
+                  stroke="#CBA853"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"

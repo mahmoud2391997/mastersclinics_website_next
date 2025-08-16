@@ -12,7 +12,7 @@ import SectionTitle from "../SectionTitle/SectionTitle";
 import Link from "next/link";
 import { CustomSelect } from "../../main-component/ServiceSinglePage/sidebar";
 
-const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
+const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAuthPopup}) => {
   const dispatch = useDispatch();
   const { items: offers, loading, error } = useSelector((state) => state.offers);
   
@@ -254,6 +254,7 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null }) => {
                       doctors={offer.doctors_ids}
                       onSelect={(data) => console.log("Selected offer:", data)}
                       id={offer.id}
+                      setShowAuthPopup={setShowAuthPopup}
                     />
                   </div>
                 ))}

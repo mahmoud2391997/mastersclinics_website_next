@@ -12,7 +12,7 @@ import TourCard from "./OfferCard";
 import SectionTitle from "../SectionTitle/SectionTitle";
 import Link from "next/link";
 
-export default function OffersSlider() {
+export default function OffersSlider({setShowAuthPopup}) {
   const dispatch = useDispatch();
   const { items: offers, loading, error } = useSelector((state) => state.offers);
 
@@ -84,6 +84,7 @@ export default function OffersSlider() {
                 branches={offer.branches}
                 doctors={offer.doctors_ids} // Pass doctors array to the card
                 onSelect={(data) => console.log("Selected offer:", data)}
+                setShowAuthPopup={setShowAuthPopup}
               />
             </SwiperSlide>
           ))

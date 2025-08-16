@@ -8,6 +8,7 @@ import { toast } from "react-toastify"
 const TourCard = memo(({ 
   image, 
   name, 
+  setShowAuthPopup,
   priceBefore, 
   priceAfter, 
   id: item_id, 
@@ -27,7 +28,7 @@ const TourCard = memo(({
   useEffect(() => {
     const checkAuth = () => {
       const authStatus = localStorage.getItem("isAuthenticated") === "true"
-      const userData = JSON.parse(localStorage.getItem("user"))
+      const userData = JSON.parse(localStorage.getItem("clientInfo"))
       
       setIsAuthenticated(authStatus)
       setUser(userData)
@@ -107,12 +108,17 @@ const TourCard = memo(({
 const toggleWishlist = async (e) => {
   e.stopPropagation()
 
-  if (!isAuthenticated || !user) {
-    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
-    router.push("/auth/login")
-    return
+ if (!isAuthenticated || !user) {
+    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
+    // Scroll to top
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    // Show auth popup (you'll need to pass down the setShowAuthPopup function from Header)
+    setShowAuthPopup(true);
+    return;
   }
-
   const newWishlistStatus = !isWishlisted
 
   // Apply optimistic change immediately
@@ -177,11 +183,11 @@ const toggleWishlist = async (e) => {
   aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
 >
   {isWishlisted ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#dec06a]" viewBox="0 0 20 20" fill="#dec06a">
       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
     </svg>
   ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 hover:text-[#dec06a]" fill="none" viewBox="0 0 24 24" stroke="#dec06a">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   )}
