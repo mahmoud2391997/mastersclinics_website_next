@@ -17,6 +17,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/adsSlider/OfferCard.jsx", "pages/departments/grid.jsx", "pages/departments/index.jsx", "pages/departments/[id].jsx", "helpers/components/FormDetails.jsx", "helpers/hooks/useWishlist.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/components/adsSlider/OfferCard.jsx", "pages/departments/grid.jsx", "pages/departments/index.jsx", "pages/departments/[id].jsx", "helpers/components/FormDetails.jsx", "helpers/hooks/WishlistButton.jsx"],
   "exclude": ["node_modules"]
 }

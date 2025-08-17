@@ -108,14 +108,11 @@ export default function ProfilePage() {
       }
 
       // Fetch profile data from API
-      const token = localStorage.getItem("token")
       const response = await fetch(
         `https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`,
         {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+      
         }
       )
 

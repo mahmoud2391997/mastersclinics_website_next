@@ -1,12 +1,11 @@
 "use client"
-
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchOfferById } from '../../store/slices/offers';
 import Image from 'next/image';
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
-import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaPercentage, FaClinicMedical, FaUserMd, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaClinicMedical } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 import Navbar from '../../helpers/components/Navbar/Navbar';
@@ -17,116 +16,22 @@ import OffersSlider from '../../helpers/components/adsSlider/index';
 import CtafromSection from '../../helpers/components/Form';
 import Link from 'next/link';
 import Scrollbar from '../../helpers/components/scrollbar/scrollbar';
+import WishlistButton from '../../helpers/hooks/WishlistButton';
 
 const OfferSinglePage = () => {
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch();
-      const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   const { selectedOffer: offer, loading, error } = useSelector((state) => state.offers);
   const [activeImage, setActiveImage] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [wishlistLoading, setWishlistLoading] = useState(false);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      const authStatus = localStorage.getItem("isAuthenticated") === "true";
-      const userData = JSON.parse(localStorage.getItem("clientInfo"));
-      
-      setIsAuthenticated(authStatus);
-      setUser(userData);
-    };
-
-    checkAuth();
-  }, []);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchOfferById(id));
     }
   }, [dispatch, id]);
-
-  useEffect(() => {
-    if (isAuthenticated && user && offer) {
-      checkWishlistStatus();
-    }
-  }, [isAuthenticated, user, offer]);
-
-  const checkWishlistStatus = async () => {
-    try {
-      setWishlistLoading(true);
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/wishlist/${user.id}`
-      );
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch wishlist items");
-      }
-      
-      const data = await response.json();
-      const isItemWishlisted = data.data?.some(
-        item => item.item_id === offer.id && item.item_type === "offer"
-      );
-      setIsWishlisted(isItemWishlisted);
-    } catch (err) {
-      console.error("Failed to fetch wishlist:", err);
-      toast.error("Failed to load wishlist status");
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
-
-  const toggleWishlist = async (e) => {
-    e.stopPropagation();
-
-  if (!isAuthenticated || !user) {
-     toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-     // Scroll to top
-     window.scrollTo({
-       top: 0,
-       behavior: 'smooth'
-     });
-     // Show auth popup (you'll need to pass down the setShowAuthPopup function from Header)
-     setShowAuthPopup(true);
-     return;
-   }
-
-    const newWishlistStatus = !isWishlisted;
-    setIsWishlisted(newWishlistStatus); // Optimistic update
-
-    try {
-      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
-      const method = newWishlistStatus ? "POST" : "DELETE";
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: user.id,
-          item_type: "offer",
-          item_id: offer.id
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${newWishlistStatus ? "add to" : "remove from"} wishlist`);
-      }
-
-      toast.success(
-        newWishlistStatus 
-          ? "تمت إضافة العرض إلى المفضلة" 
-          : "تمت إزالة العرض من المفضلة"
-      );
-    } catch (err) {
-      console.error("Wishlist error:", err);
-      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
-      // Rollback optimistic update
-      setIsWishlisted(!newWishlistStatus);
-    }
-  };
 
   if (loading) {
     return (
@@ -183,7 +88,7 @@ const OfferSinglePage = () => {
   const discountPercentage = Math.round(((offer.priceBefore - offer.priceAfter) / offer.priceBefore) * 100);
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <Navbar hclass={'wpo-site-header wpo-site-header-s2'} showAuthPopup={showAuthPopup}/>
       
       <PageTitle 
@@ -193,7 +98,6 @@ const OfferSinglePage = () => {
       />
 
       <main className="container mx-auto px-4 py-8 md:py-12" dir="rtl">
-        {/* Offer Details Section */}
         <div className="flex flex-col lg:flex-row-reverse gap-8 mb-12">
           {/* Image Gallery */}
           <div className="w-full lg:w-1/2">
@@ -215,31 +119,18 @@ const OfferSinglePage = () => {
                 }}
               />
               
-              {/* Discount Badge */}
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-[#D4AF37] text-white font-bold rounded-full w-14 h-14 flex items-center justify-center text-lg shadow-lg">
                   {discountPercentage}%
                 </div>
               )}
               
-              {/* Wishlist Button */}
-              <button
-                onClick={toggleWishlist}
-                className="absolute top-4 right-4 z-10 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
-                aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
-                disabled={wishlistLoading}
-              >
-                {wishlistLoading ? (
-                  <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : isWishlisted ? (
-                  <FaHeart className="h-6 w-6 text-[#dec06a]" />
-                ) : (
-                  <FaRegHeart className="h-6 w-6 text-gray-400 hover:text-red-400" />
-                )}
-              </button>
+              <WishlistButton
+                itemId={offer.id}
+                itemType="offer"
+                setShowAuthPopup={setShowAuthPopup}
+                className="absolute top-4 right-4 z-10"
+              />
             </div>
           </div>
 
@@ -252,7 +143,6 @@ const OfferSinglePage = () => {
                 {offer.description || "عرض مميز يشمل مجموعة من الخدمات الطبية المقدمة بأعلى معايير الجودة والكفاءة."}
               </p>
               
-              {/* Pricing Section */}
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg mb-6 border border-gray-200">
                 {offer.priceBefore > offer.priceAfter && (
                   <div className="flex items-center mb-2">
@@ -316,12 +206,12 @@ const OfferSinglePage = () => {
                       </div>
                       
                       <div className="mr-6 mb-6">
-                        <a
+                        <Link
                           href={`/branches/${branch.id}`}
                           className="px-4 py-2 border-2 border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#dec06a] hover:bg-[#dec06a]-dark text-center transition-colors"
                         >
                           المزيد من التفاصيل
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -339,7 +229,6 @@ const OfferSinglePage = () => {
           </div>
         </div>
 
-        {/* Doctors Section */}
         {offer.doctors_ids && offer.doctors_ids.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-12">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">الأطباء المتاحون</h3>
@@ -377,7 +266,6 @@ const OfferSinglePage = () => {
         )}
       </main>
 
-      {/* Appointment Form */}
       <div id="appointment-form" className="AppointmentFrom mb-5">
         <div className="container">
           <div className="cta_form_s2">
@@ -390,10 +278,9 @@ const OfferSinglePage = () => {
         </div>
       </div>
 
-      {/* Related Offers */}
       <SectionTitle title={"عروض مشابهة"}/>
-        <OffersSlider setShowAuthPopup={setShowAuthPopup}/>
-              <Scrollbar />
+      <OffersSlider setShowAuthPopup={setShowAuthPopup}/>
+      <Scrollbar />
         
       <Footer hclass={'wpo-site-footer'} />
     </div>

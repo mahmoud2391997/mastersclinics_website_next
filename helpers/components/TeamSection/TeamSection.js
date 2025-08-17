@@ -11,15 +11,14 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import ServiceSidebar from "../../../helpers/main-component/ServiceSinglePage/sidebar"
+import ServiceSidebar from "../../../helpers/main-component/ServiceSinglePage/sidebar";
+import WishlistButton from "../../../helpers/hooks/WishlistButton";
 
 const V0_PLACEHOLDER_IMAGE = "/download.png";
 
 const TeamSection = ({
   hclass = "",
   urlDepartmentId = null,
-  sliceStart = 0,
-  sliceEnd = null,
   showSectionTitle = true,
   branchId = null,
   departmentId = null,
@@ -39,235 +38,95 @@ const TeamSection = ({
   const [selectedBranch, setSelectedBranch] = useState(branchId || "all");
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [optimisticWishlist, setOptimisticWishlist] = useState({});
-  
-  const sliderRef = useRef(null);
-  const timeoutRef = useRef(null);
-  const itemsPerPage = 6;
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   // Check mobile view
   const checkMobileView = () => {
     setIsMobile(window.innerWidth < 768);
   };
-// State to toggle full team view
-const [showAllTeams, setShowAllTeams] = useState(false);
 
-// Determine which teams to display
-
-// Initial load for URL department ID
-useEffect(() => {
-  if (!initialLoadComplete && urlDepartmentId) {
-    const deptId = Number.parseInt(urlDepartmentId, 10);
-    if (!isNaN(deptId)) {
-      setSelectedDepartment(deptId);
-    }
-    setInitialLoadComplete(true);
-  }
-}, [urlDepartmentId, initialLoadComplete]);
-
-// Fetch teams and check auth on mount
-useEffect(() => {
-  dispatch(fetchTeams({}));
-  checkMobileView();
-  window.addEventListener("resize", checkMobileView);
-  
-  // Check authentication
-  const authStatus = localStorage.getItem("isAuthenticated") === "true";
-  const userData = JSON.parse(localStorage.getItem("clientInfo"));
-  setIsAuthenticated(authStatus);
-  setUser(userData);
-  
-  if (authStatus ) {
-    fetchWishlistItems(userData.id);
-  }
-  
-  return () => {
-    window.removeEventListener("resize", checkMobileView);
-    clearTimeout(timeoutRef.current);
-  };
-}, [dispatch]);
-
-// Extract departments from teams
-const departments = useMemo(() => {
-  const deptMap = new Map();
-  teams.forEach((doctor) => {
-    if (doctor.department_id) {
-      if (!deptMap.has(doctor.department_id)) {
-        deptMap.set(doctor.department_id, {
-          id: doctor.department_id,
-          name: doctor.department_name || `القسم ${doctor.department_id}`,
-        });
+  useEffect(() => {
+    if (!initialLoadComplete && urlDepartmentId) {
+      const deptId = Number.parseInt(urlDepartmentId, 10);
+      if (!isNaN(deptId)) {
+        setSelectedDepartment(deptId);
       }
+      setInitialLoadComplete(true);
     }
-  });
-  return Array.from(deptMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-);
-}, [teams]);
+  }, [urlDepartmentId, initialLoadComplete]);
 
-// Extract branches from teams
-const branches = useMemo(() => {
-  const branchMap = new Map();
-  teams.forEach((doctor) => {
-    if (doctor.branch_id && doctor.branch_name) {
-      if (!branchMap.has(doctor.branch_id)) {
-        branchMap.set(doctor.branch_id, {
-          id: doctor.branch_id,
-          name: doctor.branch_name,
-        });
+  useEffect(() => {
+    dispatch(fetchTeams({}));
+    checkMobileView();
+    window.addEventListener("resize", checkMobileView);
+    
+    return () => {
+      window.removeEventListener("resize", checkMobileView);
+    };
+  }, [dispatch]);
+
+  // Extract departments from teams
+  const departments = useMemo(() => {
+    const deptMap = new Map();
+    teams.forEach((doctor) => {
+      if (doctor.department_id) {
+        if (!deptMap.has(doctor.department_id)) {
+          deptMap.set(doctor.department_id, {
+            id: doctor.department_id,
+            name: doctor.department_name || `القسم ${doctor.department_id}`,
+          });
+        }
       }
-    }
-  });
-  return Array.from(branchMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-);
-}, [teams]);
-
-// Filter teams based on search, branch and department
-const filteredTeams = useMemo(() => {
-  return teams.filter((team) => {
-    const matchesSearch =
-    searchTerm === "" ||
-    team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    team.specialty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    team.department_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesBranch =
-    selectedBranch === "all" ||
-    team.branch_id?.toString() === selectedBranch?.toString();
-    const matchesDepartment =
-    !selectedDepartment ||
-    team.department_id?.toString() === selectedDepartment?.toString();
-    
-    return matchesSearch && matchesBranch && matchesDepartment;
-  });
-}, [teams, searchTerm, selectedBranch, selectedDepartment]);
-
-const displayedTeams = useMemo(() => {
-  if (isTeamsPage || showAllTeams) {
-    return filteredTeams;
-  }
-  // Show limited number when not on TeamsPage and "show all" not clicked
-  return filteredTeams.slice(0, 6); // example: show 6 initially
-}, [filteredTeams, isTeamsPage, showAllTeams]);
-// Pagination logic
-const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredTeams.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredTeams.length / itemsPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Determine which teams to display
- 
-
-  // Fetch wishlist items
-  const fetchWishlistItems = async (clientId) => {
-    try {
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch wishlist items");
-      const data = await response.json();
-      setWishlistItems(data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch wishlist:", err);
-      toast.error("فشل في تحميل المفضلة");
-      setWishlistItems([]);
-    }
-  };
-
-  // Check if item is in wishlist
-  const isWishlisted = (itemId) => {
-    if (optimisticWishlist[itemId] !== undefined) {
-      return optimisticWishlist[itemId];
-    }
-    return wishlistItems.some(
-      (item) => item.item_id === itemId && item.item_type === "doctor"
-    );
-  };
-
-  // Toggle wishlist item
-  const toggleWishlist = async (itemId, e) => {
-    e.stopPropagation();
-
-  if (!isAuthenticated || !user) {
-    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-    // Scroll to top
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
     });
-    // Show auth popup (you'll need to pass down the setShowAuthPopup function from Header)
-    setShowAuthPopup(true);
-    return;
-  }
+    return Array.from(deptMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }, [teams]);
 
-    const currentStatus = isWishlisted(itemId);
-    const newStatus = !currentStatus;
-
-    // Optimistic update
-    setOptimisticWishlist((prev) => ({ ...prev, [itemId]: newStatus }));
-
-    try {
-      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
-      const method = newStatus ? "POST" : "DELETE";
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: user.id,
-          item_type: "doctor",
-          item_id: itemId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`فشل في ${newStatus ? "الإضافة" : "الإزالة"} من المفضلة`);
+  // Extract branches from teams
+  const branches = useMemo(() => {
+    const branchMap = new Map();
+    teams.forEach((doctor) => {
+      if (doctor.branch_id && doctor.branch_name) {
+        if (!branchMap.has(doctor.branch_id)) {
+          branchMap.set(doctor.branch_id, {
+            id: doctor.branch_id,
+            name: doctor.branch_name,
+          });
+        }
       }
+    });
+    return Array.from(branchMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }, [teams]);
 
-      // Update actual wishlist items
-      if (newStatus) {
-        setWishlistItems((prev) => [
-          ...prev,
-          { item_id: itemId, item_type: "doctor" },
-        ]);
-      } else {
-        setWishlistItems((prev) =>
-          prev.filter(
-            (item) =>
-              !(item.item_id === itemId && item.item_type === "doctor")
-          )
-        );
-      }
+  // Filter teams based on search, branch and department
+  const filteredTeams = useMemo(() => {
+    return teams.filter((team) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        team.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.specialty?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.department_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesBranch =
+        selectedBranch === "all" ||
+        team.branch_id?.toString() === selectedBranch?.toString();
+      const matchesDepartment =
+        !selectedDepartment ||
+        team.department_id?.toString() === selectedDepartment?.toString();
+      
+      return matchesSearch && matchesBranch && matchesDepartment;
+    });
+  }, [teams, searchTerm, selectedBranch, selectedDepartment]);
 
-      toast.success(
-        newStatus ? "تمت إضافة الطبيب إلى المفضلة" : "تمت إزالة الطبيب من المفضلة"
-      );
-    } catch (err) {
-      console.error("Wishlist error:", err);
-      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
-      // Rollback optimistic update
-      setOptimisticWishlist((prev) => ({
-        ...prev,
-        [itemId]: currentStatus,
-      }));
-    } finally {
-      // Clear optimistic update after a delay
-      timeoutRef.current = setTimeout(() => {
-        setOptimisticWishlist((prev) => {
-          const newState = { ...prev };
-          delete newState[itemId];
-          return newState;
-        });
-      }, 1000);
+  const displayedTeams = useMemo(() => {
+    if (isTeamsPage) {
+      return filteredTeams;
     }
-  };
+    return filteredTeams.slice(0, 6);
+  }, [filteredTeams, isTeamsPage]);
 
   // Slider settings
   const sliderSettings = {
@@ -299,73 +158,41 @@ const indexOfLastItem = currentPage * itemsPerPage;
   };
 
   // Render team card
-const renderTeamCard = (team, index) => (
-  <div
-    className={slider ? "px-2 mb-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"}
-    key={index}
-  >
-    <div className="relative flex flex-col h-full bg-white rounded-[30px] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-      
-      {/* Wishlist Button OUTSIDE overflow-hidden */}
-      <button
-        onClick={(e) => toggleWishlist(team.id, e)}
-        className="absolute top-6 left-6 z-20 p-2 bg-white rounded-full shadow-lg border border-[#dec06a]/30 hover:bg-gray-100 transition-colors"
-        aria-label={
-          isWishlisted(team.id) ? "إزالة من المفضلة" : "إضافة إلى المفضلة"
-        }
-      >
-        {isWishlisted(team.id) ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-red-500"
-            viewBox="0 0 20 20"
-            fill="#dec06a"
-          >
-            <path
-              fillRule="evenodd"
-              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-              clipRule="evenodd"
-            />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-gray-400 hover:text-red-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="#dec06a"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-        )}
-      </button>
+  const renderTeamCard = (team, index) => (
+    <div
+      className={slider ? "px-2 mb-2" : "w-full md:w-1/2 lg:w-1/3 px-4 mb-8"}
+      key={index}
+    >
+      <div className="relative flex flex-col h-full bg-white rounded-[30px] shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+        {/* Wishlist Button */}
+        <WishlistButton
+          itemId={team.id}
+          itemType="doctor"
+          setShowAuthPopup={setShowAuthPopup}
+          className="absolute top-6 left-6 z-20 p-2"
+        />
 
-      {/* Image container WITH overflow-hidden */}
-      <div className="relative p-4 flex-shrink-0 overflow-hidden rounded-t-[30px]">
-        <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
-          <div className="relative overflow-hidden rounded-[20px] aspect-w-3 aspect-h-2">
-            <img
-              src={team.image ? getImageUrl(team.image) : V0_PLACEHOLDER_IMAGE}
-              alt={team.name || "Team Member"}
-              className="w-full h-full object-cover transform transition-transform duration-500"
-              loading="lazy"
-              onError={(e) => {
-                e.currentTarget.src = V0_PLACEHOLDER_IMAGE;
-              }}
-            />
-          </div>
-          {team.branch_name && (
-            <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
-              {team.branch_name}
+        {/* Image container */}
+        <div className="relative p-4 flex-shrink-0 overflow-hidden rounded-t-[30px]">
+          <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
+            <div className="relative overflow-hidden rounded-[20px] aspect-w-3 aspect-h-2">
+              <img
+                src={team.image ? getImageUrl(team.image) : V0_PLACEHOLDER_IMAGE}
+                alt={team.name || "Team Member"}
+                className="w-full h-full object-cover transform transition-transform duration-500"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = V0_PLACEHOLDER_IMAGE;
+                }}
+              />
             </div>
-          )}
+            {team.branch_name && (
+              <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
+                {team.branch_name}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
         {/* Content */}
         <div className="content p-6 text-center flex-grow flex flex-col">
@@ -395,7 +222,7 @@ const renderTeamCard = (team, index) => (
               href={`/doctors/${team.id}`}
               className="w-full py-3 px-6 pl-16 gradient text-white font-bold rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-between relative"
             >
-        <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="absolute left-3 w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -440,59 +267,54 @@ const renderTeamCard = (team, index) => (
           </div>
         )}
 
-      {/* Filters & Search */}
-{isTeamsPage && (
-  <div className="container mx-auto px-4 mb-8">
-    <div className="bg-white p-4 rounded-lg shadow-sm">
-      {/* Desktop Department Tabs */}
-      <div className="hidden md:block mb-4">
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setSelectedDepartment(null)}
-            className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
-              !selectedDepartment
-                ? "text-[#dec06a] border-b-2 border-[#dec06a]"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            الكل
-          </button>
-          {departments.map((department) => (
-            <button
-              key={department.id}
-              onClick={() => setSelectedDepartment(department.id)}
-              className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
-                selectedDepartment === department.id
-                  ? "text-[#dec06a] border-b-2 border-[#dec06a]"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {department.name}
-            </button>
-          ))}
-        </div>
-      </div>
+        {isTeamsPage && (
+          <div className="container mx-auto px-4 mb-8">
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="hidden md:block mb-4">
+                <div className="flex border-b border-gray-200">
+                  <button
+                    onClick={() => setSelectedDepartment(null)}
+                    className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                      !selectedDepartment
+                        ? "text-[#dec06a] border-b-2 border-[#dec06a]"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    الكل
+                  </button>
+                  {departments.map((department) => (
+                    <button
+                      key={department.id}
+                      onClick={() => setSelectedDepartment(department.id)}
+                      className={`flex-1 px-6 py-3 text-sm font-medium text-center ${
+                        selectedDepartment === department.id
+                          ? "text-[#dec06a] border-b-2 border-[#dec06a]"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      {department.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-      {/* Search and Filters */}
-      <ServiceSidebar
-        services={teams}
-        branches={branches}
-        onSearchChange={setSearchTerm}
-        onDepartmentChange={setSelectedDepartment}
-        onBranchChange={setSelectedBranch}
-        currentSearch={searchTerm}
-        currentDepartment={selectedDepartment}
-        currentBranch={selectedBranch}
-        departments={departments}
-        showDepartmentDropdown={isMobile}
-        searchPlaceholder={"ابحث عن الطبيب"}
-      />
-    </div>
-  </div>
-)}
+              <ServiceSidebar
+                services={teams}
+                branches={branches}
+                onSearchChange={setSearchTerm}
+                onDepartmentChange={setSelectedDepartment}
+                onBranchChange={setSelectedBranch}
+                currentSearch={searchTerm}
+                currentDepartment={selectedDepartment}
+                currentBranch={selectedBranch}
+                departments={departments}
+                showDepartmentDropdown={isMobile}
+                searchPlaceholder={"ابحث عن الطبيب"}
+              />
+            </div>
+          </div>
+        )}
 
-
-        {/* Main Content */}
         {loading && (
           <div className="flex justify-center items-center py-10">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#dec06a]"></div>
@@ -517,12 +339,11 @@ const renderTeamCard = (team, index) => (
               </div>
             ) : slider ? (
               <div className="team-slider-container py-4">
-                <Slider ref={sliderRef} {...sliderSettings}>
+                <Slider {...sliderSettings}>
                   {displayedTeams.map((team, index) =>
                     renderTeamCard(team, index)
                   )}
                 </Slider>
-                    {/* View All Button for non-teams page */}
                 {!isTeamsPage && !branchId && (
                   <div className="flex justify-center mt-12">
                     <Link
@@ -553,65 +374,15 @@ const renderTeamCard = (team, index) => (
                 )}
               </div>
             ) : (
-              <>
-                <div className="flex flex-wrap">
-                  {displayedTeams.map((team, index) =>
-                    renderTeamCard(team, index)
-                  )}
-                </div>
-
-                {/* Pagination for Teams Page */}
-                {/* {isTeamsPage && totalPages > 1 && (
-                  <div className="flex justify-center mt-8">
-                    <nav className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          paginate(Math.max(1, currentPage - 1))
-                        }
-                        disabled={currentPage === 1}
-                        className="px-3 py-1 rounded-full border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        السابق
-                      </button>
-
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (number) => (
-                          <button
-                            key={number}
-                            onClick={() => paginate(number)}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              currentPage === number
-                                ? "bg-[#dec06a] text-white"
-                                : "border border-gray-300 hover:bg-gray-100"
-                            }`}
-                          >
-                            {number}
-                          </button>
-                        )
-                      )}
-
-                      <button
-                        onClick={() =>
-                          paginate(Math.min(totalPages, currentPage + 1))
-                        }
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1 rounded-full border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        التالي
-                      </button>
-                    </nav>
-                  </div>
-                )} */}
-
-            
-              </>
+              <div className="flex flex-wrap">
+                {displayedTeams.map((team, index) =>
+                  renderTeamCard(team, index)
+                )}
+              </div>
             )}
           </>
         )}
-
-
       </div>
-      
     </section>
   );
 };

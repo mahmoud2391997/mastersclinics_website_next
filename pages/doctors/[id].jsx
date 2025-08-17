@@ -3,8 +3,8 @@ import { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { fetchTeamById } from "../../store/slices/doctor";
-import { FaMapMarkerAlt, FaClock, FaPhone, FaUser, FaClinicMedical, FaHeart } from "react-icons/fa";
-import { MdEmail, MdMedicalServices } from "react-icons/md";
+import { FaMapMarkerAlt, FaClock, FaClinicMedical, FaUser } from "react-icons/fa";
+import { MdMedicalServices } from "react-icons/md";
 import Navbar from "../../helpers/components/Navbar/Navbar";
 import PageTitle from "../../helpers/components/pagetitle/PageTitle";
 import Footer from "../../helpers/components/footer/Footer";
@@ -12,7 +12,7 @@ import Scrollbar from "../../helpers/components/scrollbar/scrollbar";
 import { getImageUrl } from "../../helpers/hooks/imageUrl";
 import Link from "next/link";
 import CtafromSection from "../../helpers/components/Form";
-import { toast } from "react-toastify";
+import WishlistButton from "../../helpers/hooks/WishlistButton";
 
 const TeamSinglePage = () => {
   const dispatch = useDispatch();
@@ -25,132 +25,13 @@ const TeamSinglePage = () => {
     error: doctorError = null,
   } = useSelector((state) => state.teams || {});
 
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [optimisticWishlist, setOptimisticWishlist] = useState(null);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchTeamById(id));
     }
-
-    const checkAuth = () => {
-      const authStatus = localStorage.getItem("isAuthenticated") === "true";
-      const userData = JSON.parse(localStorage.getItem("clientInfo"));
-      
-      setIsAuthenticated(authStatus);
-      setUser(userData);
-      
-      if (authStatus && userData) {
-        fetchWishlistItems(userData.id);
-      } else {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
   }, [dispatch, id]);
-
-  useEffect(() => {
-    if (currentMember && wishlistItems.length > 0) {
-      const isItemWishlisted = wishlistItems.some(
-        item => item.item_id.toString() === currentMember.id.toString() && 
-               item.item_type === "doctor"
-      );
-      setIsWishlisted(isItemWishlisted);
-      setOptimisticWishlist(null);
-    } else if (!isLoading) {
-      setIsWishlisted(false);
-    }
-  }, [wishlistItems, currentMember, isLoading]);
-
-  const fetchWishlistItems = async (clientId) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
-      );
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch wishlist items");
-      }
-      
-      const data = await response.json();
-      setWishlistItems(data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch wishlist:", err);
-      toast.error("Failed to load wishlist items");
-      setWishlistItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getWishlistIconState = () => {
-    if (isLoading) {
-      return "loading";
-    }
-    if (optimisticWishlist !== null) {
-      return optimisticWishlist ? "active" : "inactive";
-    }
-    return isWishlisted ? "active" : "inactive";
-  };
-
-  const toggleWishlist = async (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (!isAuthenticated || !user) {
-      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-      return;
-    }
-
-    if (!currentMember) return;
-
-    const newWishlistStatus = !isWishlisted;
-    setOptimisticWishlist(newWishlistStatus);
-    setIsWishlisted(newWishlistStatus);
-
-    try {
-      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
-      const method = newWishlistStatus ? "POST" : "DELETE";
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: user.id,
-          item_type: "doctor",
-          item_id: currentMember.id
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${newWishlistStatus ? "add to" : "remove from"} wishlist`);
-      }
-
-      // Refresh wishlist after update
-      await fetchWishlistItems(user.id);
-      
-      toast.success(
-        newWishlistStatus 
-          ? "تمت إضافة الطبيب إلى المفضلة" 
-          : "تمت إزالة الطبيب من المفضلة"
-      );
-    } catch (err) {
-      console.error("Wishlist error:", err);
-      toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
-      setIsWishlisted(!newWishlistStatus);
-      setOptimisticWishlist(null);
-    }
-  };
 
   if (doctorLoading) return <div className="text-center py-20">جاري تحميل الملف الشخصي للطبيب...</div>;
   if (doctorError) return <div className="text-center py-20 text-danger">خطأ: {doctorError}</div>;
@@ -219,11 +100,9 @@ const TeamSinglePage = () => {
     </div>
   );
 
-  const wishlistState = getWishlistIconState();
-
   return (
     <Fragment>
-      <Navbar hclass={"wpo-site-header wpo-site-header-s2"} />
+      <Navbar hclass={"wpo-site-header wpo-site-header-s2"} showAuthPopup={showAuthPopup}/>
       <PageTitle
         pageTitle={currentMember.name || "الطبيب"}
         pagesub={currentMember.specialty || "أخصائي"}
@@ -235,22 +114,12 @@ const TeamSinglePage = () => {
           <div className="flex flex-col lg:flex-row-reverse gap-8">
             <div className="lg:w-2/3">
               <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8 relative">
-                <button
-                  onClick={toggleWishlist}
-                  className="absolute top-4 left-4 z-10 p-3 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors"
-                  aria-label={isWishlisted ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
-                  disabled={wishlistState === "loading"}
-                >
-                  {wishlistState === "loading" ? (
-                    <div className="animate-pulse">
-                      <FaHeart className="text-gray-300 text-xl" />
-                    </div>
-                  ) : wishlistState === "active" ? (
-                    <FaHeart className="text-[#dec06a] text-xl" />
-                  ) : (
-                    <FaHeart className="text-gray-400 hover:text-[#dec06a] text-xl" />
-                  )}
-                </button>
+                <WishlistButton
+                  itemId={currentMember.id}
+                  itemType="doctor"
+                  setShowAuthPopup={setShowAuthPopup}
+                  className="absolute top-4 left-4 z-10"
+                />
 
                 <div className="flex flex-col md:flex-row">
                   <div className="md:w-1/3 relative">
