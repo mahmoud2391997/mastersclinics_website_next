@@ -111,11 +111,10 @@ export default function ProfilePage() {
       setError(null)
       
       const clientId = getClientId()
-      const token = localStorage.getItem("token")
       
-      if (!clientId || !token) {
+      if (!clientId) {
         console.error("Authentication failed - missing clientId or token")
-        router.push("/login")
+        router.push("/")
         return
       }
 
@@ -123,10 +122,7 @@ export default function ProfilePage() {
         `https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`,
         {
           method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+  
         }
       )
 
@@ -479,7 +475,7 @@ const transformedWishlist = (data.wishlist || [])
           <div className="text-center">
             <p className="text-gray-600">لا توجد بيانات متاحة</p>
             <Button 
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/")}
               className="mt-4 bg-[#CBA853] hover:bg-[#A58532]"
             >
               تسجيل الدخول
