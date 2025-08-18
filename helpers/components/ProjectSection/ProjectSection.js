@@ -15,6 +15,7 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import WishlistButton from "@/helpers/hooks/WishlistButton";
 
 const ClickHandler = () => {
     window.scrollTo(10, 0);
@@ -139,7 +140,20 @@ const ProjectSection = ({
     );
 
     const renderDeviceCard = (device, index) => (
-        <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+        <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative">
+            {/* Wishlist Button - positioned absolutely in top right corner */}
+            <div className="absolute top-3 left-3 z-10">
+                <WishlistButton 
+                    itemId={device._id}
+                    itemType="device"
+                    size="sm"
+                    className="shadow-md"
+                    onWishlistChange={(isWishlisted) => {
+                        // Optional: handle wishlist change if needed
+                    }}
+                />
+            </div>
+            
             <div className="relative min-h-72 bg-gray-100 flex justify-center items-center">
                 <img
                     src={device.image_url ? getImageUrl(device.image_url) : "/download.png"}
@@ -212,6 +226,65 @@ const ProjectSection = ({
                     renderContent()
                 )}
             </div>
+            
+            {/* Add custom styles for swiper navigation */}
+            <style jsx global>{`
+                .swiper-container-wrapper {
+                    position: relative;
+                    padding: 0 40px;
+                }
+                
+                .swiper-button-prev,
+                .swiper-button-next {
+                
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 40px;
+                    height: 40px;
+                    background: white;
+                    border-radius: 50%;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    z-index: 10;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #CBA853 !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                }
+                
+                .swiper-button-prev {
+                    left: 0;
+                }
+                
+                .swiper-button-next {
+                    right: 0;
+                }
+                
+                .swiper-button-prev::after,
+                .swiper-button-next::after {
+                    font-size: 15px;
+                    font-weight: bold;
+                }
+                
+                @media (max-width: 768px) {
+                    .swiper-container-wrapper {
+                        padding: 0 30px;
+                    }
+                    
+                    .swiper-button-prev,
+                    .swiper-button-next {
+                        width: 30px;
+                        height: 30px;
+                    }
+                    
+                    .swiper-button-prev::after,
+                    .swiper-button-next::after {
+                        font-size: 16px;
+                    }
+                }
+            `}</style>
         </section>
     );
 
@@ -262,65 +335,66 @@ const ProjectSection = ({
                 )}
                 <div className="project_wrapper relative">
                     {slider ? (
-                        <Swiper
-                            modules={[Navigation, Pagination, Autoplay]}
-                            spaceBetween={30}
-                            slidesPerView={1}
-                            breakpoints={{
-                                640: { slidesPerView: 1 },
-                                768: { slidesPerView: 2 },
-                                1024: { slidesPerView: 3 },
-                            }}
-                            navigation={{
-                                nextEl: '.swiper-button-next',
-                                prevEl: '.swiper-button-prev',
-                            }}
-                            pagination={{
-                                clickable: true,
-                                el: '.swiper-pagination',
-                                type: 'bullets',
-                                renderBullet: (index, className) => {
-                                    return `<span class="${className}" style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></span>`;
-                                }
-                            }}
-                            autoplay={{ delay: 5000, disableOnInteraction: false }}
-                            loop={true}
-                            onInit={() => {
-                                setSwiperInitialized(true);
-                                setTimeout(() => {
-                                    document.querySelectorAll('.swiper-pagination-bullet-active')
-                                        .forEach(el => el.style.backgroundColor = '#CBA853');
-                                }, 0);
-                            }}
-                            onSlideChange={() => {
-                                setTimeout(() => {
-                                    document.querySelectorAll('.swiper-pagination-bullet')
-                                        .forEach(el => el.style.backgroundColor = '#e0e0e0');
-                                    document.querySelectorAll('.swiper-pagination-bullet-active')
-                                        .forEach(el => el.style.backgroundColor = '#CBA853');
-                                }, 0);
-                            }}
-                            className="pb-12 "
-                        >
-                            {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, pitem) => (
-                                <SwiperSlide key={pitem}>
-                                    {renderDeviceCard(device, pitem)}
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
+                        <div className="swiper-container-wrapper">
+                            <Swiper
+                                modules={[Navigation, Pagination, Autoplay]}
+                                spaceBetween={30}
+                                slidesPerView={1}
+                                breakpoints={{
+                                    640: { slidesPerView: 1 },
+                                    768: { slidesPerView: 2 },
+                                    1024: { slidesPerView: 3 },
+                                }}
+                                navigation={{
+                                    nextEl: '.swiper-button-next',
+                                    prevEl: '.swiper-button-prev',
+                                }}
+                                pagination={{
+                                    clickable: true,
+                                    el: '.swiper-pagination',
+                                    type: 'bullets',
+                                    renderBullet: (index, className) => {
+                                        return `<span class="${className}" style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></span>`;
+                                    }
+                                }}
+                                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                                loop={true}
+                                onInit={() => {
+                                    setSwiperInitialized(true);
+                                    setTimeout(() => {
+                                        document.querySelectorAll('.swiper-pagination-bullet-active')
+                                            .forEach(el => el.style.backgroundColor = '#CBA853');
+                                    }, 0);
+                                }}
+                                onSlideChange={() => {
+                                    setTimeout(() => {
+                                        document.querySelectorAll('.swiper-pagination-bullet')
+                                            .forEach(el => el.style.backgroundColor = '#e0e0e0');
+                                        document.querySelectorAll('.swiper-pagination-bullet-active')
+                                            .forEach(el => el.style.backgroundColor = '#CBA853');
+                                    }, 0);
+                                }}
+                                className="pb-12"
+                            >
+                                {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, pitem) => (
+                                    <SwiperSlide key={pitem}>
+                                        {renderDeviceCard(device, pitem)}
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
+                            
+                            {/* Navigation arrows - always visible */}
+                            <div className="swiper-button-prev"></div>
+                            <div className="swiper-button-next"></div>
+                            
+                            <div className="swiper-pagination !relative !bottom-0 !mt-6"></div>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, index) => (
                                 renderDeviceCard(device, index)
                             ))}
                         </div>
-                    )}
-                    {slider && swiperInitialized && (
-                        <>
-                            <div className="swiper-button-prev !text-[#CBA853] !left-0 after:!text-xl"></div>
-                            <div className="swiper-button-next !text-[#CBA853] !right-0 after:!text-xl"></div>
-                            <div className="swiper-pagination !relative !bottom-0 !mt-6"></div>
-                        </>
                     )}
                 </div>
             </>

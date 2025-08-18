@@ -12,181 +12,207 @@ const WishlistButton = ({
   className = "",
   onWishlistChange = null,
 }) => {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
+  const [localWishlistStatus, setLocalWishlistStatus] = useState(null)
+
+  const displayStatus = localWishlistStatus !== null ? localWishlistStatus : isWishlisted
 
   useEffect(() => {
+    console.log(`[WishlistButton] Initializing for ${itemType} ${itemId}`)
+    
     const checkAuthAndWishlist = async () => {
-      const authStatus = localStorage.getItem("isAuthenticated") === "true";
-      const userData = JSON.parse(localStorage.getItem("clientInfo") || "null");
-      setIsAuthenticated(authStatus);
-      setUser(userData);
+      const authStatus = localStorage.getItem("isAuthenticated") === "true"
+      const userData = JSON.parse(localStorage.getItem("clientInfo") || "null")
+      setIsAuthenticated(authStatus)
+      setUser(userData)
 
       if (authStatus && userData) {
-        const storedWishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-        const optimistic = storedWishlist.some((item) => item.item_id === itemId && item.item_type === itemType);
-        setIsWishlisted(optimistic);
-        if (onWishlistChange) onWishlistChange(optimistic);
-
-        const cacheKey = `wishlist_${itemId}_${itemType}`;
-        const cachedResult = sessionStorage.getItem(cacheKey);
-        const cacheTime = sessionStorage.getItem(`${cacheKey}_time`);
-
-        if (cachedResult && cacheTime && Date.now() - Number.parseInt(cacheTime) < 300000) {
-          const isWishlistedCached = cachedResult === "true";
-          setIsWishlisted(isWishlistedCached);
-          if (onWishlistChange) onWishlistChange(isWishlistedCached);
-          return;
+        // Check sessionStorage for immediate response
+        const cacheKey = `wishlist_${itemId}_${itemType}`
+        const cachedResult = sessionStorage.getItem(cacheKey)
+        
+        if (cachedResult !== null) {
+          console.log(`[WishlistButton] Using cached result for ${itemId}: ${cachedResult}`)
+          setLocalWishlistStatus(cachedResult === "true")
+          if (onWishlistChange) onWishlistChange(cachedResult === "true")
         }
 
-        try {
-          const response = await fetch(
-            `https://www.ss.mastersclinics.com/api/wishlist/check/status?client_id=${userData.id}&item_id=${itemId}&item_type=${itemType}`,
-          );
-
-          if (!response.ok) {
-            if (response.status === 429) {
-              console.warn("Rate limited, using cached data");
-              return;
-            }
-            throw new Error("Failed to check wishlist status");
-          }
-
-          const data = await response.json();
-          setIsWishlisted(data.isWishlisted);
-          if (onWishlistChange) onWishlistChange(data.isWishlisted);
-
-          sessionStorage.setItem(cacheKey, data.isWishlisted.toString());
-          sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
-        } catch (err) {
-          console.error("Failed to verify wishlist status:", err);
-        }
+        // Verify with server in background
+        verifyWithServer(userData.id)
       }
-    };
-
-    checkAuthAndWishlist();
-  }, [itemId, itemType, onWishlistChange]);
-
-const toggleWishlist = async (e) => {
-  e.stopPropagation();
-  e.preventDefault();
-
-  if (!isAuthenticated || !user) {
-    toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    if (setShowAuthPopup) setShowAuthPopup(true);
-    return;
-  }
-
-  const newWishlistStatus = !isWishlisted;
-
-  // ✅ Optimistic UI update
-  setIsWishlisted(newWishlistStatus);
-  if (onWishlistChange) onWishlistChange(newWishlistStatus);
-
-  // ✅ Update sessionStorage immediately
-  const storedWishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
-  let updatedWishlist;
-  if (newWishlistStatus) {
-    updatedWishlist = [
-      ...storedWishlist,
-      {
-        item_id: itemId,
-        item_type: itemType,
-        client_id: user.id,
-        created_at: new Date().toISOString(),
-      },
-    ];
-  } else {
-    updatedWishlist = storedWishlist.filter(
-      (item) => !(item.item_id === itemId && item.item_type === itemType)
-    );
-  }
-
-  sessionStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
-  sessionStorage.setItem("wishlistCount", updatedWishlist.length.toString());
-
-  const cacheKey = `wishlist_${itemId}_${itemType}`;
-  sessionStorage.setItem(cacheKey, newWishlistStatus.toString());
-  sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
-
-  // ✅ Fire global event immediately
-  window.dispatchEvent(
-    new CustomEvent("wishlistUpdated", {
-      detail: {
-        count: updatedWishlist.length,
-        items: updatedWishlist,
-        action: newWishlistStatus ? "added" : "removed",
-        itemId,
-        itemType,
-      },
-    })
-  );
-
-  setIsLoading(true);
-
-  try {
-    // Call API in background
-    const endpoint = "https://www.ss.mastersclinics.com/api/wishlist";
-    const method = newWishlistStatus ? "POST" : "DELETE";
-
-    const response = await fetch(endpoint, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        client_id: user.id,
-        item_type: itemType,
-        item_id: itemId,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to ${newWishlistStatus ? "add to" : "remove from"} wishlist`);
     }
 
-    // ✅ Success toast (delayed to avoid double firing when very fast)
+    const verifyWithServer = async (userId) => {
+      const cacheKey = `wishlist_${itemId}_${itemType}`
+      const cachedResult = sessionStorage.getItem(cacheKey)
+      const cacheTime = sessionStorage.getItem(`${cacheKey}_time`)
+
+      // Use cached result if less than 5 minutes old
+      if (cachedResult && cacheTime && Date.now() - parseInt(cacheTime) < 300000) {
+        console.log(`[WishlistButton] Using recent cache for ${itemId}`)
+        setIsWishlisted(cachedResult === "true")
+        return
+      }
+
+      try {
+        console.log(`[WishlistButton] Fetching server status for ${itemId}`)
+        const response = await fetch(
+          `https://www.ss.mastersclinics.com/api/wishlist/check/status?client_id=${userId}&item_id=${itemId}&item_type=${itemType}`,
+          {
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          }
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log(`[WishlistButton] Server response for ${itemId}:`, data)
+          
+          const status = data.isWishlisted || false
+          setIsWishlisted(status)
+          setLocalWishlistStatus(status)
+          
+          sessionStorage.setItem(cacheKey, status.toString())
+          sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString())
+          
+          if (onWishlistChange) onWishlistChange(status)
+        }
+      } catch (err) {
+        console.error(`[WishlistButton] Failed to verify status for ${itemId}:`, err)
+      }
+    }
+
+    checkAuthAndWishlist()
+  }, [itemId, itemType, onWishlistChange])
+
+  const toggleWishlist = async (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    if (!isAuthenticated || !user) {
+      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
+      window.scrollTo({ top: 0, behavior: "smooth" })
+      if (setShowAuthPopup) setShowAuthPopup(true)
+      return
+    }
+
+    const newStatus = !displayStatus
+    console.log(`[WishlistButton] Toggling ${itemId} to ${newStatus}`)
+    
+    // Immediate UI update
+    setLocalWishlistStatus(newStatus)
+    updateLocalWishlist(newStatus)
+    
     toast.success(
-      newWishlistStatus
-        ? `تمت إضافة ${itemType === "doctor" ? "الطبيب" : "العرض"} إلى المفضلة`
-        : `تمت إزالة ${itemType === "doctor" ? "الطبيب" : "العرض"} من المفضلة`
-    );
-  } catch (err) {
-    // ❌ Rollback if failed
-    console.error("Wishlist error:", err);
-    setIsWishlisted(!newWishlistStatus);
-    if (onWishlistChange) onWishlistChange(!newWishlistStatus);
+      newStatus
+        ? `تمت إضافة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} إلى المفضلة`
+        : `تمت إزالة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} من المفضلة`,
+      { autoClose: 2000 }
+    )
 
-    // rollback sessionStorage + event
-    sessionStorage.setItem("wishlist", JSON.stringify(storedWishlist));
-    sessionStorage.setItem("wishlistCount", storedWishlist.length.toString());
-    sessionStorage.setItem(cacheKey, (!newWishlistStatus).toString());
-    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+    // Sync with server
+    await syncWithServer(newStatus)
+  }
 
+  const updateLocalWishlist = (newStatus) => {
+    const cacheKey = `wishlist_${itemId}_${itemType}`
+    sessionStorage.setItem(cacheKey, newStatus.toString())
+    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString())
+
+    // Update wishlist items array
+    const storedWishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]")
+    let updatedWishlist
+
+    if (newStatus) {
+      updatedWishlist = [
+        ...storedWishlist,
+        {
+          item_id: itemId,
+          item_type: itemType,
+          client_id: user?.id,
+          created_at: new Date().toISOString()
+        }
+      ]
+    } else {
+      updatedWishlist = storedWishlist.filter(
+        item => !(item.item_id === itemId && item.item_type === itemType)
+      )
+    }
+
+    sessionStorage.setItem("wishlist", JSON.stringify(updatedWishlist))
+    sessionStorage.setItem("wishlistCount", updatedWishlist.length.toString())
+
+    // Notify other components
     window.dispatchEvent(
       new CustomEvent("wishlistUpdated", {
         detail: {
-          count: storedWishlist.length,
-          items: storedWishlist,
-          action: newWishlistStatus ? "rollback_add" : "rollback_remove",
+          count: updatedWishlist.length,
+          items: updatedWishlist,
+          action: newStatus ? "added" : "removed",
           itemId,
-          itemType,
-        },
+          itemType
+        }
       })
-    );
+    )
 
-    toast.error(err.message || "حدث خطأ أثناء تحديث المفضلة");
-  } finally {
-    setIsLoading(false);
+    if (onWishlistChange) {
+      onWishlistChange(newStatus)
+    }
   }
-};
+
+  const syncWithServer = async (newStatus) => {
+    setIsLoading(true)
+    
+    try {
+      const endpoint = "https://www.ss.mastersclinics.com/api/wishlist"
+      const method = newStatus ? "POST" : "DELETE"
+
+      console.log(`[WishlistButton] Syncing ${itemId} with server (${method})`)
+      const response = await fetch(endpoint, {
+        method,
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+          client_id: user.id,
+          item_type: itemType,
+          item_id: itemId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // Only update server state if successful
+      setIsWishlisted(newStatus)
+      console.log(`[WishlistButton] Successfully synced ${itemId}`)
+    } catch (err) {
+      console.error(`[WishlistButton] Sync failed for ${itemId}:`, err)
+      
+      // Rollback UI
+      setLocalWishlistStatus(!newStatus)
+      updateLocalWishlist(!newStatus)
+      
+      toast.error(
+        `حدث خطأ أثناء ${newStatus ? "الإضافة إلى" : "الإزالة من"} المفضلة`,
+        { autoClose: 2000 }
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const sizeClasses = {
     sm: "text-base p-2",
     md: "text-lg p-2.5",
-    lg: "text-xl p-3",
-  };
+    lg: "text-xl p-3"
+  }
 
   return (
     <button
@@ -195,22 +221,19 @@ const toggleWishlist = async (e) => {
         isLoading ? "opacity-70 cursor-not-allowed" : ""
       }`}
       aria-label={
-        isWishlisted
-          ? `إزالة ${itemType === "doctor" ? "الطبيب" : "العرض"} من المفضلة`
-          : `إضافة ${itemType === "doctor" ? "الطبيب" : "العرض"} إلى المفضلة`
+        displayStatus
+          ? `إزالة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} من المفضلة`
+          : `إضافة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} إلى المفضلة`
       }
       disabled={isLoading}
     >
-      {isLoading ? (
-        <div className="animate-pulse">
-          <FaRegHeart className="text-gray-400" />
-        </div>
-      ) : isWishlisted ? (
-        <FaHeart className="text-[#dec06a]" />
+      {displayStatus ? (
+        <FaHeart className="text-[#dec06a] animate-pulse" />
       ) : (
         <FaRegHeart className="text-gray-400 hover:text-[#dec06a]" />
       )}
     </button>
-  );
-};
+  )
+}
+
 export default WishlistButton

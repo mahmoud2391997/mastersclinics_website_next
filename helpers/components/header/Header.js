@@ -145,6 +145,7 @@ const Header = (props) => {
       
       const data = await response.json();
       const wishlistItems = data.data || [];
+      console.log(data);
       
       // Update session storage
       sessionStorage.setItem("wishlist", JSON.stringify(wishlistItems));
@@ -751,7 +752,7 @@ const Header = (props) => {
     <div className="relative w-[100vw]">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
         <div className={`${props.hclass} m-auto !w-full`}>
-          <ContactBar />
+          <ContactBar nav={props.nav} />
        
         <div
           ref={searchRef}
@@ -1079,18 +1080,20 @@ const Header = (props) => {
                   )}
                 </div>
 <div className="relative">
-  <Link
-    href="/wishlist"
-    className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
-  >
-    <FaHeart className="text-[#dec06a]" size={24} />
-    {/* Notification Badge */}
-    {wishlistCount > 0 && (
-      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
-        {wishlistCount > 99 ? "99+" : wishlistCount}
-      </div>
-    )}
-  </Link>
+  {isAuthenticated && (
+    <Link
+      href="/profile?tab=wishlist"
+      className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+    >
+      <FaHeart className="text-[#dec06a]" size={24} />
+      {/* Notification Badge */}
+      {wishlistCount > 0 && (
+        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+          {wishlistCount > 99 ? "99+" : wishlistCount}
+        </div>
+      )}
+    </Link>
+  )}
 </div>
            
               </div>

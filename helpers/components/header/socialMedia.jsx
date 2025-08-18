@@ -11,7 +11,7 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const SocialMediaIcons = ({nav}) => {
   return (
-<div className={`flex flex-wrap justify-center gap-3 mt-2 ${nav ? "bg-[#f6eecd]" : "bg-transparent"}`}>      {[
+<div className={`flex flex-wrap justify-center gap-3  ${nav ? "bg-[#f6eecd]" : "bg-transparent mt-2"}`}>      {[
         { icon: <FaFacebook size={24} />, href: "https://www.facebook.com/masters.clinicn/" },
         { icon: <FaYoutube size={24} />, href: "https://www.youtube.com/channel/UCAy80cOsDrVqfQLM0HNP_sw" },
         { icon: <FaXTwitter size={24} />, href: "https://x.com/i/flow/login?redirect_after_login=%2Fmasters_clinic" },
