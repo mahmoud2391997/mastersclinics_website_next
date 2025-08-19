@@ -103,10 +103,11 @@ console.log(testimonials);
                         <div className="image w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
                           <img
                             className="w-full h-full object-cover"
-                            src={getImageUrl(testitem.img) || "/placeholder.svg"}
+                            src={getImageUrl(testitem.img) }
                             alt={testitem.title}
                             onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg"
+                             console.log(e);
+                             
                             }}
                           />
                         </div>

@@ -401,17 +401,18 @@ export default function ProfilePage() {
         throw new Error(`API Error: ${response.status} - ${errorText}`)
       }
 
-      const data: ApiResponse<ProfileResponse> = await response.json()
+      const data: ProfileResponse = await response.json()
+console.log(data);
 
-      if (!data.data || !data.data.client) {
+      if (!data || !data.client) {
         throw new Error("Invalid response format: missing client data")
       }
 
-      setClientInfo(data.data.client)
-      localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
+      setClientInfo(data.client)
+      localStorage.setItem("clientInfo", JSON.stringify(data.client))
 
       // Transform wishlist data
-      const transformedWishlist = (data.data.wishlist || [])
+      const transformedWishlist = (data.wishlist || [])
         .map(transformWishlistItem)
         .filter((item): item is WishlistItem => item !== null)
 

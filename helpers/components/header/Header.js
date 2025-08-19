@@ -911,7 +911,7 @@ const Header = (props) => {
                   {(showAuthPopup || props.showAuthprop) && (
                     <div 
                       ref={authPopupRef}
-                      className="absolute top-full left-0 md:top-[-115px] md:!left-20 mt-2 w-80 bg-white rounded-lg shadow-lg p-4 z-50"
+                      className="absolute top-full left-0 md:top-[-115px] lg:!left-[-45px] 2xl:!left-20 mt-2 w-70 bg-white rounded-lg shadow-lg p-4 z-50"
                     >
                       {!isAuthenticated ? (
                         <>
@@ -926,7 +926,7 @@ const Header = (props) => {
                                   value={email}
                                   onChange={(e) => setEmail(e.target.value)}
                                   required
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                  className="w-full px-2 py-2 border border-gray-300 rounded text-right"
                                   placeholder="example@example.com"
                                 />
                               </div>
@@ -934,7 +934,7 @@ const Header = (props) => {
                                 type="submit"
                                 className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
                               >
-                                إرسال رمز التحقق
+                                إرسال رمز التحقق 
                               </button>
                             </form>
                           )}
