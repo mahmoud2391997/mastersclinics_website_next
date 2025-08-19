@@ -1,13 +1,12 @@
-"use client"
-
-import { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState, useReducer } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2 } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key } from "lucide-react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserDoctor, faLaptopMedical, faGift } from '@fortawesome/free-solid-svg-icons'
 import Navbar from "@/helpers/components/Navbar/Navbar"
@@ -16,6 +15,129 @@ import getImageUrl from "@/utilies/getImageUrl"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
+
+// Toast Types
+type Toast = {
+  id: string
+  title: string
+  message: string
+  type: "success" | "error" | "info" | "warning"
+  duration?: number
+  dismissed?: boolean
+}
+
+type ToastState = Toast[]
+
+type ToastAction =
+  | { type: "ADD_TOAST"; toast: Toast }
+  | { type: "UPDATE_TOAST"; toast: Partial<Toast> & { id: string } }
+  | { type: "DISMISS_TOAST"; toastId?: string }
+  | { type: "REMOVE_TOAST"; toastId?: string }
+
+// Toast Reducer
+function toastReducer(state: ToastState, action: ToastAction): ToastState {
+  switch (action.type) {
+    case "ADD_TOAST":
+      return [...state, action.toast]
+
+    case "UPDATE_TOAST":
+      return state.map((t) =>
+        t.id === action.toast.id ? { ...t, ...action.toast } : t
+      )
+
+    case "DISMISS_TOAST":
+      return state.map((t) =>
+        action.toastId === undefined || t.id === action.toastId
+          ? { ...t, dismissed: true }
+          : t
+      )
+
+    case "REMOVE_TOAST":
+      return state.filter(
+        (t) => action.toastId === undefined || t.id !== action.toastId
+      )
+
+    default:
+      return state
+  }
+}
+
+// Toast Context
+const ToastContext = React.createContext<{
+  state: ToastState
+  dispatch: React.Dispatch<ToastAction>
+}>({
+  state: [],
+  dispatch: () => null
+})
+
+// Toast Provider
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(toastReducer, [])
+
+  return (
+    <ToastContext.Provider value={{ state, dispatch }}>
+      {children}
+    </ToastContext.Provider>
+  )
+}
+
+// Toast Component
+export function Toaster() {
+  const { state, dispatch } = React.useContext(ToastContext)
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50 space-y-2">
+      {state.map((toast) => (
+        <div
+          key={toast.id}
+          className={`p-4 rounded-md shadow-lg ${
+            toast.type === "success"
+              ? "bg-green-100 text-green-800"
+              : toast.type === "error"
+              ? "bg-red-100 text-red-800"
+              : toast.type === "info"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="font-semibold">{toast.title}</h3>
+              <p className="text-sm">{toast.message}</p>
+            </div>
+            <button
+              onClick={() => dispatch({ type: "DISMISS_TOAST", toastId: toast.id })}
+              className="ml-4"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Toast Hook
+export function useToast() {
+  const { dispatch } = React.useContext(ToastContext)
+
+  const showToast = useCallback(
+    (toast: Omit<Toast, "id">) => {
+      const id = Math.random().toString(36).substring(2, 9)
+      dispatch({ type: "ADD_TOAST", toast: { ...toast, id } })
+
+      // Auto-dismiss
+      setTimeout(() => {
+        dispatch({ type: "DISMISS_TOAST", toastId: id })
+      }, toast.duration || 5000)
+    },
+    [dispatch]
+  )
+
+  return { showToast }
+}
 
 interface ClientInfo {
   id: number
@@ -70,7 +192,7 @@ interface DeviceWishlistItem {
   created_at: string
   updated_at: string
   priority: number
-  typee:string;
+  typee: string
   type: "device"
 }
 
@@ -85,11 +207,56 @@ export default function ProfilePage() {
     errors: {} as Record<string, string>,
     tempData: {} as Partial<ClientInfo>
   })
+  const [emailEditState, setEmailEditState] = useState({
+    isEditing: false,
+    newEmail: "",
+    verificationCode: "",
+    isSendingCode: false,
+    isVerifying: false,
+    error: "",
+    codeSent: false
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { showToast } = useToast()
+
+  // Move makeRequest inside the component
+  const makeRequest = useCallback(async (endpoint: string, options: RequestInit = {}) => {
+    const API_BASE_URL = "https://www.ss.mastersclinics.com"
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+
+    try {
+      const token = localStorage.getItem("token")
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : "",
+          ...options.headers,
+        },
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }))
+        throw new Error(errorData.message || `HTTP ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout')
+      }
+      throw error
+    }
+  }, [])
 
   const getClientId = (): number | null => {
     try {
@@ -102,6 +269,10 @@ export default function ProfilePage() {
       return null
     }
   }
+
+  const updateClientInfo = useCallback((client: ClientInfo) => {
+    localStorage.setItem("clientInfo", JSON.stringify(client))
+  }, [])
 
   const activeTab = searchParams.get('tab') === 'wishlist' ? 'wishlist' : 'info'
 
@@ -122,7 +293,6 @@ export default function ProfilePage() {
         `https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`,
         {
           method: "GET",
-  
         }
       )
 
@@ -132,7 +302,6 @@ export default function ProfilePage() {
       }
 
       const data = await response.json()
-console.log("profile",data);
 
       if (!data.client) {
         throw new Error("Invalid response format: missing client data")
@@ -141,110 +310,61 @@ console.log("profile",data);
       setClientInfo(data.client)
       localStorage.setItem("clientInfo", JSON.stringify(data.client))
 
-     // Replace the wishlist transformation code with this:
-
-// First define interfaces for the raw API data
-interface RawDoctorWishlistItem {
-  id: number
-  name: string
-  specialty: string
-  branch_id: number
-  department_id: number
-  services: string
-  image: string | null
-  created_at: string
-  updated_at: string
-  priority: number
-  is_active: number
-}
-
-interface RawOfferWishlistItem {
-  id: number
-  title: string
-  description: string
-  image: string
-  priceBefore: string
-  priceAfter: string
-  discountPercentage: string
-  branches: string
-  services_ids: string
-  doctors_ids: string
-  created_at: string
-  updated_at: string
-  is_active: number
-  priority: number
-}
-
-interface RawDeviceWishlistItem {
-  id: number
-  name: string
-  branches_ids: string
-  available_times: string
-  image_url: string
-  is_active: number
-  created_at: string
-  updated_at: string
-  priority: number
-  typee: string
-}
-
-type RawWishlistItem = RawDoctorWishlistItem | RawOfferWishlistItem | RawDeviceWishlistItem
-
-// Then update the transformation logic
-const transformedWishlist = (data.wishlist || [])
-  .filter((item: RawWishlistItem) => item !== null)
-  .map((item: RawWishlistItem) => {
-    if ('title' in item) {
-      return {
-        id: item.id,
-        title: item.title,
-        description: item.description || "",
-        image: item.image,
-        priceBefore: item.priceBefore,
-        priceAfter: item.priceAfter,
-        discountPercentage: item.discountPercentage,
-        branches: item.branches,
-        services_ids: item.services_ids,
-        doctors_ids: item.doctors_ids,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        is_active: item.is_active,
-        priority: item.priority,
-        type: "offer"
-      } as OfferWishlistItem
-    } else if ('specialty' in item) {
-      return {
-        id: item.id,
-        name: item.name,
-        specialty: item.specialty,
-        branch_id: item.branch_id,
-        department_id: item.department_id,
-        services: item.services,
-        image: item.image,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        priority: item.priority,
-        is_active: item.is_active,
-        type: "doctor"
-      } as DoctorWishlistItem
-    } else if ('image_url' in item) {
-      return {
-        id: item.id,
-        name: item.name,
-        typee: item.typee,
-        branches_ids: item.branches_ids,
-        available_times: item.available_times,
-        image_url: item.image_url,
-        is_active: item.is_active,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        priority: item.priority,
-        type: "device"
-      } as DeviceWishlistItem
-    }
-    return null
-  })
-  .filter((item: RawWishlistItem): item is WishlistItem => item !== null)
+      // Transform wishlist data
+      const transformedWishlist = (data.wishlist || [])
+        .filter((item: any) => item !== null)
+        .map((item: any) => {
+          if ('title' in item) {
+            return {
+              id: item.id,
+              title: item.title,
+              description: item.description || "",
+              image: item.image,
+              priceBefore: item.priceBefore,
+              priceAfter: item.priceAfter,
+              discountPercentage: item.discountPercentage,
+              branches: item.branches,
+              services_ids: item.services_ids,
+              doctors_ids: item.doctors_ids,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              is_active: item.is_active,
+              priority: item.priority,
+              type: "offer"
+            } as OfferWishlistItem
+          } else if ('specialty' in item) {
+            return {
+              id: item.id,
+              name: item.name,
+              specialty: item.specialty,
+              branch_id: item.branch_id,
+              department_id: item.department_id,
+              services: item.services,
+              image: item.image,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              priority: item.priority,
+              is_active: item.is_active,
+              type: "doctor"
+            } as DoctorWishlistItem
+          } else if ('image_url' in item) {
+            return {
+              id: item.id,
+              name: item.name,
+              typee: item.typee,
+              branches_ids: item.branches_ids,
+              available_times: item.available_times,
+              image_url: item.image_url,
+              is_active: item.is_active,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              priority: item.priority,
+              type: "device"
+            } as DeviceWishlistItem
+          }
+          return null
+        })
+        .filter((item: any): item is WishlistItem => item !== null)
 
       setWishlist(transformedWishlist)
     } catch (err) {
@@ -290,7 +410,6 @@ const transformedWishlist = (data.wishlist || [])
           method: "DELETE",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
           },
           body: JSON.stringify({
             client_id: clientId,
@@ -324,6 +443,11 @@ const transformedWishlist = (data.wishlist || [])
     return errors
   }
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
   const handleEditProfile = () => {
     if (!clientInfo) return
     setEditState({
@@ -355,7 +479,6 @@ const transformedWishlist = (data.wishlist || [])
           method: "PUT",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
           },
           body: JSON.stringify({
             clientId,
@@ -405,6 +528,111 @@ const transformedWishlist = (data.wishlist || [])
       tempData: { ...prev.tempData, [field]: value },
       errors: { ...prev.errors, [field]: "" }
     }))
+  }
+
+  const handleSendVerificationCode = async () => {
+    if (!emailEditState.newEmail) {
+      setEmailEditState(prev => ({ ...prev, error: "البريد الإلكتروني مطلوب" }))
+      return
+    }
+
+    if (!validateEmail(emailEditState.newEmail)) {
+      setEmailEditState(prev => ({ ...prev, error: "البريد الإلكتروني غير صحيح" }))
+      return
+    }
+
+    try {
+      setEmailEditState(prev => ({ ...prev, isSendingCode: true, error: "" }))
+      
+      const clientId = getClientId()
+      if (!clientId) throw new Error("Authentication required")
+
+      const response = await fetch(
+        "https://www.ss.mastersclinics.com/api/client-auth/authorize",
+        {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: emailEditState.newEmail
+          })
+        }
+      )
+
+      if (!response.ok) throw new Error(`Failed with status ${response.status}`)
+
+      setEmailEditState(prev => ({ ...prev, codeSent: true }))
+      toast.success("تم إرسال رمز التحقق إلى البريد الإلكتروني الجديد")
+    } catch (err) {
+      console.error("Send verification code failed:", err)
+      setEmailEditState(prev => ({ 
+        ...prev, 
+        error: err instanceof Error ? err.message : "فشل إرسال رمز التحقق" 
+      }))
+      toast.error("فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى")
+    } finally {
+      setEmailEditState(prev => ({ ...prev, isSendingCode: false }))
+    }
+  }
+
+  const verifyAndChangeEmail = async () => {
+    if (!emailEditState.verificationCode) {
+      setEmailEditState(prev => ({ ...prev, error: "رمز التحقق مطلوب" }))
+      return
+    }
+
+    try {
+      setEmailEditState(prev => ({ ...prev, isVerifying: true, error: "" }))
+      const clientId = getClientId()
+      if (!clientId) throw new Error("Authentication required")
+
+      const data = await makeRequest("/api/client-auth/change-email", {
+        method: "POST",
+        body: JSON.stringify({
+          clientId,
+          newEmail: emailEditState.newEmail,
+          verificationCode: emailEditState.verificationCode
+        })
+      })
+
+      setClientInfo(data.client)
+      updateClientInfo(data.client)
+      
+      showToast({
+        title: "نجح التغيير",
+        message: "تم تغيير البريد الإلكتروني بنجاح",
+        type: "success"
+      })
+      
+      setEmailEditState({
+        isEditing: false,
+        newEmail: "",
+        verificationCode: "",
+        isSendingCode: false,
+        isVerifying: false,
+        error: "",
+        codeSent: false
+      })
+    } catch (err) {
+      setEmailEditState(prev => ({ 
+        ...prev, 
+        error: err instanceof Error ? err.message : "فشل تغيير البريد الإلكتروني",
+        isVerifying: false 
+      }))
+    }
+  }
+
+  const handleCancelEmailEdit = () => {
+    setEmailEditState({
+      isEditing: false,
+      newEmail: "",
+      verificationCode: "",
+      isSendingCode: false,
+      isVerifying: false,
+      error: "",
+      codeSent: false
+    })
   }
 
   const getTypeIcon = (type: string) => {
@@ -487,7 +715,7 @@ const transformedWishlist = (data.wishlist || [])
   }
 
   return (
-    <div className="min-h-screen " >
+    <div className="min-h-screen" >
       <Navbar nav={true} />
       <div className="container mx-auto px-4 py-8 bg-gray-50" dir="rtl">
         <div className="max-w-6xl mx-auto">
@@ -520,35 +748,39 @@ const transformedWishlist = (data.wishlist || [])
                     <User className="w-5 h-5 text-[#CBA853]" />
                     المعلومات الشخصية
                   </CardTitle>
-                  {!editState.isEditing ? (
+                  {!editState.isEditing && !emailEditState.isEditing ? (
                     <Button onClick={handleEditProfile} variant="outline" size="sm">
                       <Edit className="w-4 h-4 ml-2" />
                       تعديل
                     </Button>
                   ) : (
                     <div className="flex gap-2">
-                      <Button
-                        onClick={handleSaveProfile}
-                        size="sm"
-                        className="bg-[#CBA853] hover:bg-[#A58532]"
-                        disabled={editState.isLoading}
-                      >
-                        {editState.isLoading ? (
-                          <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                        ) : (
-                          <Save className="w-4 h-4 ml-2" />
-                        )}
-                        حفظ
-                      </Button>
-                      <Button
-                        onClick={handleCancelEdit}
-                        variant="outline"
-                        size="sm"
-                        disabled={editState.isLoading}
-                      >
-                        <X className="w-4 h-4 ml-2" />
-                        إلغاء
-                      </Button>
+                      {editState.isEditing && (
+                        <>
+                          <Button
+                            onClick={handleSaveProfile}
+                            size="sm"
+                            className="bg-[#CBA853] hover:bg-[#A58532]"
+                            disabled={editState.isLoading}
+                          >
+                            {editState.isLoading ? (
+                              <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                            ) : (
+                              <Save className="w-4 h-4 ml-2" />
+                            )}
+                            حفظ
+                          </Button>
+                          <Button
+                            onClick={handleCancelEdit}
+                            variant="outline"
+                            size="sm"
+                            disabled={editState.isLoading}
+                          >
+                            <X className="w-4 h-4 ml-2" />
+                            إلغاء
+                          </Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </CardHeader>
@@ -590,10 +822,121 @@ const transformedWishlist = (data.wishlist || [])
                     </div>
                     <div>
                       <Label>البريد الإلكتروني</Label>
-                      <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        {clientInfo.email}
-                      </div>
+                      {emailEditState.isEditing ? (
+                        <div className="space-y-4 mt-2">
+                          <div className="flex flex-col gap-2">
+                            <Input
+                              type="email"
+                              value={emailEditState.newEmail}
+                              onChange={e => setEmailEditState(prev => ({ 
+                                ...prev, 
+                                newEmail: e.target.value,
+                                error: ""
+                              }))}
+                              placeholder="البريد الإلكتروني الجديد"
+                              disabled={emailEditState.codeSent}
+                            />
+                            {emailEditState.codeSent && (
+                              <div className="flex items-center gap-2">
+                                <Key className="w-4 h-4 text-[#CBA853]" />
+                                <Input
+                                  value={emailEditState.verificationCode}
+                                  onChange={e => setEmailEditState(prev => ({ 
+                                    ...prev, 
+                                    verificationCode: e.target.value,
+                                    error: ""
+                                  }))}
+                                  placeholder="أدخل رمز التحقق"
+                                  maxLength={6}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {emailEditState.error && (
+                            <p className="text-red-500 text-sm">{emailEditState.error}</p>
+                          )}
+
+                          <div className="flex gap-2">
+                            {!emailEditState.codeSent ? (
+                              <>
+                                <Button
+                                  onClick={handleSendVerificationCode}
+                                  disabled={emailEditState.isSendingCode}
+                                  className="bg-[#CBA853] hover:bg-[#A58532]"
+                                >
+                                  {emailEditState.isSendingCode ? (
+                                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Mail className="w-4 h-4 ml-2" />
+                                      إرسال رمز التحقق
+                                    </>
+                                  )}
+                                </Button>
+                                <Button
+                                  onClick={handleCancelEmailEdit}
+                                  variant="outline"
+                                  disabled={emailEditState.isSendingCode}
+                                >
+                                  <X className="w-4 h-4 ml-2" />
+                                  إلغاء
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  onClick={verifyAndChangeEmail}
+                                  disabled={emailEditState.isVerifying}
+                                  className="bg-[#CBA853] hover:bg-[#A58532]"
+                                >
+                                  {emailEditState.isVerifying ? (
+                                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Lock className="w-4 h-4 ml-2" />
+                                      تأكيد التغيير
+                                    </>
+                                  )}
+                                </Button>
+                                <Button
+                                  onClick={() => setEmailEditState(prev => ({ 
+                                    ...prev, 
+                                    codeSent: false, 
+                                    verificationCode: "" 
+                                  }))}
+                                  variant="outline"
+                                >
+                                  <X className="w-4 h-4 ml-2" />
+                                  تراجع
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-1 p-2 bg-gray-50 rounded flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            {clientInfo.email}
+                          </div>
+                          {!editState.isEditing && (
+                            <Button 
+                              onClick={() => setEmailEditState(prev => ({ 
+                                ...prev, 
+                                isEditing: true,
+                                newEmail: clientInfo.email
+                              }))}
+                              variant="ghost"
+                              size="sm"
+                              className="text-[#CBA853] hover:text-[#A58532]"
+                            >
+                              <Edit className="w-3 h-3 ml-1" />
+                              تغيير
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="phone">رقم الهاتف</Label>
@@ -645,14 +988,34 @@ const transformedWishlist = (data.wishlist || [])
                           <div className="absolute top-2 left-2">
                             {getTypeIcon(item.type)}
                           </div>
-                          <Button
-                            onClick={() => removeFromWishlist(item)}
-                            variant="ghost"
-                            size="sm"
-                            className="absolute top-2 right-2 text-red-600 hover:text-red-700 p-1 h-auto"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute top-2 right-2 text-red-600 hover:text-red-700 p-1 h-auto"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent dir="rtl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  هل أنت متأكد من إزالة هذا العنصر من قائمة الأمنيات؟
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => removeFromWishlist(item)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  حذف
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                           
                           {/* Doctor Item */}
                           {item.type === "doctor" && (
@@ -703,58 +1066,52 @@ const transformedWishlist = (data.wishlist || [])
                           )}
 
                           {/* Device Item */}
-                       {/* Device Item */}
-{item.type === "device" && (
-  <>
-    <h3 className="font-semibold text-lg mt-6">{item.name}</h3>
-    <p className="text-[#CBA853] text-sm">{item.typee}</p>
-    
-    {/* Display available times if they exist */}
-    {item.available_times && item.available_times !== "null" && (
-      <div className="mt-2">
-        <Label className="text-sm text-gray-600">مواعيد العمل:</Label>
-        <p className="text-sm text-gray-600">
-          {(() => {
-            try {
-              // First try to parse as JSON
-              const times = JSON.parse(item.available_times);
-              return Array.isArray(times) ? times.join(", ") : times;
-            } catch {
-  return item.available_times.replace(/^"|"$/g, '');
-}
-
-          })()}
-        </p>
-      </div>
-    )}
-    
-    {item.image_url && (
-      <div className="mt-4">
-        <img 
-          src={getImageUrl(item.image_url)} 
-          alt={item.name}
-          className="w-full h-40 object-cover rounded"
-        />
-      </div>
-    )}
-    
-    <div className="mt-4 flex justify-between items-center">
-      <div className="text-xs text-gray-500">
-        أضيف في: {formatDate(item.created_at)}
-      </div>
-      <Button
-        onClick={() => router.push(`/devices/${item.id}`)}
-        variant="outline"
-        size="sm"
-        className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
-      >
-        عرض التفاصيل
-      </Button>
-    </div>
-  </>
-)}
-
-                     
+                          {item.type === "device" && (
+                            <>
+                              <h3 className="font-semibold text-lg mt-6">{item.name}</h3>
+                              <p className="text-[#CBA853] text-sm">{item.typee}</p>
+                              
+                              {item.available_times && item.available_times !== "null" && (
+                                <div className="mt-2">
+                                  <Label className="text-sm text-gray-600">مواعيد العمل:</Label>
+                                  <p className="text-sm text-gray-600">
+                                    {(() => {
+                                      try {
+                                        const times = JSON.parse(item.available_times);
+                                        return Array.isArray(times) ? times.join(", ") : times;
+                                      } catch {
+                                        return item.available_times.replace(/^"|"$/g, '');
+                                      }
+                                    })()}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {item.image_url && (
+                                <div className="mt-4">
+                                  <img 
+                                    src={getImageUrl(item.image_url)} 
+                                    alt={item.name}
+                                    className="w-full h-40 object-cover rounded"
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className="mt-4 flex justify-between items-center">
+                                <div className="text-xs text-gray-500">
+                                  أضيف في: {formatDate(item.created_at)}
+                                </div>
+                                <Button
+                                  onClick={() => router.push(`/devices/${item.id}`)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
+                                >
+                                  عرض التفاصيل
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))}
                     </div>
