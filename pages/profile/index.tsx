@@ -198,6 +198,44 @@ interface DeviceWishlistItem {
 
 type WishlistItem = DoctorWishlistItem | OfferWishlistItem | DeviceWishlistItem
 
+// API Response Types
+interface ApiResponse<T> {
+  success: boolean
+  message?: string
+  data?: T
+}
+
+interface ProfileResponse {
+  client: ClientInfo
+  wishlist: WishlistItem[]
+}
+
+interface ApiWishlistItem {
+  id: number
+  name?: string
+  title?: string
+  specialty?: string
+  branch_id?: number
+  department_id?: number
+  services?: string
+  image?: string | null
+  image_url?: string
+  description?: string
+  priceBefore?: string
+  priceAfter?: string
+  discountPercentage?: string
+  branches?: string
+  services_ids?: string
+  doctors_ids?: string
+  branches_ids?: string
+  available_times?: string
+  is_active: number
+  priority: number
+  created_at: string
+  updated_at: string
+  typee?: string
+}
+
 export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
@@ -276,6 +314,68 @@ export default function ProfilePage() {
 
   const activeTab = searchParams.get('tab') === 'wishlist' ? 'wishlist' : 'info'
 
+  const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
+    if (!item) return null;
+    
+    // Doctor item
+    if (item.name && item.specialty) {
+      return {
+        id: item.id,
+        name: item.name,
+        specialty: item.specialty,
+        branch_id: item.branch_id || 0,
+        department_id: item.department_id || 0,
+        services: item.services || "",
+        image: item.image || null,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        priority: item.priority,
+        is_active: item.is_active,
+        type: "doctor"
+      } as DoctorWishlistItem;
+    }
+    
+    // Offer item
+    if (item.title) {
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description || "",
+        image: item.image || "",
+        priceBefore: item.priceBefore || "",
+        priceAfter: item.priceAfter || "",
+        discountPercentage: item.discountPercentage || "",
+        branches: item.branches || "",
+        services_ids: item.services_ids || "",
+        doctors_ids: item.doctors_ids || "",
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        is_active: item.is_active,
+        priority: item.priority,
+        type: "offer"
+      } as OfferWishlistItem;
+    }
+    
+    // Device item
+    if (item.name && item.image_url) {
+      return {
+        id: item.id,
+        name: item.name,
+        typee: item.typee || "",
+        branches_ids: item.branches_ids || "",
+        available_times: item.available_times || "",
+        image_url: item.image_url,
+        is_active: item.is_active,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        priority: item.priority,
+        type: "device"
+      } as DeviceWishlistItem;
+    }
+    
+    return null;
+  }
+
   const fetchProfileData = async () => {
     try {
       setLoading(true)
@@ -301,70 +401,19 @@ export default function ProfilePage() {
         throw new Error(`API Error: ${response.status} - ${errorText}`)
       }
 
-      const data = await response.json()
+      const data: ApiResponse<ProfileResponse> = await response.json()
 
-      if (!data.client) {
+      if (!data.data || !data.data.client) {
         throw new Error("Invalid response format: missing client data")
       }
 
-      setClientInfo(data.client)
-      localStorage.setItem("clientInfo", JSON.stringify(data.client))
+      setClientInfo(data.data.client)
+      localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
 
       // Transform wishlist data
-      const transformedWishlist = (data.wishlist || [])
-        .filter((item: any) => item !== null)
-        .map((item: any) => {
-          if ('title' in item) {
-            return {
-              id: item.id,
-              title: item.title,
-              description: item.description || "",
-              image: item.image,
-              priceBefore: item.priceBefore,
-              priceAfter: item.priceAfter,
-              discountPercentage: item.discountPercentage,
-              branches: item.branches,
-              services_ids: item.services_ids,
-              doctors_ids: item.doctors_ids,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              is_active: item.is_active,
-              priority: item.priority,
-              type: "offer"
-            } as OfferWishlistItem
-          } else if ('specialty' in item) {
-            return {
-              id: item.id,
-              name: item.name,
-              specialty: item.specialty,
-              branch_id: item.branch_id,
-              department_id: item.department_id,
-              services: item.services,
-              image: item.image,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              priority: item.priority,
-              is_active: item.is_active,
-              type: "doctor"
-            } as DoctorWishlistItem
-          } else if ('image_url' in item) {
-            return {
-              id: item.id,
-              name: item.name,
-              typee: item.typee,
-              branches_ids: item.branches_ids,
-              available_times: item.available_times,
-              image_url: item.image_url,
-              is_active: item.is_active,
-              created_at: item.created_at,
-              updated_at: item.updated_at,
-              priority: item.priority,
-              type: "device"
-            } as DeviceWishlistItem
-          }
-          return null
-        })
-        .filter((item: any): item is WishlistItem => item !== null)
+      const transformedWishlist = (data.data.wishlist || [])
+        .map(transformWishlistItem)
+        .filter((item): item is WishlistItem => item !== null)
 
       setWishlist(transformedWishlist)
     } catch (err) {
@@ -491,9 +540,11 @@ export default function ProfilePage() {
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
-      const data = await response.json()
-      setClientInfo(data.client)
-      localStorage.setItem("clientInfo", JSON.stringify(data.client))
+      const data: ApiResponse<{ client: ClientInfo }> = await response.json()
+      if (data.data) {
+        setClientInfo(data.data.client)
+        localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
+      }
       
       setEditState({
         isEditing: false,
