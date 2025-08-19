@@ -3,7 +3,9 @@
 import React from "react";
 import SimpleCtaForm from "./FormDetails";
 
-const CtafromSection = () => {
+const CtafromSection = (id : number) => {
+  console.log(id);
+  
   return (
     <section className="relative z-10 my-10 py-5 rounded-xl" id="booking-form">
       <div className="container mx-auto rounded-xl">
@@ -23,7 +25,7 @@ const CtafromSection = () => {
           {/* Form container with wide inputs */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-4xl"> {/* Increased max-width */}
-              <SimpleCtaForm />
+              <SimpleCtaForm id={id}/>
             </div>
           </div>
         </div>

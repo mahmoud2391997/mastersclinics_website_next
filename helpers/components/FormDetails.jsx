@@ -8,17 +8,40 @@ export const makeAppointment = async (data) => {
   const response = await axios.post(`https://www.ss.mastersclinics.com/appointments`, data);
   return response.data;
 };
+export const createStripePayment = async (id) => {
+  // force number
+  const numericId = Number(id);
 
-const SimpleCtaForm = () => {
-  const [formData, setFormData] = useState({ name: "", phone: "" });
+  if (isNaN(numericId)) {
+    throw new Error("ID must be a valid number");
+  }
+
+  const response = await axios.post("https://www.ss.mastersclinics.com/payment", {
+    id: numericId, // always number now
+  });
+
+  return response.data;
+};
+
+
+const SimpleCtaForm = ({id}) => {
+  console.log("Appointment ID:", id.id);
+  const [formData, setFormData] = useState({ 
+    name: "", 
+    phone: "", 
+    payNow: false 
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ 
+      ...prev, 
+      [name]: type === "checkbox" ? checked : value 
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -31,17 +54,31 @@ const SimpleCtaForm = () => {
       const submissionData = {
         name: formData.name,
         phone: formData.phone,
-        createdAt: new Date().toISOString(),
+ utm_source: "الموقع الرئيسي", 
+         createdAt: new Date().toISOString(),
       };
 
+      // First create the appointment
       await makeAppointment(submissionData);
+      
+      // If user selected to pay now, process payment
+      if (formData.payNow) {
+        const paymentData = await createStripePayment(id.id);
+        
+        // Redirect to Stripe checkout
+        if (paymentData.url) {
+          window.location.href = paymentData.url;
+          return; // Exit early since we're redirecting
+        }
+      }
+      
       setSubmitStatus("success");
 
       setTimeout(() => {
         router.push("/thankyou");
       }, 1500);
 
-      setFormData({ name: "", phone: "" });
+      setFormData({ name: "", phone: "", payNow: false });
     } catch (error) {
       setSubmitStatus("error");
       setErrorMessage(error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.");
@@ -103,6 +140,25 @@ const SimpleCtaForm = () => {
           </div>
         </div>
 
+        {/* Payment Checkbox */}
+        <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
+          <label 
+            htmlFor="payNow"
+            className="text-white text-lg font-medium cursor-pointer flex items-center pt-3"
+          >
+            الدفع الآن ببطاقة الائتمان
+          </label>
+          <input
+            id="payNow"
+            type="checkbox"
+            name="payNow"
+            checked={formData.payNow}
+            onChange={handleChange}
+            disabled={isSubmitting}
+            className="w-5 h-5 rounded focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
+          />
+        </div>
+
         {/* Submit Button - Full width */}
         <div className="w-full mt-2">
           <button
@@ -121,7 +177,7 @@ const SimpleCtaForm = () => {
             {isSubmitting ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current mr-2"></div>
-                جاري الإرسال...
+                {formData.payNow ? "جاري الدفع..." : "جاري الإرسال..."}
               </div>
             ) : submitStatus === "success" ? (
               <div className="flex items-center justify-center">
@@ -140,14 +196,14 @@ const SimpleCtaForm = () => {
             ) : (
               <div className="flex items-center justify-center">
                 <span className="ml-2">←</span>
-                احجزي الآن
+                {formData.payNow ? "ادفع الآن" : "احجزي الآن"}
               </div>
             )}
           </button>
         </div>
       </form>
 
-      {submitStatus === "success" && (
+      {submitStatus === "success" && !formData.payNow && (
         <div className="mt-6 p-4 md:p-5 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-lg md:text-xl">
           تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
         </div>

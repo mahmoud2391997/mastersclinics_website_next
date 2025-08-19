@@ -273,7 +273,7 @@ const OfferSinglePage = () => {
               <h3>حجز موعد</h3>
               <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
             </div>
-            <CtafromSection />
+            <CtafromSection id={id}/>
           </div>
         </div>
       </div>

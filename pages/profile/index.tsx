@@ -1086,6 +1086,19 @@ console.log(data);
                                   />
                                 </div>
                               )}
+                                   <div className="mt-4 flex justify-between items-center">
+                                <div className="text-xs text-gray-500">
+                                  أضيف في: {formatDate(item.created_at)}
+                                </div>
+                                <Button
+                                  onClick={() => router.push(`/doctors/${item.id}`)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
+                                >
+                                  عرض التفاصيل
+                                </Button>
+                              </div>
                             </>
                           )}
 
@@ -1114,6 +1127,19 @@ console.log(data);
                                   />
                                 </div>
                               )}
+                               <div className="mt-4 flex justify-between items-center">
+                                <div className="text-xs text-gray-500">
+                                  أضيف في: {formatDate(item.created_at)}
+                                </div>
+                                <Button
+                                  onClick={() => router.push(`/offers/${item.id}`)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
+                                >
+                                  عرض التفاصيل
+                                </Button>
+                              </div>
                             </>
                           )}
 

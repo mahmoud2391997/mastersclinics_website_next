@@ -196,7 +196,7 @@ const TeamSinglePage = () => {
                     </p>
                   </div>
                   <div className="p-6">
-                    <CtafromSection />
+                    <CtafromSection id={id}/>
                   </div>
                 </div>
               </div>
