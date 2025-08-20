@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import axios from "axios";
 
 export const makeAppointment = async (data) => {
+  // ✅ يرسل id القادم من الفورم
   const response = await axios.post(`https://www.ss.mastersclinics.com/appointments`, data);
   return response.data;
 };
@@ -44,48 +45,50 @@ const SimpleCtaForm = ({id}) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
-    setErrorMessage("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setSubmitStatus("idle");
+  setErrorMessage("");
 
-    try {
-      const submissionData = {
-        name: formData.name,
-        phone: formData.phone,
- utm_source: "الموقع الرئيسي", 
-         createdAt: new Date().toISOString(),
-      };
+  try {
+    const submissionData = {
+      id: id.id,                // ✅ مرر id القادم من الـ props
+      name: formData.name,
+      phone: formData.phone,
+      utmSource: "الموقع الرئيسي", // ✨ خليه camelCase زي الباك إند
+      createdAt: new Date().toISOString()
+    };
 
-      // First create the appointment
-      await makeAppointment(submissionData);
-      
-      // If user selected to pay now, process payment
-      if (formData.payNow) {
-        const paymentData = await createStripePayment(id.id);
-        
-        // Redirect to Stripe checkout
-        if (paymentData.url) {
-          window.location.href = paymentData.url;
-          return; // Exit early since we're redirecting
-        }
+    // 🟢 إنشاء الحجز ومعاه id اللي وصل من الـ props
+    await makeAppointment(submissionData);
+
+    // 🟢 لو الدفع الآن
+    if (formData.payNow) {
+      const paymentData = await createStripePayment(id.id);
+      if (paymentData.url) {
+        window.location.href = paymentData.url;
+        return;
       }
-      
-      setSubmitStatus("success");
-
-      setTimeout(() => {
-        router.push("/thankyou");
-      }, 1500);
-
-      setFormData({ name: "", phone: "", payNow: false });
-    } catch (error) {
-      setSubmitStatus("error");
-      setErrorMessage(error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.");
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+
+    setSubmitStatus("success");
+
+    setTimeout(() => {
+      router.push("/thankyou");
+    }, 1500);
+
+    setFormData({ name: "", phone: "", payNow: false });
+  } catch (error) {
+    setSubmitStatus("error");
+    setErrorMessage(
+      error?.response?.data?.message ||
+        "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="w-full max-w-[90vw] mx-auto" id="simple-cta-form">
