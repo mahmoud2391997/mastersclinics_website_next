@@ -3,92 +3,115 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
+import { toast } from "react-toastify"; // ✅ make sure you installed & configured react-toastify
 
 export const makeAppointment = async (data) => {
-  // ✅ يرسل id القادم من الفورم
   const response = await axios.post(`https://www.ss.mastersclinics.com/appointments`, data);
   return response.data;
 };
-export const createStripePayment = async (id) => {
-  // force number
-  const numericId = Number(id);
 
-  if (isNaN(numericId)) {
-    throw new Error("ID must be a valid number");
-  }
+export const createStripePayment = async (id) => {
+  const numericId = Number(id);
+  if (isNaN(numericId)) throw new Error("ID must be a valid number");
 
   const response = await axios.post("https://www.ss.mastersclinics.com/payment", {
-    id: numericId, // always number now
+    id: numericId,
   });
 
   return response.data;
 };
 
-
-const SimpleCtaForm = ({id}) => {
+const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
   console.log("Appointment ID:", id.id);
-  const [formData, setFormData] = useState({ 
-    name: "", 
-    phone: "", 
-    payNow: false 
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    payNow: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === "checkbox" ? checked : value 
-    }));
-  };
+const handleChange = (e) => {
+  const { name, value, type, checked } = e.target;
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setSubmitStatus("idle");
-  setErrorMessage("");
+  if (name === "payNow" && checked) {
+    // ✅ check authentication first
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+    const clientInfo = localStorage.getItem("clientInfo");
 
-  try {
-    const submissionData = {
-      id: id.id,                // ✅ مرر id القادم من الـ props
-      name: formData.name,
-      phone: formData.phone,
-      utmSource: "الموقع الرئيسي", // ✨ خليه camelCase زي الباك إند
-      createdAt: new Date().toISOString()
-    };
+    if (!isAuthenticated || !clientInfo) {
+      e.preventDefault(); // Prevent checkbox from being checked
+      e.target.checked = false; // Force uncheck the checkbox
+      
+      toast.error("يجب تسجيل الدخول أولاً");
 
-    // 🟢 إنشاء الحجز ومعاه id اللي وصل من الـ props
-    await makeAppointment(submissionData);
-
-    // 🟢 لو الدفع الآن
-    if (formData.payNow) {
-      const paymentData = await createStripePayment(id.id);
-      if (paymentData.url) {
-        window.location.href = paymentData.url;
-        return;
+      // scroll to element with id='scrool'
+      const scrollTarget = document.getElementById("scrool");
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: "smooth" });
       }
+
+      // open auth popup using a more reliable method
+      if (typeof setShowAuthPopup === "function") {
+        setShowAuthPopup(true);
+      } else {
+        // Fallback: dispatch a custom event that the header can listen to
+        window.dispatchEvent(new CustomEvent('showAuthPopup'));
+      }
+
+      return; // 🚫 stop updating checkbox state
     }
-
-    setSubmitStatus("success");
-
-    setTimeout(() => {
-      router.push("/thankyou");
-    }, 1500);
-
-    setFormData({ name: "", phone: "", payNow: false });
-  } catch (error) {
-    setSubmitStatus("error");
-    setErrorMessage(
-      error?.response?.data?.message ||
-        "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
-    );
-  } finally {
-    setIsSubmitting(false);
   }
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
 };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
+    setErrorMessage("");
+
+    try {
+      const submissionData = {
+        id: id.id,
+        name: formData.name,
+        phone: formData.phone,
+        utmSource: "الموقع الرئيسي",
+        createdAt: new Date().toISOString(),
+      };
+
+      await makeAppointment(submissionData);
+
+      if (formData.payNow) {
+        const paymentData = await createStripePayment(id.id);
+        if (paymentData.url) {
+          window.location.href = paymentData.url;
+          return;
+        }
+      }
+
+      setSubmitStatus("success");
+
+      setTimeout(() => {
+        router.push("/thankyou");
+      }, 1500);
+
+      setFormData({ name: "", phone: "", payNow: false });
+    } catch (error) {
+      setSubmitStatus("error");
+      setErrorMessage(
+        error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-[90vw] mx-auto" id="simple-cta-form">
@@ -144,8 +167,8 @@ const handleSubmit = async (e) => {
         </div>
 
         {/* Payment Checkbox */}
-        <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
-          <label 
+       <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
+          <label
             htmlFor="payNow"
             className="text-white text-lg font-medium cursor-pointer flex items-center pt-3"
           >
@@ -161,7 +184,6 @@ const handleSubmit = async (e) => {
             className="w-5 h-5 rounded focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
           />
         </div>
-
         {/* Submit Button - Full width */}
         <div className="w-full mt-2">
           <button

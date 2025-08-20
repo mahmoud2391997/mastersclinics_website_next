@@ -89,7 +89,7 @@ const OfferSinglePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} showAuthPopup={showAuthPopup}/>
+      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} showAuthprop={showAuthPopup}/>
       
       <PageTitle 
         pageTitle={offer.title} 
@@ -127,9 +127,7 @@ const OfferSinglePage = () => {
               
               <WishlistButton
                 itemId={offer.id}
-                itemType="offer"
-                setShowAuthPopup={setShowAuthPopup}
-                className="absolute top-4 right-4 z-10"
+                itemType="offer"                className="absolute top-4 right-4 z-10"
               />
             </div>
           </div>
@@ -273,8 +271,7 @@ const OfferSinglePage = () => {
               <h3>حجز موعد</h3>
               <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
             </div>
-            <CtafromSection id={id} type={"offer"}/>
-          </div>
+<CtafromSection id={id} type={"offer"} setShowAuthPopup={setShowAuthPopup}/>          </div>
         </div>
       </div>
 

@@ -42,7 +42,20 @@ const WishlistButton = ({
 
         // Verify with server in background
         verifyWithServer(userData.id)
+      } else {
+        // Check localStorage for unauthenticated wishlist
+        checkUnauthenticatedWishlist()
       }
+    }
+
+    const checkUnauthenticatedWishlist = () => {
+      const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]")
+      const isInWishlist = unauthWishlist.some(
+        item => item.item_id === itemId && item.item_type === itemType
+      )
+      console.log(`[WishlistButton] Unauthenticated wishlist status for ${itemId}: ${isInWishlist}`)
+      setLocalWishlistStatus(isInWishlist)
+      if (onWishlistChange) onWishlistChange(isInWishlist)
     }
 
     const verifyWithServer = async (userId) => {
@@ -87,26 +100,99 @@ const WishlistButton = ({
     }
 
     checkAuthAndWishlist()
-  }, [itemId, itemType, onWishlistChange])
+
+    // Listen for authentication changes
+    const handleAuthChange = () => {
+      const authStatus = localStorage.getItem("isAuthenticated") === "true"
+      const userData = JSON.parse(localStorage.getItem("clientInfo") || "null")
+      setIsAuthenticated(authStatus)
+      setUser(userData)
+
+      if (authStatus && userData) {
+        // If user just authenticated, sync unauthenticated wishlist
+        syncUnauthenticatedWishlist(userData.id)
+      }
+    }
+
+    // Listen for storage changes (auth status)
+    window.addEventListener('storage', handleAuthChange)
+    
+    // Also check for auth changes within the same tab
+    const interval = setInterval(() => {
+      const currentAuthStatus = localStorage.getItem("isAuthenticated") === "true"
+      if (currentAuthStatus !== isAuthenticated) {
+        handleAuthChange()
+      }
+    }, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleAuthChange)
+      clearInterval(interval)
+    }
+  }, [itemId, itemType, onWishlistChange, isAuthenticated])
+
+  // Sync unauthenticated wishlist with server after login
+  const syncUnauthenticatedWishlist = async (userId) => {
+    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]")
+    
+    if (unauthWishlist.length === 0) return
+    
+    console.log(`[WishlistButton] Syncing ${unauthWishlist.length} items from unauthenticated wishlist`)
+    
+    try {
+      for (const item of unauthWishlist) {
+        if (item.item_id === itemId && item.item_type === itemType) {
+          // This item is in the unauthenticated wishlist, update UI
+          setLocalWishlistStatus(true)
+        }
+        
+        await fetch("https://www.ss.mastersclinics.com/api/wishlist", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            client_id: userId,
+            item_type: item.item_type,
+            item_id: item.item_id
+          })
+        })
+      }
+      
+      // Clear unauthenticated wishlist after successful sync
+      localStorage.removeItem("unauthWishlist")
+      console.log("[WishlistButton] Unauthenticated wishlist synced and cleared")
+      
+    } catch (err) {
+      console.error("[WishlistButton] Failed to sync unauthenticated wishlist:", err)
+    }
+  }
 
   const toggleWishlist = async (e) => {
     e.stopPropagation()
     e.preventDefault()
-
-    if (!isAuthenticated || !user) {
-      toast.error("يجب تسجيل الدخول أولاً لإضافة إلى المفضلة")
-      window.scrollTo({ top: 0, behavior: "smooth" })
-      if (setShowAuthPopup) setShowAuthPopup(true)
-      return
-    }
 
     const newStatus = !displayStatus
     console.log(`[WishlistButton] Toggling ${itemId} to ${newStatus}`)
     
     // Immediate UI update
     setLocalWishlistStatus(newStatus)
-    updateLocalWishlist(newStatus)
     
+    if (!isAuthenticated || !user) {
+      // Handle unauthenticated user
+      handleUnauthenticatedWishlist(newStatus)
+      toast.success(
+        newStatus
+          ? `تمت إضافة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} إلى المفضلة`
+          : `تمت إزالة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} من المفضلة`,
+        { autoClose: 2000 }
+      )
+      return
+    }
+
+    // Handle authenticated user
+    updateLocalWishlist(newStatus)
     toast.success(
       newStatus
         ? `تمت إضافة ${itemType === "doctor" ? "الطبيب" : "الجهاز"} إلى المفضلة`
@@ -116,6 +202,57 @@ const WishlistButton = ({
 
     // Sync with server
     await syncWithServer(newStatus)
+  }
+
+  const handleUnauthenticatedWishlist = (newStatus) => {
+    // Get current unauthenticated wishlist
+    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]")
+    let updatedWishlist
+
+    if (newStatus) {
+      // Add to unauthenticated wishlist
+      updatedWishlist = [
+        ...unauthWishlist,
+        {
+          item_id: itemId,
+          item_type: itemType,
+          added_at: new Date().toISOString()
+        }
+      ]
+    } else {
+      // Remove from unauthenticated wishlist
+      updatedWishlist = unauthWishlist.filter(
+        item => !(item.item_id === itemId && item.item_type === itemType)
+      )
+    }
+
+    // Save updated wishlist to localStorage
+    localStorage.setItem("unauthWishlist", JSON.stringify(updatedWishlist))
+    
+    // Update session storage for UI consistency
+    const cacheKey = `wishlist_${itemId}_${itemType}`
+    sessionStorage.setItem(cacheKey, newStatus.toString())
+    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString())
+
+    // Update wishlist count in sessionStorage
+    sessionStorage.setItem("wishlistCount", updatedWishlist.length.toString())
+
+    // Notify other components
+    window.dispatchEvent(
+      new CustomEvent("wishlistUpdated", {
+        detail: {
+          count: updatedWishlist.length,
+          items: updatedWishlist,
+          action: newStatus ? "added" : "removed",
+          itemId,
+          itemType
+        }
+      })
+    )
+
+    if (onWishlistChange) {
+      onWishlistChange(newStatus)
+    }
   }
 
   const updateLocalWishlist = (newStatus) => {

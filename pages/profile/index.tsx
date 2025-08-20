@@ -1,4 +1,7 @@
-import React, { useCallback, useEffect, useState, useReducer } from "react"
+
+"use client"
+
+import React, { useCallback, useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -6,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key } from "lucide-react"
+import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key, RefreshCw } from "lucide-react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserDoctor, faLaptopMedical, faGift } from '@fortawesome/free-solid-svg-icons'
 import Navbar from "@/helpers/components/Navbar/Navbar"
@@ -15,129 +18,6 @@ import getImageUrl from "@/utilies/getImageUrl"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
-
-// Toast Types
-type Toast = {
-  id: string
-  title: string
-  message: string
-  type: "success" | "error" | "info" | "warning"
-  duration?: number
-  dismissed?: boolean
-}
-
-type ToastState = Toast[]
-
-type ToastAction =
-  | { type: "ADD_TOAST"; toast: Toast }
-  | { type: "UPDATE_TOAST"; toast: Partial<Toast> & { id: string } }
-  | { type: "DISMISS_TOAST"; toastId?: string }
-  | { type: "REMOVE_TOAST"; toastId?: string }
-
-// Toast Reducer
-function toastReducer(state: ToastState, action: ToastAction): ToastState {
-  switch (action.type) {
-    case "ADD_TOAST":
-      return [...state, action.toast]
-
-    case "UPDATE_TOAST":
-      return state.map((t) =>
-        t.id === action.toast.id ? { ...t, ...action.toast } : t
-      )
-
-    case "DISMISS_TOAST":
-      return state.map((t) =>
-        action.toastId === undefined || t.id === action.toastId
-          ? { ...t, dismissed: true }
-          : t
-      )
-
-    case "REMOVE_TOAST":
-      return state.filter(
-        (t) => action.toastId === undefined || t.id !== action.toastId
-      )
-
-    default:
-      return state
-  }
-}
-
-// Toast Context
-const ToastContext = React.createContext<{
-  state: ToastState
-  dispatch: React.Dispatch<ToastAction>
-}>({
-  state: [],
-  dispatch: () => null
-})
-
-// Toast Provider
-export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(toastReducer, [])
-
-  return (
-    <ToastContext.Provider value={{ state, dispatch }}>
-      {children}
-    </ToastContext.Provider>
-  )
-}
-
-// Toast Component
-export function Toaster() {
-  const { state, dispatch } = React.useContext(ToastContext)
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50 space-y-2">
-      {state.map((toast) => (
-        <div
-          key={toast.id}
-          className={`p-4 rounded-md shadow-lg ${
-            toast.type === "success"
-              ? "bg-green-100 text-green-800"
-              : toast.type === "error"
-              ? "bg-red-100 text-red-800"
-              : toast.type === "info"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-semibold">{toast.title}</h3>
-              <p className="text-sm">{toast.message}</p>
-            </div>
-            <button
-              onClick={() => dispatch({ type: "DISMISS_TOAST", toastId: toast.id })}
-              className="ml-4"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-// Toast Hook
-export function useToast() {
-  const { dispatch } = React.useContext(ToastContext)
-
-  const showToast = useCallback(
-    (toast: Omit<Toast, "id">) => {
-      const id = Math.random().toString(36).substring(2, 9)
-      dispatch({ type: "ADD_TOAST", toast: { ...toast, id } })
-
-      // Auto-dismiss
-      setTimeout(() => {
-        dispatch({ type: "DISMISS_TOAST", toastId: id })
-      }, toast.duration || 5000)
-    },
-    [dispatch]
-  )
-
-  return { showToast }
-}
 
 interface ClientInfo {
   id: number
@@ -198,18 +78,6 @@ interface DeviceWishlistItem {
 
 type WishlistItem = DoctorWishlistItem | OfferWishlistItem | DeviceWishlistItem
 
-// API Response Types
-interface ApiResponse<T> {
-  success: boolean
-  message?: string
-  data?: T
-}
-
-interface ProfileResponse {
-  client: ClientInfo
-  wishlist: WishlistItem[]
-}
-
 interface ApiWishlistItem {
   id: number
   name?: string
@@ -236,6 +104,11 @@ interface ApiWishlistItem {
   typee?: string
 }
 
+interface ProfileResponse {
+  client: ClientInfo
+  wishlist: ApiWishlistItem[]
+}
+
 export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
@@ -259,42 +132,8 @@ export default function ProfilePage() {
   const [retryCount, setRetryCount] = useState(0)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { showToast } = useToast()
 
-  // Move makeRequest inside the component
-  const makeRequest = useCallback(async (endpoint: string, options: RequestInit = {}) => {
-    const API_BASE_URL = "https://www.ss.mastersclinics.com"
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 3000)
-
-    try {
-      const token = localStorage.getItem("token")
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : "",
-          ...options.headers,
-        },
-        signal: controller.signal,
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: "Unknown error" }))
-        throw new Error(errorData.message || `HTTP ${response.status}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      clearTimeout(timeoutId)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout')
-      }
-      throw error
-    }
-  }, [])
+  const activeTab = searchParams.get('tab') === 'wishlist' ? 'wishlist' : 'info'
 
   const getClientId = (): number | null => {
     try {
@@ -308,16 +147,9 @@ export default function ProfilePage() {
     }
   }
 
-  const updateClientInfo = useCallback((client: ClientInfo) => {
-    localStorage.setItem("clientInfo", JSON.stringify(client))
-  }, [])
-
-  const activeTab = searchParams.get('tab') === 'wishlist' ? 'wishlist' : 'info'
-
   const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
     if (!item) return null;
     
-    // Doctor item
     if (item.name && item.specialty) {
       return {
         id: item.id,
@@ -335,7 +167,6 @@ export default function ProfilePage() {
       } as DoctorWishlistItem;
     }
     
-    // Offer item
     if (item.title) {
       return {
         id: item.id,
@@ -356,7 +187,6 @@ export default function ProfilePage() {
       } as OfferWishlistItem;
     }
     
-    // Device item
     if (item.name && item.image_url) {
       return {
         id: item.id,
@@ -376,6 +206,41 @@ export default function ProfilePage() {
     return null;
   }
 
+  const refreshWishlistData = async () => {
+    try {
+      const clientId = getClientId();
+      if (!clientId) return;
+
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const transformedWishlist = (data.data || [])
+          .map(transformWishlistItem)
+        .filter((item : WishlistItem) => item !== null)
+
+        setWishlist(transformedWishlist);
+        
+        sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist));
+        sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString());
+
+        // Dispatch event to update header
+        window.dispatchEvent(
+          new CustomEvent("wishlistRefreshed", {
+            detail: {
+              items: transformedWishlist,
+              count: transformedWishlist.length
+            }
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Error refreshing wishlist:", err);
+    }
+  };
+
   const fetchProfileData = async () => {
     try {
       setLoading(true)
@@ -384,7 +249,7 @@ export default function ProfilePage() {
       const clientId = getClientId()
       
       if (!clientId) {
-        console.error("Authentication failed - missing clientId or token")
+        console.error("Authentication failed - missing clientId")
         router.push("/")
         return
       }
@@ -402,7 +267,6 @@ export default function ProfilePage() {
       }
 
       const data: ProfileResponse = await response.json()
-console.log(data);
 
       if (!data || !data.client) {
         throw new Error("Invalid response format: missing client data")
@@ -411,17 +275,19 @@ console.log(data);
       setClientInfo(data.client)
       localStorage.setItem("clientInfo", JSON.stringify(data.client))
 
-      // Transform wishlist data
       const transformedWishlist = (data.wishlist || [])
         .map(transformWishlistItem)
         .filter((item): item is WishlistItem => item !== null)
 
       setWishlist(transformedWishlist)
+      
+      sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist));
+      sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString());
+
     } catch (err) {
       console.error("Failed to load profile:", err)
       setError(err instanceof Error ? err.message : "Unknown error occurred")
       
-      // Retry up to 3 times
       if (retryCount < 3) {
         setTimeout(() => setRetryCount(c => c + 1), 2000)
       }
@@ -430,29 +296,27 @@ console.log(data);
     }
   }
 
-  useEffect(() => {
-    fetchProfileData()
-  }, [retryCount])
-
-  // Timeout after 10 seconds if still loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loading) {
-        setError("Request timed out. Please check your connection.")
-        setLoading(false)
-      }
-    }, 10000)
-
-    return () => clearTimeout(timer)
-  }, [loading])
-
   const removeFromWishlist = async (item: WishlistItem) => {
     try {
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
       // Optimistic update
-      setWishlist(prev => prev.filter(i => i.id !== item.id))
+      const updatedWishlist = wishlist.filter(i => i.id !== item.id)
+      setWishlist(updatedWishlist)
+
+      // Dispatch event for other components
+      window.dispatchEvent(
+        new CustomEvent("wishlistUpdated", {
+          detail: {
+            action: "removed",
+            itemId: item.id,
+            itemType: item.type,
+            items: updatedWishlist,
+            count: updatedWishlist.length
+          }
+        })
+      );
 
       const response = await fetch(
         "https://www.ss.mastersclinics.com/api/wishlist",
@@ -469,13 +333,17 @@ console.log(data);
         }
       )
 
-      if (!response.ok) throw new Error(`Failed with status ${response.status}`)
+      if (!response.ok) {
+        // If the request fails, revert the optimistic update
+        setWishlist(wishlist);
+        throw new Error(`Failed with status ${response.status}`)
+      }
 
       toast.success(`تمت إزالة ${item.type === "doctor" ? "الطبيب" : item.type === "offer" ? "العرض" : "الجهاز"} من المفضلة`)
     } catch (err) {
       console.error("Remove failed:", err)
       toast.error("فشلت عملية الإزالة. يرجى المحاولة مرة أخرى")
-      fetchProfileData() // Refresh data
+      fetchProfileData()
     }
   }
 
@@ -541,7 +409,7 @@ console.log(data);
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
-      const data: ApiResponse<{ client: ClientInfo }> = await response.json()
+      const data = await response.json()
       if (data.data) {
         setClientInfo(data.data.client)
         localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
@@ -639,23 +507,28 @@ console.log(data);
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
-      const data = await makeRequest("/api/client-auth/change-email", {
-        method: "POST",
-        body: JSON.stringify({
-          clientId,
-          newEmail: emailEditState.newEmail,
-          verificationCode: emailEditState.verificationCode
-        })
-      })
+      const response = await fetch(
+        "https://www.ss.mastersclinics.com/api/client-auth/change-email",
+        {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            clientId,
+            newEmail: emailEditState.newEmail,
+            verificationCode: emailEditState.verificationCode
+          })
+        }
+      )
 
+      if (!response.ok) throw new Error(`Failed with status ${response.status}`)
+
+      const data = await response.json()
       setClientInfo(data.client)
-      updateClientInfo(data.client)
+      localStorage.setItem("clientInfo", JSON.stringify(data.client))
       
-      showToast({
-        title: "نجح التغيير",
-        message: "تم تغيير البريد الإلكتروني بنجاح",
-        type: "success"
-      })
+      toast.success("تم تغيير البريد الإلكتروني بنجاح")
       
       setEmailEditState({
         isEditing: false,
@@ -703,6 +576,54 @@ console.log(data);
       return dateString
     }
   }
+
+  useEffect(() => {
+    fetchProfileData()
+  }, [retryCount])
+
+useEffect(() => {
+    const handleWishlistUpdate = (event: CustomEvent) => {
+      const { action, itemId, itemType, items, count } = event.detail;
+      console.log("[Profile] Wishlist update received:", { action, itemId, itemType });
+
+      if (action === "removed") {
+        setWishlist(prev => prev.filter(item => 
+          !(item.id === itemId && item.type === itemType)
+        ));
+        
+        const updatedItems = items || wishlist.filter(item => 
+          !(item.id === itemId && item.type === itemType)
+        );
+        sessionStorage.setItem("wishlist", JSON.stringify(updatedItems));
+        sessionStorage.setItem("wishlistCount", (count || updatedItems.length).toString());
+      } else if (action === "added") {
+        refreshWishlistData();
+      }
+    };
+
+    const handleRefreshRequest = (event: CustomEvent) => {
+      refreshWishlistData();
+    };
+
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
+    window.addEventListener("refreshWishlist", handleRefreshRequest as EventListener);
+    
+    return () => {
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
+      window.removeEventListener("refreshWishlist", handleRefreshRequest as EventListener);
+    };
+  }, [wishlist]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setError("Request timed out. Please check your connection.")
+        setLoading(false)
+      }
+    }, 10000)
+
+    return () => clearTimeout(timer)
+  }, [loading])
 
   if (loading) {
     return (
@@ -1023,11 +944,19 @@ console.log(data);
 
             <TabsContent value="wishlist">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 text-[#CBA853]" />
-                    قائمة الأمنيات
+                    قائمة الأمنيات ({wishlist.length})
                   </CardTitle>
+                  <Button 
+                    onClick={refreshWishlistData}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <RefreshCw className="w-4 h-4 ml-2" />
+                    مزامنة
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {wishlist.length > 0 ? (
@@ -1086,7 +1015,7 @@ console.log(data);
                                   />
                                 </div>
                               )}
-                                   <div className="mt-4 flex justify-between items-center">
+                              <div className="mt-4 flex justify-between items-center">
                                 <div className="text-xs text-gray-500">
                                   أضيف في: {formatDate(item.created_at)}
                                 </div>
@@ -1127,7 +1056,7 @@ console.log(data);
                                   />
                                 </div>
                               )}
-                               <div className="mt-4 flex justify-between items-center">
+                              <div className="mt-4 flex justify-between items-center">
                                 <div className="text-xs text-gray-500">
                                   أضيف في: {formatDate(item.created_at)}
                                 </div>
