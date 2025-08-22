@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, {  useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -601,7 +601,7 @@ useEffect(() => {
       }
     };
 
-    const handleRefreshRequest = (event: CustomEvent) => {
+    const handleRefreshRequest = () => {
       refreshWishlistData();
     };
 
