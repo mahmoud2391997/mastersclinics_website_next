@@ -5,6 +5,7 @@ import MobileMenu from "../MobileMenu/MobileMenu";
 import ContactBar from "./socialMedia";
 import { FaChevronDown, FaChevronLeft, FaHeart, FaSearch, FaTimes, FaUser } from "react-icons/fa";
 import { useRouter } from "next/router";
+import WishlistHeader from "./wishlistsidebar";
 
 const Logo = () => (
   <div>
@@ -1128,7 +1129,11 @@ const handleLogout = () => {
                 
                 {/* Wishlist Icon */}
                 {renderWishlistIcon()}
-                
+                   {/* Wishlist Icon - Add this component */}
+                <WishlistHeader 
+                  isAuthenticated={isAuthenticated} 
+                  onAuthRequired={() => setShowAuthPopup(true)}
+                />
                 {/* Account Icon */}
                 <div className="relative">
                   <div 
