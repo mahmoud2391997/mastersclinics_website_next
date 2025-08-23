@@ -4443,6 +4443,26 @@ Version:        1.0.0
   font-size: 15px;
   overflow: hidden;
 }
+/* Make toast smaller */
+.Toastify__toast {
+  font-size: 14px;   /* smaller text */
+  padding: 8px 12px; /* reduce padding */
+  border-radius: 8px;
+  min-height: auto;  /* remove default height */
+}
+
+/* Make icons smaller */
+.Toastify__toast-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Adjust close button */
+.Toastify__close-button {
+  font-size: 14px;
+  margin-top: -2px;
+}
+
 .wpo-site-footer::after, .wpo-site-footer_s2::after {
   position: absolute;
   left: 0;

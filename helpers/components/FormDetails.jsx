@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
-import { toast } from "react-toastify"; // ✅ make sure you installed & configured react-toastify
+import { toast } from "react-toastify";
 
+// ✅ API: Create Appointment
 export const makeAppointment = async (data) => {
   const response = await axios.post(`https://www.ss.mastersclinics.com/appointments`, data);
   return response.data;
 };
 
+// ✅ API: Create Stripe Payment
 export const createStripePayment = async (id) => {
   const numericId = Number(id);
   if (isNaN(numericId)) throw new Error("ID must be a valid number");
@@ -23,6 +25,7 @@ export const createStripePayment = async (id) => {
 
 const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
   console.log("Appointment ID:", id.id);
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -33,44 +36,62 @@ const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-const handleChange = (e) => {
-  const { name, value, type, checked } = e.target;
-
-  if (name === "payNow" && checked) {
-    // ✅ check authentication first
+  // ✅ Auto-fill form from sessionStorage if authenticated
+  useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     const clientInfo = localStorage.getItem("clientInfo");
 
-    if (!isAuthenticated || !clientInfo) {
-      e.preventDefault(); // Prevent checkbox from being checked
-      e.target.checked = false; // Force uncheck the checkbox
-      
-      toast.error("يجب تسجيل الدخول أولاً");
-
-      // scroll to element with id='scrool'
-      const scrollTarget = document.getElementById("scrool");
-      if (scrollTarget) {
-        scrollTarget.scrollIntoView({ behavior: "smooth" });
+    if (isAuthenticated && clientInfo) {
+      try {
+        const parsed = JSON.parse(clientInfo);
+        setFormData((prev) => ({
+          ...prev,
+          name: `${parsed.first_name} ${parsed.last_name}`,
+          phone: parsed.phone_number || "",
+        }));
+      } catch (err) {
+        console.error("❌ Failed to parse clientInfo", err);
       }
-
-      // open auth popup using a more reliable method
-      if (typeof setShowAuthPopup === "function") {
-        setShowAuthPopup(true);
-      } else {
-        // Fallback: dispatch a custom event that the header can listen to
-        window.dispatchEvent(new CustomEvent('showAuthPopup'));
-      }
-
-      return; // 🚫 stop updating checkbox state
     }
-  }
+  }, []);
 
-  setFormData((prev) => ({
-    ...prev,
-    [name]: type === "checkbox" ? checked : value,
-  }));
-};
+  // ✅ Handle input changes
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
+    // Check authentication when PayNow is selected
+    if (name === "payNow" && checked) {
+      const isAuthenticated = sessionStorage.getItem("isAuthenticated") === "true";
+      const clientInfo = sessionStorage.getItem("clientInfo");
+
+      if (!isAuthenticated || !clientInfo) {
+        e.preventDefault();
+        e.target.checked = false;
+
+        toast.error("يجب تسجيل الدخول أولاً");
+
+        const scrollTarget = document.getElementById("scrool");
+        if (scrollTarget) {
+          scrollTarget.scrollIntoView({ behavior: "smooth" });
+        }
+
+        if (typeof setShowAuthPopup === "function") {
+          setShowAuthPopup(true);
+        } else {
+          window.dispatchEvent(new CustomEvent("showAuthPopup"));
+        }
+
+        return;
+      }
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // ✅ Handle Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -167,7 +188,7 @@ const handleChange = (e) => {
         </div>
 
         {/* Payment Checkbox */}
-       <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
+        <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
           <label
             htmlFor="payNow"
             className="text-white text-lg font-medium cursor-pointer flex items-center pt-3"
@@ -184,7 +205,8 @@ const handleChange = (e) => {
             className="w-5 h-5 rounded focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
           />
         </div>
-        {/* Submit Button - Full width */}
+
+        {/* Submit Button */}
         <div className="w-full mt-2">
           <button
             type="submit"
@@ -228,12 +250,14 @@ const handleChange = (e) => {
         </div>
       </form>
 
+      {/* Success Message */}
       {submitStatus === "success" && !formData.payNow && (
         <div className="mt-6 p-4 md:p-5 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-lg md:text-xl">
           تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
         </div>
       )}
 
+      {/* Error Message */}
       {submitStatus === "error" && (
         <div className="mt-6 p-4 md:p-5 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-lg md:text-xl">
           {errorMessage}

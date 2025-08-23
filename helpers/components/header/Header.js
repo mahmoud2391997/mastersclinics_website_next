@@ -1130,10 +1130,7 @@ const handleLogout = () => {
                 {/* Wishlist Icon */}
                 {renderWishlistIcon()}
                    {/* Wishlist Icon - Add this component */}
-                <WishlistHeader 
-                  isAuthenticated={isAuthenticated} 
-                  onAuthRequired={() => setShowAuthPopup(true)}
-                />
+              
                 {/* Account Icon */}
                 <div className="relative">
                   <div 
