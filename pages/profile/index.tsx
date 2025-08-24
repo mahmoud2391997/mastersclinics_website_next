@@ -1,17 +1,26 @@
-
 "use client"
 
-import React, {  useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key, RefreshCw } from "lucide-react"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUserDoctor, faLaptopMedical, faGift } from '@fortawesome/free-solid-svg-icons'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key, RefreshCw, Calendar } from "lucide-react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faUserDoctor, faLaptopMedical, faGift } from "@fortawesome/free-solid-svg-icons"
 import Navbar from "@/helpers/components/Navbar/Navbar"
 import Footer from "@/helpers/components/footer/Footer"
 import getImageUrl from "@/utilies/getImageUrl"
@@ -112,11 +121,12 @@ interface ProfileResponse {
 export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
+  const [appointments, setAppointments] = useState<any[]>([])
   const [editState, setEditState] = useState({
     isEditing: false,
     isLoading: false,
     errors: {} as Record<string, string>,
-    tempData: {} as Partial<ClientInfo>
+    tempData: {} as Partial<ClientInfo>,
   })
   const [emailEditState, setEmailEditState] = useState({
     isEditing: false,
@@ -125,7 +135,7 @@ export default function ProfilePage() {
     isSendingCode: false,
     isVerifying: false,
     error: "",
-    codeSent: false
+    codeSent: false,
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -133,7 +143,7 @@ export default function ProfilePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const activeTab = searchParams.get('tab') === 'wishlist' ? 'wishlist' : 'info'
+  const activeTab = searchParams.get("tab") || "info"
 
   const getClientId = (): number | null => {
     try {
@@ -148,8 +158,8 @@ export default function ProfilePage() {
   }
 
   const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
-    if (!item) return null;
-    
+    if (!item) return null
+
     if (item.name && item.specialty) {
       return {
         id: item.id,
@@ -163,10 +173,10 @@ export default function ProfilePage() {
         updated_at: item.updated_at,
         priority: item.priority,
         is_active: item.is_active,
-        type: "doctor"
-      } as DoctorWishlistItem;
+        type: "doctor",
+      } as DoctorWishlistItem
     }
-    
+
     if (item.title) {
       return {
         id: item.id,
@@ -183,10 +193,10 @@ export default function ProfilePage() {
         updated_at: item.updated_at,
         is_active: item.is_active,
         priority: item.priority,
-        type: "offer"
-      } as OfferWishlistItem;
+        type: "offer",
+      } as OfferWishlistItem
     }
-    
+
     if (item.name && item.image_url) {
       return {
         id: item.id,
@@ -199,67 +209,78 @@ export default function ProfilePage() {
         created_at: item.created_at,
         updated_at: item.updated_at,
         priority: item.priority,
-        type: "device"
-      } as DeviceWishlistItem;
+        type: "device",
+      } as DeviceWishlistItem
     }
-    
-    return null;
+
+    return null
+  }
+
+  const fetchAppointmentsData = async () => {
+    try {
+      const clientId = getClientId()
+      if (!clientId) return
+
+      const response = await fetch(`https://www.ss.mastersclinics.com/api/appointments/${clientId}`)
+
+      if (response.ok) {
+        const data = await response.json()
+        setAppointments(data.data || [])
+      }
+    } catch (err) {
+      console.error("Error fetching appointments:", err)
+    }
   }
 
   const refreshWishlistData = async () => {
     try {
-      const clientId = getClientId();
-      if (!clientId) return;
+      const clientId = getClientId()
+      if (!clientId) return
 
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/wishlist/${clientId}`
-      );
-      
+      const response = await fetch(`https://www.ss.mastersclinics.com/api/wishlist/${clientId}`)
+
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
         const transformedWishlist = (data.data || [])
           .map(transformWishlistItem)
-        .filter((item : WishlistItem) => item !== null)
+          .filter((item: WishlistItem) => item !== null)
 
-        setWishlist(transformedWishlist);
-        
-        sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist));
-        sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString());
+        setWishlist(transformedWishlist)
+
+        sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist))
+        sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString())
 
         // Dispatch event to update header
         window.dispatchEvent(
           new CustomEvent("wishlistRefreshed", {
             detail: {
               items: transformedWishlist,
-              count: transformedWishlist.length
-            }
-          })
-        );
+              count: transformedWishlist.length,
+            },
+          }),
+        )
       }
     } catch (err) {
-      console.error("Error refreshing wishlist:", err);
+      console.error("Error refreshing wishlist:", err)
     }
-  };
+  }
 
   const fetchProfileData = async () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const clientId = getClientId()
-      
+
       if (!clientId) {
         console.error("Authentication failed - missing clientId")
         router.push("/")
         return
       }
 
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`,
-        {
-          method: "GET",
-        }
-      )
+      const response = await fetch(`https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`, {
+        method: "GET",
+      })
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -280,16 +301,15 @@ export default function ProfilePage() {
         .filter((item): item is WishlistItem => item !== null)
 
       setWishlist(transformedWishlist)
-      
-      sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist));
-      sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString());
 
+      sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist))
+      sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString())
     } catch (err) {
       console.error("Failed to load profile:", err)
       setError(err instanceof Error ? err.message : "Unknown error occurred")
-      
+
       if (retryCount < 3) {
-        setTimeout(() => setRetryCount(c => c + 1), 2000)
+        setTimeout(() => setRetryCount((c) => c + 1), 2000)
       }
     } finally {
       setLoading(false)
@@ -302,7 +322,7 @@ export default function ProfilePage() {
       if (!clientId) throw new Error("Authentication required")
 
       // Optimistic update
-      const updatedWishlist = wishlist.filter(i => i.id !== item.id)
+      const updatedWishlist = wishlist.filter((i) => i.id !== item.id)
       setWishlist(updatedWishlist)
 
       // Dispatch event for other components
@@ -313,33 +333,32 @@ export default function ProfilePage() {
             itemId: item.id,
             itemType: item.type,
             items: updatedWishlist,
-            count: updatedWishlist.length
-          }
-        })
-      );
-
-      const response = await fetch(
-        "https://www.ss.mastersclinics.com/api/wishlist",
-        {
-          method: "DELETE",
-          headers: { 
-            "Content-Type": "application/json",
+            count: updatedWishlist.length,
           },
-          body: JSON.stringify({
-            client_id: clientId,
-            item_type: item.type,
-            item_id: item.id,
-          }),
-        }
+        }),
       )
+
+      const response = await fetch("https://www.ss.mastersclinics.com/api/wishlist", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          item_type: item.type,
+          item_id: item.id,
+        }),
+      })
 
       if (!response.ok) {
         // If the request fails, revert the optimistic update
-        setWishlist(wishlist);
+        setWishlist(wishlist)
         throw new Error(`Failed with status ${response.status}`)
       }
 
-      toast.success(`تمت إزالة ${item.type === "doctor" ? "الطبيب" : item.type === "offer" ? "العرض" : "الجهاز"} من المفضلة`)
+      toast.success(
+        `تمت إزالة ${item.type === "doctor" ? "الطبيب" : item.type === "offer" ? "العرض" : "الجهاز"} من المفضلة`,
+      )
     } catch (err) {
       console.error("Remove failed:", err)
       toast.error("فشلت عملية الإزالة. يرجى المحاولة مرة أخرى")
@@ -372,7 +391,7 @@ export default function ProfilePage() {
       isEditing: true,
       isLoading: false,
       errors: {},
-      tempData: { ...clientInfo }
+      tempData: { ...clientInfo },
     })
   }
 
@@ -381,31 +400,28 @@ export default function ProfilePage() {
 
     const errors = validateFields(editState.tempData)
     if (Object.keys(errors).length > 0) {
-      setEditState(prev => ({ ...prev, errors }))
+      setEditState((prev) => ({ ...prev, errors }))
       return
     }
 
-    setEditState(prev => ({ ...prev, isLoading: true }))
+    setEditState((prev) => ({ ...prev, isLoading: true }))
 
     try {
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
-      const response = await fetch(
-        "https://www.ss.mastersclinics.com/api/client-auth/edit-client",
-        {
-          method: "PUT",
-          headers: { 
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            clientId,
-            first_name: editState.tempData.first_name || clientInfo.first_name,
-            last_name: editState.tempData.last_name || clientInfo.last_name,
-            phone_number: editState.tempData.phone_number || clientInfo.phone_number
-          })
-        }
-      )
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/edit-client", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientId,
+          first_name: editState.tempData.first_name || clientInfo.first_name,
+          last_name: editState.tempData.last_name || clientInfo.last_name,
+          phone_number: editState.tempData.phone_number || clientInfo.phone_number,
+        }),
+      })
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
@@ -414,122 +430,115 @@ export default function ProfilePage() {
         setClientInfo(data.data.client)
         localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
       }
-      
+
       setEditState({
         isEditing: false,
         isLoading: false,
         errors: {},
-        tempData: {}
+        tempData: {},
       })
 
       toast.success("تم تحديث البيانات بنجاح")
     } catch (err) {
       console.error("Update failed:", err)
       toast.error("فشل التحديث. يرجى المحاولة مرة أخرى")
-      setEditState(prev => ({ ...prev, isLoading: false }))
+      setEditState((prev) => ({ ...prev, isLoading: false }))
     }
   }
 
   const handleCancelEdit = () => {
-    if (Object.keys(editState.tempData).length > 0 && 
-        !window.confirm("هل تريد تجاهل التغييرات؟")) return
-        
+    if (Object.keys(editState.tempData).length > 0 && !window.confirm("هل تريد تجاهل التغييرات؟")) return
+
     setEditState({
       isEditing: false,
       isLoading: false,
       errors: {},
-      tempData: {}
+      tempData: {},
     })
   }
 
   const handleFieldChange = (field: keyof ClientInfo, value: string) => {
-    setEditState(prev => ({
+    setEditState((prev) => ({
       ...prev,
       tempData: { ...prev.tempData, [field]: value },
-      errors: { ...prev.errors, [field]: "" }
+      errors: { ...prev.errors, [field]: "" },
     }))
   }
 
   const handleSendVerificationCode = async () => {
     if (!emailEditState.newEmail) {
-      setEmailEditState(prev => ({ ...prev, error: "البريد الإلكتروني مطلوب" }))
+      setEmailEditState((prev) => ({ ...prev, error: "البريد الإلكتروني مطلوب" }))
       return
     }
 
     if (!validateEmail(emailEditState.newEmail)) {
-      setEmailEditState(prev => ({ ...prev, error: "البريد الإلكتروني غير صحيح" }))
+      setEmailEditState((prev) => ({ ...prev, error: "البريد الإلكتروني غير صحيح" }))
       return
     }
 
     try {
-      setEmailEditState(prev => ({ ...prev, isSendingCode: true, error: "" }))
-      
+      setEmailEditState((prev) => ({ ...prev, isSendingCode: true, error: "" }))
+
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
-      const response = await fetch(
-        "https://www.ss.mastersclinics.com/api/client-auth/authorize",
-        {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: emailEditState.newEmail
-          })
-        }
-      )
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailEditState.newEmail,
+        }),
+      })
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
-      setEmailEditState(prev => ({ ...prev, codeSent: true }))
+      setEmailEditState((prev) => ({ ...prev, codeSent: true }))
       toast.success("تم إرسال رمز التحقق إلى البريد الإلكتروني الجديد")
     } catch (err) {
       console.error("Send verification code failed:", err)
-      setEmailEditState(prev => ({ 
-        ...prev, 
-        error: err instanceof Error ? err.message : "فشل إرسال رمز التحقق" 
+      setEmailEditState((prev) => ({
+        ...prev,
+        error: err instanceof Error ? err.message : "فشل إرسال رمز التحقق",
       }))
       toast.error("فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى")
     } finally {
-      setEmailEditState(prev => ({ ...prev, isSendingCode: false }))
+      setEmailEditState((prev) => ({ ...prev, isSendingCode: false }))
     }
   }
 
   const verifyAndChangeEmail = async () => {
     if (!emailEditState.verificationCode) {
-      setEmailEditState(prev => ({ ...prev, error: "رمز التحقق مطلوب" }))
+      setEmailEditState((prev) => ({ ...prev, error: "رمز التحقق مطلوب" }))
       return
     }
 
     try {
-      setEmailEditState(prev => ({ ...prev, isVerifying: true, error: "" }))
+      setEmailEditState((prev) => ({ ...prev, isVerifying: true, error: "" }))
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
-      const response = await fetch(
-        "https://www.ss.mastersclinics.com/api/client-auth/change-email",
-        {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            clientId,
-            newEmail: emailEditState.newEmail,
-            verificationCode: emailEditState.verificationCode
-          })
-        }
-      )
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/change-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clientId,
+          newEmail: emailEditState.newEmail,
+          verificationCode: emailEditState.verificationCode,
+        }),
+      })
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
       const data = await response.json()
       setClientInfo(data.client)
       localStorage.setItem("clientInfo", JSON.stringify(data.client))
-      
+
       toast.success("تم تغيير البريد الإلكتروني بنجاح")
-      
+
       setEmailEditState({
         isEditing: false,
         newEmail: "",
@@ -537,13 +546,13 @@ export default function ProfilePage() {
         isSendingCode: false,
         isVerifying: false,
         error: "",
-        codeSent: false
+        codeSent: false,
       })
     } catch (err) {
-      setEmailEditState(prev => ({ 
-        ...prev, 
+      setEmailEditState((prev) => ({
+        ...prev,
         error: err instanceof Error ? err.message : "فشل تغيير البريد الإلكتروني",
-        isVerifying: false 
+        isVerifying: false,
       }))
     }
   }
@@ -556,22 +565,26 @@ export default function ProfilePage() {
       isSendingCode: false,
       isVerifying: false,
       error: "",
-      codeSent: false
+      codeSent: false,
     })
   }
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "doctor": return <FontAwesomeIcon icon={faUserDoctor} className="text-[#CBA853] text-xl" />
-      case "offer": return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
-      case "device": return <FontAwesomeIcon icon={faLaptopMedical} className="text-[#CBA853] text-xl" />
-      default: return <FontAwesomeIcon icon={faGift} className="text-gray-500 text-xl" />
+      case "doctor":
+        return <FontAwesomeIcon icon={faUserDoctor} className="text-[#CBA853] text-xl" />
+      case "offer":
+        return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
+      case "device":
+        return <FontAwesomeIcon icon={faLaptopMedical} className="text-[#CBA853] text-xl" />
+      default:
+        return <FontAwesomeIcon icon={faGift} className="text-gray-500 text-xl" />
     }
   }
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('ar-SA')
+      return new Date(dateString).toLocaleDateString("ar-SA")
     } catch {
       return dateString
     }
@@ -579,40 +592,37 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfileData()
+    fetchAppointmentsData()
   }, [retryCount])
 
-useEffect(() => {
+  useEffect(() => {
     const handleWishlistUpdate = (event: CustomEvent) => {
-      const { action, itemId, itemType, items, count } = event.detail;
-      console.log("[Profile] Wishlist update received:", { action, itemId, itemType });
+      const { action, itemId, itemType, items, count } = event.detail
+      console.log("[Profile] Wishlist update received:", { action, itemId, itemType })
 
       if (action === "removed") {
-        setWishlist(prev => prev.filter(item => 
-          !(item.id === itemId && item.type === itemType)
-        ));
-        
-        const updatedItems = items || wishlist.filter(item => 
-          !(item.id === itemId && item.type === itemType)
-        );
-        sessionStorage.setItem("wishlist", JSON.stringify(updatedItems));
-        sessionStorage.setItem("wishlistCount", (count || updatedItems.length).toString());
+        setWishlist((prev) => prev.filter((item) => !(item.id === itemId && item.type === itemType)))
+
+        const updatedItems = items || wishlist.filter((item) => !(item.id === itemId && item.type === itemType))
+        sessionStorage.setItem("wishlist", JSON.stringify(updatedItems))
+        sessionStorage.setItem("wishlistCount", (count || updatedItems.length).toString())
       } else if (action === "added") {
-        refreshWishlistData();
+        refreshWishlistData()
       }
-    };
+    }
 
     const handleRefreshRequest = () => {
-      refreshWishlistData();
-    };
+      refreshWishlistData()
+    }
 
-    window.addEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
-    window.addEventListener("refreshWishlist", handleRefreshRequest as EventListener);
-    
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate as EventListener)
+    window.addEventListener("refreshWishlist", handleRefreshRequest as EventListener)
+
     return () => {
-      window.removeEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
-      window.removeEventListener("refreshWishlist", handleRefreshRequest as EventListener);
-    };
-  }, [wishlist]);
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate as EventListener)
+      window.removeEventListener("refreshWishlist", handleRefreshRequest as EventListener)
+    }
+  }, [wishlist])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -633,9 +643,7 @@ useEffect(() => {
           <div className="text-center">
             <Loader2 className="w-12 h-12 mx-auto animate-spin text-[#CBA853]" />
             <p className="mt-4 text-gray-600">جاري تحميل البيانات...</p>
-            {retryCount > 0 && (
-              <p className="text-sm text-gray-500">محاولة {retryCount} من 3</p>
-            )}
+            {retryCount > 0 && <p className="text-sm text-gray-500">محاولة {retryCount} من 3</p>}
           </div>
         </div>
       </div>
@@ -652,7 +660,7 @@ useEffect(() => {
               <p className="font-medium">حدث خطأ</p>
               <p className="text-sm mt-2">{error}</p>
             </div>
-            <Button 
+            <Button
               onClick={() => {
                 setRetryCount(0)
                 setLoading(true)
@@ -675,10 +683,7 @@ useEffect(() => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <p className="text-gray-600">لا توجد بيانات متاحة</p>
-            <Button 
-              onClick={() => router.push("/")}
-              className="mt-4 bg-[#CBA853] hover:bg-[#A58532]"
-            >
+            <Button onClick={() => router.push("/")} className="mt-4 bg-[#CBA853] hover:bg-[#A58532]">
               تسجيل الدخول
             </Button>
           </div>
@@ -688,29 +693,33 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen" >
+    <div className="min-h-screen">
       <Navbar nav={true} />
       <div className="container mx-auto px-4 py-8 bg-gray-50" dir="rtl">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">الملف الشخصي</h1>
 
           <Tabs value={activeTab} className="w-full" dir="rtl">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger 
-                value="info" 
-                className="flex items-center gap-2"
-                onClick={() => router.push('/profile')}
-              >
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="info" className="flex items-center gap-2" onClick={() => router.push("/profile")}>
                 <User className="w-4 h-4" />
                 المعلومات الشخصية
               </TabsTrigger>
-              <TabsTrigger 
-                value="wishlist" 
+              <TabsTrigger
+                value="wishlist"
                 className="flex items-center gap-2"
-                onClick={() => router.push('/profile?tab=wishlist')}
+                onClick={() => router.push("/profile?tab=wishlist")}
               >
                 <Heart className="w-4 h-4" />
                 قائمة الأمنيات ({wishlist.length})
+              </TabsTrigger>
+              <TabsTrigger
+                value="appointments"
+                className="flex items-center gap-2"
+                onClick={() => router.push("/profile?tab=appointments")}
+              >
+                <Calendar className="w-4 h-4" />
+                المواعيد
               </TabsTrigger>
             </TabsList>
 
@@ -743,12 +752,7 @@ useEffect(() => {
                             )}
                             حفظ
                           </Button>
-                          <Button
-                            onClick={handleCancelEdit}
-                            variant="outline"
-                            size="sm"
-                            disabled={editState.isLoading}
-                          >
+                          <Button onClick={handleCancelEdit} variant="outline" size="sm" disabled={editState.isLoading}>
                             <X className="w-4 h-4 ml-2" />
                             إلغاء
                           </Button>
@@ -766,7 +770,7 @@ useEffect(() => {
                           <Input
                             id="firstName"
                             value={editState.tempData.first_name || ""}
-                            onChange={e => handleFieldChange("first_name", e.target.value)}
+                            onChange={(e) => handleFieldChange("first_name", e.target.value)}
                           />
                           {editState.errors.first_name && (
                             <p className="text-red-500 text-sm mt-1">{editState.errors.first_name}</p>
@@ -783,7 +787,7 @@ useEffect(() => {
                           <Input
                             id="lastName"
                             value={editState.tempData.last_name || ""}
-                            onChange={e => handleFieldChange("last_name", e.target.value)}
+                            onChange={(e) => handleFieldChange("last_name", e.target.value)}
                           />
                           {editState.errors.last_name && (
                             <p className="text-red-500 text-sm mt-1">{editState.errors.last_name}</p>
@@ -801,11 +805,13 @@ useEffect(() => {
                             <Input
                               type="email"
                               value={emailEditState.newEmail}
-                              onChange={e => setEmailEditState(prev => ({ 
-                                ...prev, 
-                                newEmail: e.target.value,
-                                error: ""
-                              }))}
+                              onChange={(e) =>
+                                setEmailEditState((prev) => ({
+                                  ...prev,
+                                  newEmail: e.target.value,
+                                  error: "",
+                                }))
+                              }
                               placeholder="البريد الإلكتروني الجديد"
                               disabled={emailEditState.codeSent}
                             />
@@ -814,21 +820,21 @@ useEffect(() => {
                                 <Key className="w-4 h-4 text-[#CBA853]" />
                                 <Input
                                   value={emailEditState.verificationCode}
-                                  onChange={e => setEmailEditState(prev => ({ 
-                                    ...prev, 
-                                    verificationCode: e.target.value,
-                                    error: ""
-                                  }))}
+                                  onChange={(e) =>
+                                    setEmailEditState((prev) => ({
+                                      ...prev,
+                                      verificationCode: e.target.value,
+                                      error: "",
+                                    }))
+                                  }
                                   placeholder="أدخل رمز التحقق"
                                   maxLength={6}
                                 />
                               </div>
                             )}
                           </div>
-                          
-                          {emailEditState.error && (
-                            <p className="text-red-500 text-sm">{emailEditState.error}</p>
-                          )}
+
+                          {emailEditState.error && <p className="text-red-500 text-sm">{emailEditState.error}</p>}
 
                           <div className="flex gap-2">
                             {!emailEditState.codeSent ? (
@@ -873,11 +879,13 @@ useEffect(() => {
                                   )}
                                 </Button>
                                 <Button
-                                  onClick={() => setEmailEditState(prev => ({ 
-                                    ...prev, 
-                                    codeSent: false, 
-                                    verificationCode: "" 
-                                  }))}
+                                  onClick={() =>
+                                    setEmailEditState((prev) => ({
+                                      ...prev,
+                                      codeSent: false,
+                                      verificationCode: "",
+                                    }))
+                                  }
                                   variant="outline"
                                 >
                                   <X className="w-4 h-4 ml-2" />
@@ -894,12 +902,14 @@ useEffect(() => {
                             {clientInfo.email}
                           </div>
                           {!editState.isEditing && (
-                            <Button 
-                              onClick={() => setEmailEditState(prev => ({ 
-                                ...prev, 
-                                isEditing: true,
-                                newEmail: clientInfo.email
-                              }))}
+                            <Button
+                              onClick={() =>
+                                setEmailEditState((prev) => ({
+                                  ...prev,
+                                  isEditing: true,
+                                  newEmail: clientInfo.email,
+                                }))
+                              }
                               variant="ghost"
                               size="sm"
                               className="text-[#CBA853] hover:text-[#A58532]"
@@ -918,7 +928,7 @@ useEffect(() => {
                           <Input
                             id="phone"
                             value={editState.tempData.phone_number || ""}
-                            onChange={e => handleFieldChange("phone_number", e.target.value)}
+                            onChange={(e) => handleFieldChange("phone_number", e.target.value)}
                           />
                           {editState.errors.phone_number && (
                             <p className="text-red-500 text-sm mt-1">{editState.errors.phone_number}</p>
@@ -949,11 +959,7 @@ useEffect(() => {
                     <Heart className="w-5 h-5 text-[#CBA853]" />
                     قائمة الأمنيات ({wishlist.length})
                   </CardTitle>
-                  <Button 
-                    onClick={refreshWishlistData}
-                    variant="outline"
-                    size="sm"
-                  >
+                  <Button onClick={refreshWishlistData} variant="outline" size="sm">
                     <RefreshCw className="w-4 h-4 ml-2" />
                     مزامنة
                   </Button>
@@ -961,14 +967,12 @@ useEffect(() => {
                 <CardContent>
                   {wishlist.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {wishlist.map(item => (
-                        <div 
+                      {wishlist.map((item) => (
+                        <div
                           key={`${item.type}-${item.id}`}
                           className="border rounded-lg p-4 relative hover:shadow-md transition-shadow"
                         >
-                          <div className="absolute top-2 left-2">
-                            {getTypeIcon(item.type)}
-                          </div>
+                          <div className="absolute top-2 left-2">{getTypeIcon(item.type)}</div>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
@@ -988,7 +992,7 @@ useEffect(() => {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                <AlertDialogAction 
+                                <AlertDialogAction
                                   onClick={() => removeFromWishlist(item)}
                                   className="bg-red-600 hover:bg-red-700"
                                 >
@@ -997,28 +1001,24 @@ useEffect(() => {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                          
+
                           {/* Doctor Item */}
                           {item.type === "doctor" && (
                             <>
                               <h3 className="font-semibold text-lg mt-6">{item.name}</h3>
                               <p className="text-[#CBA853] text-sm">{item.specialty}</p>
-                              <div className="mt-2 text-sm text-gray-600 line-clamp-3">
-                                {item.services}
-                              </div>
+                              <div className="mt-2 text-sm text-gray-600 line-clamp-3">{item.services}</div>
                               {item.image && (
                                 <div className="mt-4">
-                                  <img 
-                                    src={getImageUrl(item.image)} 
+                                  <img
+                                    src={getImageUrl(item.image) || "/placeholder.svg"}
                                     alt={item.name}
                                     className="w-full h-40 object-cover rounded"
                                   />
                                 </div>
                               )}
                               <div className="mt-4 flex justify-between items-center">
-                                <div className="text-xs text-gray-500">
-                                  أضيف في: {formatDate(item.created_at)}
-                                </div>
+                                <div className="text-xs text-gray-500">أضيف في: {formatDate(item.created_at)}</div>
                                 <Button
                                   onClick={() => router.push(`/doctors/${item.id}`)}
                                   variant="outline"
@@ -1035,9 +1035,7 @@ useEffect(() => {
                           {item.type === "offer" && (
                             <>
                               <h3 className="font-semibold text-lg mt-6">{item.title}</h3>
-                              {item.description && (
-                                <p className="text-gray-600 text-sm">{item.description}</p>
-                              )}
+                              {item.description && <p className="text-gray-600 text-sm">{item.description}</p>}
                               <div className="mt-2 flex items-center gap-2">
                                 <span className="text-gray-500 line-through">{item.priceBefore} ج.م</span>
                                 <span className="text-[#CBA853] font-bold">{item.priceAfter} ج.م</span>
@@ -1049,17 +1047,15 @@ useEffect(() => {
                               </div>
                               {item.image && (
                                 <div className="mt-4">
-                                  <img 
-                                    src={getImageUrl(item.image)} 
+                                  <img
+                                    src={getImageUrl(item.image) || "/placeholder.svg"}
                                     alt={item.title}
                                     className="w-full h-40 object-cover rounded"
                                   />
                                 </div>
                               )}
                               <div className="mt-4 flex justify-between items-center">
-                                <div className="text-xs text-gray-500">
-                                  أضيف في: {formatDate(item.created_at)}
-                                </div>
+                                <div className="text-xs text-gray-500">أضيف في: {formatDate(item.created_at)}</div>
                                 <Button
                                   onClick={() => router.push(`/offers/${item.id}`)}
                                   variant="outline"
@@ -1077,37 +1073,35 @@ useEffect(() => {
                             <>
                               <h3 className="font-semibold text-lg mt-6">{item.name}</h3>
                               <p className="text-[#CBA853] text-sm">{item.typee}</p>
-                              
+
                               {item.available_times && item.available_times !== "null" && (
                                 <div className="mt-2">
                                   <Label className="text-sm text-gray-600">مواعيد العمل:</Label>
                                   <p className="text-sm text-gray-600">
                                     {(() => {
                                       try {
-                                        const times = JSON.parse(item.available_times);
-                                        return Array.isArray(times) ? times.join(", ") : times;
+                                        const times = JSON.parse(item.available_times)
+                                        return Array.isArray(times) ? times.join(", ") : times
                                       } catch {
-                                        return item.available_times.replace(/^"|"$/g, '');
+                                        return item.available_times.replace(/^"|"$/g, "")
                                       }
                                     })()}
                                   </p>
                                 </div>
                               )}
-                              
+
                               {item.image_url && (
                                 <div className="mt-4">
-                                  <img 
-                                    src={getImageUrl(item.image_url)} 
+                                  <img
+                                    src={getImageUrl(item.image_url) || "/placeholder.svg"}
                                     alt={item.name}
                                     className="w-full h-40 object-cover rounded"
                                   />
                                 </div>
                               )}
-                              
+
                               <div className="mt-4 flex justify-between items-center">
-                                <div className="text-xs text-gray-500">
-                                  أضيف في: {formatDate(item.created_at)}
-                                </div>
+                                <div className="text-xs text-gray-500">أضيف في: {formatDate(item.created_at)}</div>
                                 <Button
                                   onClick={() => router.push(`/devices/${item.id}`)}
                                   variant="outline"
@@ -1132,11 +1126,59 @@ useEffect(() => {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="appointments" className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h2 className="text-xl font-semibold mb-4 text-right">مواعيدي</h2>
+                <div className="space-y-4">
+                  {appointments.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {appointments.map((appointment) => (
+                        <div
+                          key={appointment.id}
+                          className="border rounded-lg p-4 relative hover:shadow-md transition-shadow"
+                        >
+                          <div className="absolute top-2 left-2">
+                            <Calendar className="w-4 h-4 text-[#CBA853]" />
+                          </div>
+                          <h3 className="font-semibold text-lg mt-6">{appointment.title}</h3>
+                          <p className="text-gray-600 text-sm">{appointment.description}</p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-gray-500">التاريخ:</span>
+                            <span>{formatDate(appointment.date)}</span>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-gray-500">الوقت:</span>
+                            <span>{appointment.time}</span>
+                          </div>
+                          <div className="mt-4 flex justify-between items-center">
+                            <div className="text-xs text-gray-500">أضيف في: {formatDate(appointment.created_at)}</div>
+                            <Button
+                              onClick={() => router.push(`/appointments/${appointment.id}`)}
+                              variant="outline"
+                              size="sm"
+                              className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
+                            >
+                              عرض التفاصيل
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>لا توجد مواعيد محجوزة حالياً</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
-      <Footer hclass={'wpo-site-footer'}/>
-      <Scrollbar/>
+      <Footer hclass={"wpo-site-footer"} />
+      <Scrollbar />
     </div>
   )
 }
