@@ -196,7 +196,7 @@ const TeamSinglePage = () => {
                     </p>
                   </div>
                   <div className="p-6">
-                    <CtafromSection id={id}/>
+                    <CtafromSection id={id} type={"doctor"} setShowAuthPopup={setShowAuthPopup} />
                   </div>
                 </div>
               </div>

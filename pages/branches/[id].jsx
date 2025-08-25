@@ -19,6 +19,7 @@ const BranchPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   const { selectedBranch: branch, loading, error } = useSelector((state) => state.branches);
 console.log(branch);
@@ -52,7 +53,7 @@ console.log(branch);
 
   return (
     <div className="">
-      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} />
+      <Navbar hclass={'wpo-site-header wpo-site-header-s2'} showAuthPopup={showAuthPopup}/>
       <PageTitle pageTitle={branch.name} pagesub="تفاصيل الفرع"         bgImage={ "/branches.webp"} 
  />
       
@@ -169,7 +170,7 @@ console.log(branch);
               <h3>حجز موعد</h3>
               <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
             </div>
-            <CtafromSection />
+            <CtafromSection id={id} type={"branch"} setShowAuthPopup={setShowAuthPopup}/>
           </div>
         </div>
       </div>

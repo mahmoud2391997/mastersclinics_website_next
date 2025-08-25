@@ -19,6 +19,7 @@ const ProjectSinglePage = () => {
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch();
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   const {
     selectedDevice: currentDevice,
@@ -53,7 +54,7 @@ const ProjectSinglePage = () => {
 
   return (
     <Fragment>
-      <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
+      <Navbar Logo={logo} hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} showAuthPopup={showAuthPopup}/>
       <PageTitle pageTitle={currentDevice.name} pagesub={currentDevice.type} bgImage={"/devices @0.5x.webp"}/>
       
       <section className="project_single section-padding" dir="rtl">
@@ -230,7 +231,7 @@ const ProjectSinglePage = () => {
               </p>
             </div>
             <div className="p-6">
-              <CtafromSection id={id} />
+              <CtafromSection id={id} type={"device"} setShowAuthPopup={setShowAuthPopup} />
             </div>
           </div>
         </div>

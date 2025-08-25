@@ -23,8 +23,58 @@ export const createStripePayment = async (id) => {
   return response.data;
 };
 
-const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
-  console.log("Appointment ID:", id.id);
+// ✅ Utility: Get client authentication info consistently
+const getAuthInfo = () => {
+  // Check both localStorage and sessionStorage for compatibility
+  const isAuthenticatedLocal = localStorage.getItem("isAuthenticated") === "true";
+  const isAuthenticatedSession = sessionStorage.getItem("isAuthenticated") === "true";
+  
+  const clientInfoLocal = localStorage.getItem("clientInfo");
+  const clientInfoSession = sessionStorage.getItem("clientInfo");
+  
+  const isAuthenticated = isAuthenticatedLocal || isAuthenticatedSession;
+  const clientInfo = clientInfoLocal || clientInfoSession;
+  
+  return { isAuthenticated, clientInfo };
+};
+
+// ✅ Utility: Detect device type
+const getDeviceType = () => {
+  if (typeof window === 'undefined') return 'unknown';
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  if (/mobile|android|iphone|ipad|phone/i.test(userAgent)) return 'mobile';
+  if (/tablet|ipad/i.test(userAgent)) return 'tablet';
+  return 'desktop';
+};
+
+// ✅ Utility: Get UTM parameters from URL
+const getUtmSource = () => {
+  if (typeof window === 'undefined') return 'الموقع الرئيسي';
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const utmSource = urlParams.get('utm_source');
+  const utmMedium = urlParams.get('utm_medium');
+  const utmCampaign = urlParams.get('utm_campaign');
+  
+  if (utmSource) {
+    return `${utmSource}${utmMedium ? ` - ${utmMedium}` : ''}${utmCampaign ? ` (${utmCampaign})` : ''}`;
+  }
+  
+  return 'الموقع الرئيسي';
+};
+
+const SimpleCtaForm = ({ 
+  type ,
+  id, // This is the componentId from the backend's perspective
+  setShowAuthPopup, 
+  branch = null,
+  doctor = null,
+  offer = null,
+  device = null,
+  landingPageId = null 
+}) => {
+  console.log("Component ID:", id?.id);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -36,17 +86,16 @@ const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  // ✅ Auto-fill form from sessionStorage if authenticated
+  // ✅ Auto-fill form from storage if authenticated
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-    const clientInfo = localStorage.getItem("clientInfo");
+    const { isAuthenticated, clientInfo } = getAuthInfo();
 
     if (isAuthenticated && clientInfo) {
       try {
         const parsed = JSON.parse(clientInfo);
         setFormData((prev) => ({
           ...prev,
-          name: `${parsed.first_name} ${parsed.last_name}`,
+          name: `${parsed.first_name || ''} ${parsed.last_name || ''}`.trim(),
           phone: parsed.phone_number || "",
         }));
       } catch (err) {
@@ -61,10 +110,9 @@ const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
 
     // Check authentication when PayNow is selected
     if (name === "payNow" && checked) {
-      const isAuthenticated = sessionStorage.getItem("isAuthenticated") === "true";
-      const clientInfo = sessionStorage.getItem("clientInfo");
+      const { isAuthenticated } = getAuthInfo();
 
-      if (!isAuthenticated || !clientInfo) {
+      if (!isAuthenticated) {
         e.preventDefault();
         e.target.checked = false;
 
@@ -99,36 +147,87 @@ const SimpleCtaForm = ({ id, setShowAuthPopup }) => {
     setErrorMessage("");
 
     try {
+      // Get authenticated client info
+      const { isAuthenticated, clientInfo } = getAuthInfo();
+      let clientId = null;
+      
+      if (isAuthenticated && clientInfo) {
+        try {
+          const parsed = JSON.parse(clientInfo);
+          clientId = parsed.id || parsed.client_id || null;
+        } catch (err) {
+          console.error("Failed to parse clientInfo for clientId", err);
+        }
+      }
+
+      // Prepare comprehensive submission data
+      // Key change: Rename id to componentId to match backend expectation
       const submissionData = {
-        id: id.id,
-        name: formData.name,
-        phone: formData.phone,
-        utmSource: "الموقع الرئيسي",
+        entityId: id?.id, // 👈 Changed from 'id' to 'componentId'
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        branch,
+        landingPageId,
+        utmSource: getUtmSource(),
+        doctor,
+        offer,
+        device: device || getDeviceType(),
+        clientId,
         createdAt: new Date().toISOString(),
+        type
       };
 
-      await makeAppointment(submissionData);
+      console.log("Submitting appointment:", submissionData);
 
+      const result = await makeAppointment(submissionData);
+      console.log("Appointment created:", result);
+
+      // Handle payment if requested
       if (formData.payNow) {
-        const paymentData = await createStripePayment(id.id);
-        if (paymentData.url) {
+        console.log("Processing payment for appointment:", result.appointmentId);
+        const paymentData = await createStripePayment(result.appointmentId);
+        
+        if (paymentData?.url) {
           window.location.href = paymentData.url;
           return;
+        } else {
+          throw new Error("Payment URL not received");
         }
       }
 
       setSubmitStatus("success");
-
+      
+      // Show success message briefly before redirect
       setTimeout(() => {
         router.push("/thankyou");
       }, 1500);
 
+      // Reset form
       setFormData({ name: "", phone: "", payNow: false });
+
     } catch (error) {
+      console.error("Appointment submission error:", error);
+      
       setSubmitStatus("error");
-      setErrorMessage(
-        error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
-      );
+      
+      // More specific error messages
+      let errorMsg = "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.";
+      
+      if (error.response?.status === 400) {
+        errorMsg = error.response.data?.error || "بيانات غير صحيحة. يرجى التحقق من المعلومات.";
+      } else if (error.response?.status === 409) {
+        errorMsg = "هذا الموعد محجوز مسبقاً. يرجى المحاولة مرة أخرى.";
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        errorMsg = "مشكلة في الاتصال. يرجى التحقق من اتصال الإنترنت.";
+      } else if (error.message.includes("Payment")) {
+        errorMsg = "حدث خطأ في عملية الدفع. يرجى المحاولة مرة أخرى.";
+      }
+      
+      setErrorMessage(errorMsg);
+      
+      // Show error toast
+      toast.error(errorMsg);
+      
     } finally {
       setIsSubmitting(false);
     }

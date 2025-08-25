@@ -216,21 +216,21 @@ export default function ProfilePage() {
     return null
   }
 
-  const fetchAppointmentsData = async () => {
-    try {
-      const clientId = getClientId()
-      if (!clientId) return
+  // const fetchAppointmentsData = async () => {
+  //   try {
+  //     const clientId = getClientId()
+  //     if (!clientId) return
 
-      const response = await fetch(`https://www.ss.mastersclinics.com/api/appointments/${clientId}`)
+  //     const response = await fetch(`https://www.ss.mastersclinics.com/api/appointments/${clientId}`)
 
-      if (response.ok) {
-        const data = await response.json()
-        setAppointments(data.data || [])
-      }
-    } catch (err) {
-      console.error("Error fetching appointments:", err)
-    }
-  }
+  //     if (response.ok) {
+  //       const data = await response.json()
+  //       setAppointments(data.data || [])
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching appointments:", err)
+  //   }
+  // }
 
   const refreshWishlistData = async () => {
     try {
@@ -286,8 +286,9 @@ export default function ProfilePage() {
         const errorText = await response.text()
         throw new Error(`API Error: ${response.status} - ${errorText}`)
       }
-
+      
       const data: ProfileResponse = await response.json()
+      console.log(data);
 
       if (!data || !data.client) {
         throw new Error("Invalid response format: missing client data")
@@ -592,7 +593,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfileData()
-    fetchAppointmentsData()
+    // fetchAppointmentsData()
   }, [retryCount])
 
   useEffect(() => {
