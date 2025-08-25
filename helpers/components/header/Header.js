@@ -101,6 +101,7 @@ const Header = (props) => {
     firstName: "",
     lastName: "",
     phoneNumber: "",
+    identity_number: "",
   })
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [authError, setAuthError] = useState("")
@@ -560,71 +561,79 @@ const Header = (props) => {
     }
   }
 
-  const handleUserInfoSubmit = async (e) => {
-    e.preventDefault()
-    setAuthError("")
+const handleUserInfoSubmit = async (e) => {
+  e.preventDefault();
+  setAuthError("");
 
-    try {
-      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: userInfo.firstName,
-          lastName: userInfo.lastName,
-          phoneNumber: userInfo.phoneNumber,
-          email: email,
-          code: verificationCode,
-        }),
-      })
+  const { firstName, lastName, phoneNumber, identity_number } = userInfo;
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to create user")
-      }
-
-      const data = await response.json()
-      console.log("User creation response:", {
-        response: data,
-        email,
-        timestamp: new Date().toISOString(),
-      })
-
-      const newClientInfo = {
-        id: data.clientId,
-        email,
-        first_name: userInfo.firstName,
-        last_name: userInfo.lastName,
-        phone_number: userInfo.phoneNumber,
-        unique_number: data.uniqueNumber,
-        created_at: new Date().toISOString(),
-      }
-
-      setClientInfo(newClientInfo)
-      setIsAuthenticated(true)
-
-      localStorage.setItem("userEmail", email)
-      localStorage.setItem("isAuthenticated", "true")
-      localStorage.setItem("clientInfo", JSON.stringify(newClientInfo))
-      
-      // Sync wishlist after user creation
-      syncUnauthenticatedWishlist(data.clientId)
-
-      console.log("New user created and authenticated:", {
-        email,
-        clientInfo: newClientInfo,
-        timestamp: new Date().toISOString(),
-      })
-
-      setShowAuthPopup(false)
-      resetAuthForm()
-    } catch (error) {
-      console.error("Error creating user:", error)
-      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.")
-    }
+  // Validate identity number
+  if (!identity_number || !/^\d{10}$/.test(identity_number.trim())) {
+    setAuthError("يرجى إدخال رقم هوية صالح مكون من 10 أرقام.");
+    return;
   }
 
+  try {
+    const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        phoneNumber,
+        email: email,
+        code: verificationCode,
+        identity_number: identity_number.trim(), // 👈 Send identity_number
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to create user");
+    }
+
+    const data = await response.json();
+    console.log("User creation response:", {
+      response: data,
+      email,
+      timestamp: new Date().toISOString(),
+    });
+
+    const newClientInfo = {
+      id: data.clientId,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phoneNumber,
+      identity_number: identity_number.trim(), // 👈 Save in clientInfo
+      unique_number: data.uniqueNumber,
+      created_at: new Date().toISOString(),
+    };
+
+    setClientInfo(newClientInfo);
+    setIsAuthenticated(true);
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("clientInfo", JSON.stringify(newClientInfo));
+
+    // Sync wishlist
+    syncUnauthenticatedWishlist(data.clientId);
+
+    console.log("New user created and authenticated:", {
+      email,
+      clientInfo: newClientInfo,
+      timestamp: new Date().toISOString(),
+    });
+
+    setShowAuthPopup(false);
+    resetAuthForm();
+  } catch (error) {
+    console.error("Error creating user:", error);
+    setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+  }
+};
   const handleResendCode = async () => {
     setIsResending(true)
     setAuthError("")
@@ -671,7 +680,7 @@ const Header = (props) => {
     setAuthStep(1)
     setEmail("")
     setVerificationCode("")
-    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" })
+    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" ,identity_number:""})
     setAuthError("")
     setCodeExpirationTime(null)
     setTimeRemaining(0)
@@ -1249,48 +1258,68 @@ const handleLogout = () => {
 </form>
                           )}
                           
-                          {authStep === 3 && (
-                            <form onSubmit={handleUserInfoSubmit}>
-                              <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
-                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-                              <div className="mb-4">
-                                <label className="block text-right mb-2">الاسم الأول</label>
-                                <input
-                                  type="text"
-                                  value={userInfo.firstName}
-                                  onChange={(e) => setUserInfo({...userInfo, firstName: e.target.value})}
-                                  required
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                                />
-                              </div>
-                              <div className="mb-4">
-                                <label className="block text-right mb-2">الاسم الأخير</label>
-                                <input
-                                  type="text"
-                                  value={userInfo.lastName}
-                                  onChange={(e) => setUserInfo({...userInfo, lastName: e.target.value})}
-                                  required
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                                />
-                              </div>
-                              <div className="mb-4">
-                                <label className="block text-right mb-2">رقم الهاتف</label>
-                                <input
-                                  type="tel"
-                                  value={userInfo.phoneNumber}
-                                  onChange={(e) => setUserInfo({...userInfo, phoneNumber: e.target.value})}
-                                  required
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                                />
-                              </div>
-                              <button
-                                type="submit"
-                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-                              >
-                                حفظ
-                              </button>
-                            </form>
-                          )}
+                      {authStep === 3 && (
+  <form onSubmit={handleUserInfoSubmit}>
+    <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
+    {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+    
+    <div className="mb-4">
+      <label className="block text-right mb-2">الاسم الأول</label>
+      <input
+        type="text"
+        value={userInfo.firstName}
+        onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
+        required
+        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block text-right mb-2">الاسم الأخير</label>
+      <input
+        type="text"
+        value={userInfo.lastName}
+        onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
+        required
+        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block text-right mb-2">رقم الهاتف</label>
+      <input
+        type="tel"
+        value={userInfo.phoneNumber}
+        onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
+        required
+        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+      />
+    </div>
+
+    {/* 👇 New: Identity Number Field */}
+    <div className="mb-4">
+      <label className="block text-right mb-2">رقم الهوية</label>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={userInfo.identity_number || ""}
+        onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
+        placeholder="1234567890"
+        required
+        minLength="10"
+        maxLength="10"
+        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+      />
+    </div>
+
+    <button
+      type="submit"
+      className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+    >
+      حفظ
+    </button>
+  </form>
+)}
                         </>
                       ) : (
                         <div className="text-right">

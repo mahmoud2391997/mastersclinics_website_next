@@ -1,6 +1,6 @@
 "use client";
 import { getImageUrl } from "../../helpers/hooks/imageUrl";
-import { useEffect } from "react";
+import { useEffect , useState } from "react";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";

@@ -3,7 +3,7 @@
 import React from "react";
 import SimpleCtaForm from "./FormDetails";
 
-const CtafromSection = (id : number,setShowAuthPopup:boolean,type:string) => {
+const CtafromSection = (id : {id:number,type:string},setShowAuthPopup:boolean,type:string) => {
   console.log(id);
   
   return (
@@ -25,7 +25,7 @@ const CtafromSection = (id : number,setShowAuthPopup:boolean,type:string) => {
           {/* Form container with wide inputs */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-4xl"> {/* Increased max-width */}
-              <SimpleCtaForm id={id} setShowAuthPopup={setShowAuthPopup} type={type} />
+              <SimpleCtaForm entityId={id.id} setShowAuthPopup={setShowAuthPopup} type={id.type} />
             </div>
           </div>
         </div>

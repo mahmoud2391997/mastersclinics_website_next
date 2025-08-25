@@ -18,7 +18,30 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Heart, User, Phone, Mail, Edit, Save, X, Trash2, Loader2, Lock, Key, RefreshCw, Calendar } from "lucide-react"
+import {
+  Heart,
+  User,
+  Phone,
+  Mail,
+  Edit,
+  Save,
+  X,
+  Trash2,
+  Loader2,
+  Lock,
+  Key,
+  RefreshCw,
+  Calendar,
+  CreditCard,
+  Stethoscope,
+  Percent,
+  Monitor,
+  Building2,
+  Star,
+  Clock,
+  MapPin,
+  Eye,
+} from "lucide-react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUserDoctor, faLaptopMedical, faGift } from "@fortawesome/free-solid-svg-icons"
 import Navbar from "@/helpers/components/Navbar/Navbar"
@@ -28,6 +51,41 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
 
+const getTypeIcon = (type: string) => {
+  const iconClass = "w-5 h-5"
+  switch (type) {
+    case "doctor":
+      return <Stethoscope className={`${iconClass} text-emerald-600`} />
+    case "offer":
+      return <Percent className={`${iconClass} text-orange-500`} />
+    case "device":
+      return <Monitor className={`${iconClass} text-[#CBA853]`} />
+    case "branch":
+      return <Building2 className={`${iconClass} text-purple-600`} />
+    default:
+      return <Calendar className={`${iconClass} text-gray-500`} />
+  }
+}
+
+const getTypeColor = (type: string) => {
+
+  
+      return "border-r-4 border-r-orange-500 bg-gradient-to-l from-orange-50 to-white hover:from-orange-100 dark:from-orange-950/20 dark:to-background dark:hover:from-orange-950/30"
+
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat("ar-EG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date)
+}
+
+
 interface ClientInfo {
   id: number
   unique_number: string
@@ -35,6 +93,7 @@ interface ClientInfo {
   last_name: string
   phone_number: string
   email: string
+  identity_number: string
   created_at: string
 }
 
@@ -116,6 +175,7 @@ interface ApiWishlistItem {
 interface ProfileResponse {
   client: ClientInfo
   wishlist: ApiWishlistItem[]
+  appointments: any[]
 }
 
 export default function ProfilePage() {
@@ -144,6 +204,14 @@ export default function ProfilePage() {
   const router = useRouter()
 
   const activeTab = searchParams.get("tab") || "info"
+
+  const handleTabChange = (tab: string) => {
+    if (tab === "info") {
+      router.push("/profile#")
+    } else {
+      router.push(`/profile?tab=${tab}#`)
+    }
+  }
 
   const getClientId = (): number | null => {
     try {
@@ -216,22 +284,6 @@ export default function ProfilePage() {
     return null
   }
 
-  // const fetchAppointmentsData = async () => {
-  //   try {
-  //     const clientId = getClientId()
-  //     if (!clientId) return
-
-  //     const response = await fetch(`https://www.ss.mastersclinics.com/api/appointments/${clientId}`)
-
-  //     if (response.ok) {
-  //       const data = await response.json()
-  //       setAppointments(data.data || [])
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching appointments:", err)
-  //   }
-  // }
-
   const refreshWishlistData = async () => {
     try {
       const clientId = getClientId()
@@ -280,20 +332,29 @@ export default function ProfilePage() {
 
       const response = await fetch(`https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`, {
         method: "GET",
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("clientInfo")
+          router.push("/")
+          return
+        }
         const errorText = await response.text()
         throw new Error(`API Error: ${response.status} - ${errorText}`)
       }
-      
+
       const data: ProfileResponse = await response.json()
-      console.log(data);
+      console.log(data)
 
       if (!data || !data.client) {
         throw new Error("Invalid response format: missing client data")
       }
-
+      
+      setAppointments(data.appointments || [])
       setClientInfo(data.client)
       localStorage.setItem("clientInfo", JSON.stringify(data.client))
 
@@ -369,15 +430,31 @@ export default function ProfilePage() {
 
   const validateFields = (data: Partial<ClientInfo>) => {
     const errors: Record<string, string> = {}
-    if (data.first_name && data.first_name.length < 2) {
-      errors.first_name = "يجب أن يكون الاسم الأول أكثر من حرفين"
+
+    if (data.first_name !== undefined && !data.first_name.trim()) {
+      errors.first_name = "الاسم الأول مطلوب"
     }
-    if (data.last_name && data.last_name.length < 2) {
-      errors.last_name = "يجب أن يكون الاسم الأخير أكثر من حرفين"
+
+    if (data.last_name !== undefined && !data.last_name.trim()) {
+      errors.last_name = "الاسم الأخير مطلوب"
     }
-    if (data.phone_number && !/^\+?\d{10,15}$/.test(data.phone_number)) {
-      errors.phone_number = "رقم الهاتف غير صحيح"
+
+    if (data.phone_number !== undefined) {
+      if (!data.phone_number.trim()) {
+        errors.phone_number = "رقم الهاتف مطلوب"
+      } else if (!/^[0-9+\-\s()]+$/.test(data.phone_number)) {
+        errors.phone_number = "رقم الهاتف غير صحيح"
+      }
     }
+
+    if (data.identity_number !== undefined) {
+      if (!data.identity_number.trim()) {
+        errors.identity_number = "رقم الهوية مطلوب"
+      } else if (!/^\d{10,14}$/.test(data.identity_number.replace(/\s/g, ""))) {
+        errors.identity_number = "رقم الهوية يجب أن يكون من 10 إلى 14 رقم"
+      }
+    }
+
     return errors
   }
 
@@ -411,6 +488,14 @@ export default function ProfilePage() {
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
+      const updatedClientData = {
+        ...clientInfo,
+        first_name: editState.tempData.first_name || clientInfo.first_name,
+        last_name: editState.tempData.last_name || clientInfo.last_name,
+        phone_number: editState.tempData.phone_number || clientInfo.phone_number,
+        identity_number: editState.tempData.identity_number || clientInfo.identity_number,
+      }
+
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/edit-client", {
         method: "PUT",
         headers: {
@@ -418,19 +503,20 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           clientId,
-          first_name: editState.tempData.first_name || clientInfo.first_name,
-          last_name: editState.tempData.last_name || clientInfo.last_name,
-          phone_number: editState.tempData.phone_number || clientInfo.phone_number,
+          first_name: updatedClientData.first_name,
+          last_name: updatedClientData.last_name,
+          phone_number: updatedClientData.phone_number,
+          identity_number: updatedClientData.identity_number,
         }),
       })
 
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
       const data = await response.json()
-      if (data.data) {
-        setClientInfo(data.data.client)
-        localStorage.setItem("clientInfo", JSON.stringify(data.data.client))
-      }
+
+      const newClientInfo = data.data?.client || updatedClientData
+      setClientInfo(newClientInfo)
+      localStorage.setItem("clientInfo", JSON.stringify(newClientInfo))
 
       setEditState({
         isEditing: false,
@@ -569,6 +655,17 @@ export default function ProfilePage() {
       codeSent: false,
     })
   }
+const formatScheduledDate = (dateString: string | null) => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("ar-EG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -579,7 +676,7 @@ export default function ProfilePage() {
       case "device":
         return <FontAwesomeIcon icon={faLaptopMedical} className="text-[#CBA853] text-xl" />
       default:
-        return <FontAwesomeIcon icon={faGift} className="text-gray-500 text-xl" />
+        return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
     }
   }
 
@@ -593,7 +690,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfileData()
-    // fetchAppointmentsData()
   }, [retryCount])
 
   useEffect(() => {
@@ -624,6 +720,13 @@ export default function ProfilePage() {
       window.removeEventListener("refreshWishlist", handleRefreshRequest as EventListener)
     }
   }, [wishlist])
+
+  useEffect(() => {
+    // Ensure hash is present on initial load
+    if (typeof window !== 'undefined' && !window.location.hash) {
+      window.location.hash = "#"
+    }
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -702,14 +805,18 @@ export default function ProfilePage() {
 
           <Tabs value={activeTab} className="w-full" dir="rtl">
             <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="info" className="flex items-center gap-2" onClick={() => router.push("/profile")}>
+              <TabsTrigger 
+                value="info" 
+                className="flex items-center gap-2" 
+                onClick={() => handleTabChange("info")}
+              >
                 <User className="w-4 h-4" />
                 المعلومات الشخصية
               </TabsTrigger>
               <TabsTrigger
                 value="wishlist"
                 className="flex items-center gap-2"
-                onClick={() => router.push("/profile?tab=wishlist")}
+                onClick={() => handleTabChange("wishlist")}
               >
                 <Heart className="w-4 h-4" />
                 قائمة الأمنيات ({wishlist.length})
@@ -717,7 +824,7 @@ export default function ProfilePage() {
               <TabsTrigger
                 value="appointments"
                 className="flex items-center gap-2"
-                onClick={() => router.push("/profile?tab=appointments")}
+                onClick={() => handleTabChange("appointments")}
               >
                 <Calendar className="w-4 h-4" />
                 المواعيد
@@ -770,7 +877,7 @@ export default function ProfilePage() {
                         <>
                           <Input
                             id="firstName"
-                            value={editState.tempData.first_name || ""}
+                            value={editState.tempData.first_name ?? clientInfo.first_name}
                             onChange={(e) => handleFieldChange("first_name", e.target.value)}
                           />
                           {editState.errors.first_name && (
@@ -787,7 +894,7 @@ export default function ProfilePage() {
                         <>
                           <Input
                             id="lastName"
-                            value={editState.tempData.last_name || ""}
+                            value={editState.tempData.last_name ?? clientInfo.last_name}
                             onChange={(e) => handleFieldChange("last_name", e.target.value)}
                           />
                           {editState.errors.last_name && (
@@ -923,12 +1030,12 @@ export default function ProfilePage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="phone">رقم الهاتف</Label>
+                      <Label htmlFor="phoneNumber">رقم الهاتف</Label>
                       {editState.isEditing ? (
                         <>
                           <Input
-                            id="phone"
-                            value={editState.tempData.phone_number || ""}
+                            id="phoneNumber"
+                            value={editState.tempData.phone_number ?? clientInfo.phone_number}
                             onChange={(e) => handleFieldChange("phone_number", e.target.value)}
                           />
                           {editState.errors.phone_number && (
@@ -939,6 +1046,26 @@ export default function ProfilePage() {
                         <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
                           <Phone className="w-4 h-4 text-gray-500" />
                           {clientInfo.phone_number}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label htmlFor="identityNumber">رقم الهوية</Label>
+                      {editState.isEditing ? (
+                        <>
+                          <Input
+                            id="identityNumber"
+                            value={editState.tempData.identity_number ?? clientInfo.identity_number}
+                            onChange={(e) => handleFieldChange("identity_number", e.target.value)}
+                          />
+                          {editState.errors.identity_number && (
+                            <p className="text-red-500 text-sm mt-1">{editState.errors.identity_number}</p>
+                          )}
+                        </>
+                      ) : (
+                        <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-gray-500" />
+                          {clientInfo.identity_number || "غير محدد"}
                         </div>
                       )}
                     </div>
@@ -979,7 +1106,7 @@ export default function ProfilePage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="absolute top-2 right-2 text-red-600 hover:text-red-700 p-1 h-auto"
+                                className="absolute top-2 right-2 text-[#CBA853] hover:text-red-700 p-1 h-auto"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -1041,7 +1168,7 @@ export default function ProfilePage() {
                                 <span className="text-gray-500 line-through">{item.priceBefore} ج.م</span>
                                 <span className="text-[#CBA853] font-bold">{item.priceAfter} ج.م</span>
                                 {item.discountPercentage && (
-                                  <Badge variant="outline" className="text-red-600 border-red-600">
+                                  <Badge variant="outline" className="text-[#CBA853] border-red-600">
                                     خصم {item.discountPercentage}%
                                   </Badge>
                                 )}
@@ -1128,53 +1255,325 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="appointments" className="space-y-6">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h2 className="text-xl font-semibold mb-4 text-right">مواعيدي</h2>
-                <div className="space-y-4">
-                  {appointments.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {appointments.map((appointment) => (
-                        <div
-                          key={appointment.id}
-                          className="border rounded-lg p-4 relative hover:shadow-md transition-shadow"
-                        >
-                          <div className="absolute top-2 left-2">
-                            <Calendar className="w-4 h-4 text-[#CBA853]" />
+       <TabsContent value="appointments" className="space-y-6">
+ 
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 text-center sm:text-right">
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+            لوحة المواعيد الطبية
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto sm:mx-0">
+            إدارة مواعيدك الطبية بسهولة وفعالية مع نظام متطور ومتكامل
+          </p>
+        </div>
+
+        <Tabs defaultValue="appointments" className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto sm:mx-0 grid-cols-1 mb-8 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <TabsTrigger
+              value="appointments"
+              className="text-base font-medium data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
+            >
+              <Calendar className="w-5 h-5 ml-2" />
+              المواعيد ({appointments.length})
+            </TabsTrigger>
+          </TabsList>
+<TabsContent value="appointments" className="space-y-8 text-[#CBA853]">
+  <Card className="shadow-xl border-0 bg-white dark:bg-gray-900 overflow-hidden">
+    <CardHeader className="bg-gradient-to-l from-emerald-500/10 via-emerald-500/5 to-transparent border-b border-gray-100 dark:border-gray-800 p-6 sm:p-8">
+      <CardTitle className="flex items-center gap-4 text-2xl font-bold text-[#CBA853]">   <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <Calendar className="w-7 h-7 text-[#CBA853]" />
+                  </div>
+                  <div>
+                    <div>المواعيد المحجوزة</div>
+                    <div className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                      {appointments.length} موعد نشط
+                    </div>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+
+    <CardContent className="p-6 sm:p-8 text-[#CBA853]">
+                {appointments.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+                    {appointments.map((appointment) => (
+                      <Card
+                        key={appointment.id}
+                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor(appointment.type)}`}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start mb-5">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                                {getTypeIcon(appointment.type)}
+                              </div>
+                              <Badge
+                                variant="secondary"
+                                className="text-xs font-semibold px-3 py-1 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 border-0 shadow-sm"
+                              >
+                                {appointment.type === "doctor" && "طبيب"}
+                                {appointment.type === "offer" && "عرض"}
+                                {appointment.type === "device" && "جهاز"}
+                                {appointment.type === "branch" && "فرع"}
+                              </Badge>
+                            </div>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-500 hover:text-[#CBA853] hover:bg-red-50 dark:hover:bg-red-950/20 p-2 h-auto rounded-full transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent dir="rtl" className="max-w-md">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-xl font-bold">تأكيد الإلغاء</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-base text-gray-600 dark:text-gray-400">
+                                    هل أنت متأكد من إلغاء هذا الموعد؟ لا يمكن التراجع عن هذا الإجراء.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="font-medium">إلغاء</AlertDialogCancel>
+                                  <AlertDialogAction className="bg-red-500 hover:bg-red-600 font-medium">
+                                    نعم، إلغاء الموعد
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
-                          <h3 className="font-semibold text-lg mt-6">{appointment.title}</h3>
-                          <p className="text-gray-600 text-sm">{appointment.description}</p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="text-gray-500">التاريخ:</span>
-                            <span>{formatDate(appointment.date)}</span>
-                          </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="text-gray-500">الوقت:</span>
-                            <span>{appointment.time}</span>
-                          </div>
-                          <div className="mt-4 flex justify-between items-center">
-                            <div className="text-xs text-gray-500">أضيف في: {formatDate(appointment.created_at)}</div>
+{appointment.scheduledAt ? (
+  <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50  px-3 py-2 rounded-lg">
+    <span className="text-black font-medium">
+   موعد الحجز :   {formatScheduledDate(appointment.scheduledAt)} 
+    </span>
+    <Clock className="w-4 h-4 text-black" />
+  </div>
+) : (
+  <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 dark:bg-gray-950/20 px-3 py-2 rounded-lg">
+    <span className="text-gray-700 dark:text-gray-300 font-medium">
+      لم يتم الحجز موعد بعد
+    </span>
+    <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+  </div>
+)}
+
+                          {/* Doctor Appointment */}
+                          {appointment.type === "doctor" && appointment.related && (
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+                                  {appointment.related.name}
+                                </h3>
+                                <p className="text-[#CBA853] dark:text-emerald-400 font-semibold text-sm mb-3">
+                                  {appointment.related.specialty}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                  <span className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/20 px-2 py-1 rounded-full">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    {appointment.related.rating}
+                                  </span>
+                                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs">
+                                    {appointment.related.experience}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                  {appointment.related.services}
+                                </p>
+                              </div>
+                              {appointment.related.image && (
+                                <div className="rounded-xl overflow-hidden shadow-md">
+                                  <img
+                                    src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
+                                    alt={appointment.related.name}
+                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Offer Appointment */}
+                          {appointment.type === "offer" && appointment.related && (
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-3 leading-tight">
+                                  {appointment.related.title}
+                                </h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
+                                  {appointment.related.description}
+                                </p>
+                                <div className="flex items-center gap-3 mb-3">
+                                  <span className="text-gray-500 dark:text-gray-400 line-through text-base">
+                                    {appointment.related.priceBefore} ج.م
+                                  </span>
+                                  <span className="text-[#CBA853] dark:text-orange-400 font-bold text-xl">
+                                    {appointment.related.priceAfter} ج.م
+                                  </span>
+                                  <Badge className="bg-red-500 hover:bg-red-600 text-white border-0 text-xs font-semibold">
+                                    خصم {appointment.related.discountPercentage}%
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
+                                  <Clock className="w-4 h-4" />
+                                  صالح حتى: {new Date(appointment.related.validUntil).toLocaleDateString("ar-EG")}
+                                </p>
+                              </div>
+                              {appointment.related.image && (
+                                <div className="rounded-xl overflow-hidden shadow-md">
+                                  <img
+                                    src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
+                                    alt={appointment.related.title}
+                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Device Appointment */}
+                          {appointment.type === "device" && appointment.related && (
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+                                  {appointment.related.name}
+                                </h3>
+                                <p className="text-[#CBA853] dark:text-blue-400 font-semibold text-sm mb-4">
+                                  {appointment.related.type}
+                                </p>
+                                <div className="space-y-3 text-sm">
+                                  <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                    <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-gray-700 dark:text-gray-300">
+                                      {appointment.related.available_times.replace(/^"|"$/g, "")}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                    <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                    <span className="text-gray-700 dark:text-gray-300">
+                                      {appointment.related.location}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              {appointment.related.image_url && (
+                                <div className="rounded-xl overflow-hidden shadow-md">
+                                  <img
+                                    src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
+                                    alt={appointment.related.name}
+                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Branch Appointment */}
+           {appointment.type === "branch" && appointment.related && (
+  <div className="space-y-4">
+    <div>
+      {/* صورة الفرع */}
+      {appointment.related.image_url && (
+        <img
+          src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
+          alt={appointment.related.name}
+          className="w-full h-40 object-cover rounded-lg mb-4"
+        />
+      )}
+
+      {/* اسم الفرع */}
+      <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+        {appointment.related.name}
+      </h3>
+
+      <div className="space-y-3 text-sm">
+        {/* العنوان */}
+        <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+          <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+          <span className="text-gray-700 dark:text-gray-300">
+            {appointment.related.address?.replace(/^"|"$/g, "")}
+          </span>
+        </div>
+
+        {/* رقم الهاتف */}
+        {appointment.phone && (
+          <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+            <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <span className="text-gray-700 dark:text-gray-300 font-mono">
+              {appointment.phone}
+            </span>
+          </div>
+        )}
+
+        {/* رابط الخريطة */}
+        {appointment.related.google_map_link && (
+          <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+            <a
+              href={appointment.related.google_map_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#CBA853] hover:underline"
+            >
+              عرض على الخريطة
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Badge */}
+      <Badge
+        variant="outline"
+        className="mt-3 border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300"
+      >
+        حجز مباشر بالفرع
+      </Badge>
+    </div>
+  </div>
+)}
+
+
+                          <div className="flex justify-between items-center mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">
+                              {formatDate(appointment.createdAt)}
+                            </div>
                             <Button
-                              onClick={() => router.push(`/appointments/${appointment.id}`)}
                               variant="outline"
                               size="sm"
-                              className="text-[#CBA853] border-[#CBA853] hover:bg-[#CBA853] hover:text-white"
+                              className="text-[#CBA853] border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/20 font-medium shadow-sm hover:shadow-xl transition-all bg-transparent"
                             >
-                              عرض التفاصيل
+                              <Eye className="w-4 h-4 ml-1" />
+                              التفاصيل
                             </Button>
                           </div>
-                        </div>
-                      ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  /* Enhanced empty state with better visual hierarchy */
+                  <div className="text-center py-20">
+                    <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-950/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center shadow-lg">
+                      <Calendar className="w-16 h-16 text-emerald-500" />
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>لا توجد مواعيد محجوزة حالياً</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">لا توجد مواعيد محجوزة</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                      ابدأ رحلتك الصحية معنا واحجز موعدك الأول مع أفضل الأطباء والمتخصصين
+                    </p>
+                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 text-base shadow-lg hover:shadow-xl transition-all">
+                      احجز موعد جديد
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+</TabsContent>
+
           </Tabs>
         </div>
       </div>
