@@ -32,6 +32,8 @@ const ThankYouPage: React.FC = () => {
         const res = await axios.get(
           `https://www.ss.mastersclinics.com/payment/status/${sessionId}`
         )
+        console.log(res.data);
+        
         setStatus(res.data.paymentStatus as "paid" | "pending" | "failed")
       } catch {
         setStatus("failed")
