@@ -105,8 +105,15 @@ const WishlistButton = ({
     const handleAuthChange = () => {
       const authStatus = localStorage.getItem("isAuthenticated") === "true"
       const userData = JSON.parse(localStorage.getItem("clientInfo") || "null")
-      setIsAuthenticated(authStatus)
-      setUser(userData)
+      
+      // Only update state if it actually changed
+      if (authStatus !== isAuthenticated) {
+        setIsAuthenticated(authStatus)
+      }
+      
+      if (userData?.id !== user?.id) {
+        setUser(userData)
+      }
 
       if (authStatus && userData) {
         // If user just authenticated, sync unauthenticated wishlist
@@ -120,7 +127,9 @@ const WishlistButton = ({
     // Also check for auth changes within the same tab
     const interval = setInterval(() => {
       const currentAuthStatus = localStorage.getItem("isAuthenticated") === "true"
-      if (currentAuthStatus !== isAuthenticated) {
+      const currentUserData = JSON.parse(localStorage.getItem("clientInfo") || "null")
+      
+      if (currentAuthStatus !== isAuthenticated || currentUserData?.id !== user?.id) {
         handleAuthChange()
       }
     }, 1000)
@@ -129,7 +138,7 @@ const WishlistButton = ({
       window.removeEventListener('storage', handleAuthChange)
       clearInterval(interval)
     }
-  }, [itemId, itemType, onWishlistChange, isAuthenticated])
+  }, [itemId, itemType, onWishlistChange]) // Removed isAuthenticated and user from dependencies
 
   // Sync unauthenticated wishlist with server after login
   const syncUnauthenticatedWishlist = async (userId) => {

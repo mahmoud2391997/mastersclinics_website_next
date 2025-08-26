@@ -16,44 +16,105 @@ declare global {
   }
 }
 
+interface PaymentStatusResponse {
+  paymentStatus: "paid" | "pending" | "failed"
+  customerName?: string
+  referenceNumber?: string
+}
+
+const safeDecode = (val: string | null): string => {
+  if (!val) return ""
+  try {
+    return decodeURIComponent(decodeURIComponent(val))
+  } catch {
+    try {
+      return decodeURIComponent(val)
+    } catch {
+      return val
+    }
+  }
+}
+
 const ThankYouPage: React.FC = () => {
   const router = useRouter()
   const [isVisible, setIsVisible] = useState(false)
-  const [referenceNumber] = useState(() => `MC${Date.now().toString().slice(-6)}`)
+  const [customerData, setCustomerData] = useState<{ name: string; referenceNumber?: string }>({
+    name: "عميلنا الكريم",
+  })
+
   const searchParams = useSearchParams()
   const sessionId = searchParams.get("session_id")
+  const searchQuery = safeDecode(searchParams.get("query")) || safeDecode(searchParams.get("search")) || "خدمات التجميل"
+  const requesterName = safeDecode(searchParams.get("name"))
+  const serviceType = searchParams.get("type") || "" // doctor | device | offer
+  const serviceName = safeDecode(searchParams.get("service")) || searchQuery
+  const branchName = safeDecode(searchParams.get("branch"))
+  const offerName = safeDecode(searchParams.get("offer"))
+  const utmSource = safeDecode(searchParams.get("utmSource"))
+  // map type to arabic label
+  const serviceLabel =
+    serviceType === "doctor"
+      ? "موعد"
+      : serviceType === "device"
+      ? "جلسة"
+      : serviceType === "offer"
+      ? "عرض"
+      : "خدمة"
 
   const [status, setStatus] = useState<"loading" | "paid" | "pending" | "failed" | "no_payment">(
     sessionId ? "loading" : "no_payment"
   )
 
   useEffect(() => {
+    if (requesterName) {
+      setCustomerData((prev) => ({
+        ...prev,
+        name: decodeURIComponent(requesterName),
+      }))
+    }
+
     if (!sessionId) {
       setStatus("no_payment")
       return
     }
-    
+
     const checkStatus = async () => {
       try {
-        const res = await axios.get(
+        const res = await axios.get<PaymentStatusResponse>(
           `https://www.ss.mastersclinics.com/payment/status/${sessionId}`
         )
-        console.log(res.data);
-        
+        console.log(res.data)
+
         setStatus(res.data.paymentStatus as "paid" | "pending" | "failed")
+
+        if (res.data.customerName) {
+          setCustomerData((prev) => ({
+            ...prev,
+            name: res.data.customerName!,
+          }))
+        }
+
+        if (res.data.referenceNumber) {
+          setCustomerData((prev) => ({
+            ...prev,
+            referenceNumber: res.data.referenceNumber!,
+          }))
+        }
       } catch {
         setStatus("failed")
       }
     }
     checkStatus()
-  }, [sessionId])
+  }, [sessionId, requesterName])
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
 
   const handleWhatsAppContact = () => {
-    const message = encodeURIComponent(`مرحباً، لدي استفسار بخصوص الحجز رقم: ${referenceNumber}`)
+    const message = encodeURIComponent(
+      `مرحباً، أنا ${customerData.name}، لدي استفسار بخصوص ${serviceLabel} (${serviceName}).`
+    )
     window.open(`https://wa.me/966555202417?text=${message}`, "_blank")
   }
 
@@ -115,13 +176,13 @@ const ThankYouPage: React.FC = () => {
       case "loading":
         return "جاري التحقق من حالة الدفع..."
       case "paid":
-        return "تمت عملية دفع المبلغ بنجاح! تم تسجيل طلبكم بنجاح!"
+        return `عزيزي/عزيزتي ${customerData.name}، تمت عملية الدفع بنجاح! تم تسجيل ${serviceLabel} (${serviceName}) بنجاح!`
       case "pending":
-        return "عملية الدفع قيد المعالجة، يرجى الانتظار..."
+        return `عزيزي/عزيزتي ${customerData.name}، عملية الدفع قيد المعالجة، يرجى الانتظار...`
       case "failed":
-        return "فشلت عملية الدفع. يرجى المحاولة مرة أخرى."
+        return `عزيزي/عزيزتي ${customerData.name}، فشلت عملية الدفع. يرجى المحاولة مرة أخرى.`
       case "no_payment":
-        return "تم تسجيل طلبكم بنجاح!"
+        return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب حجز ${serviceLabel} (${serviceName}) بنجاح!`
       default:
         return ""
     }
@@ -134,14 +195,12 @@ const ThankYouPage: React.FC = () => {
           <p className="text-lg text-gray-600 mb-6 leading-relaxed" dir="rtl">
             شكراً لثقتكم بعيادات ماسترز
             <br />
-            سوف يتم التواصل معكم خلال 24 ساعة
+            سوف يتم التواصل معكم خلال 24 ساعة لتأكيد {serviceLabel}
           </p>
         )
       case "no_payment":
         return (
           <p className="text-lg text-gray-600 mb-6 leading-relaxed" dir="rtl">
-            تم استلام طلب الحجز الخاص بك بنجاح
-            <br />
             سوف يتم التواصل معكم خلال 24 ساعة لتأكيد الموعد
           </p>
         )
@@ -156,7 +215,7 @@ const ThankYouPage: React.FC = () => {
       case "pending":
         return (
           <p className="text-lg text-gray-600 mb-6 leading-relaxed" dir="rtl">
-            يتم حالياً معالجة طلب الدفع الخاص بك
+            يتم حالياً معالجة عملية الدفع الخاصة بـ {serviceLabel} ({serviceName})
             <br />
             قد تستغرق العملية بضع دقائق
           </p>
@@ -167,7 +226,6 @@ const ThankYouPage: React.FC = () => {
   }
 
   const renderActionButtons = () => {
-    // Show action buttons for these statuses
     if (["paid", "failed", "no_payment"].includes(status)) {
       return (
         <div className="space-y-4 mt-6">
@@ -197,8 +255,7 @@ const ThankYouPage: React.FC = () => {
         </div>
       )
     }
-    
-    // For pending status, show only a waiting message
+
     if (status === "pending") {
       return (
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
@@ -210,47 +267,122 @@ const ThankYouPage: React.FC = () => {
         </div>
       )
     }
-    
+
     return null
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4AF37]/10 via-white to-[#D4AF37]/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#D4AF37]/10 via-white to-[#D4AF37]/5 flex items-center justify-center p-1">
+      {/* Background Decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-[#D4AF37]/5 rounded-full blur-xl"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-[#D4AF37]/5 rounded-full blur-xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#D4AF37]/3 rounded-full blur-3xl"></div>
+      </div>
+
       <div
         className={`relative z-10 transition-all duration-1000 transform ${
           isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
         }`}
       >
         <div className="bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg w-full text-center border border-white/20">
-          <div className="mb-8">{renderStatusIcon()}</div>
+          {/* Success Animation */}
+          <div className="mb-8 relative">
+            <div
+              className={`transition-all duration-1000 delay-300 ${
+                isVisible ? "scale-100 rotate-0" : "scale-0 rotate-180"
+              }`}
+            >
+              {renderStatusIcon()}
+            </div>
+          </div>
 
-          <div className="mb-8">
+          {/* Logo */}
+          <div
+            className={`mb-8 transition-all duration-1000 delay-500 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
             <img
               src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/dEYvd/lBmMUm3zZyt94KtrsYYdL6UrUEOoncu4UJnK9VhR.png"
               alt="عيادات ماسترز لوجو"
-              className="max-w-[120px] h-auto mx-auto drop-shadow-lg"
+              className="!w-[323px] h-auto mx-auto drop-shadow-lg"
             />
           </div>
 
-          <h1
-            className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#B7950B] bg-clip-text text-transparent mb-4"
-            dir="rtl"
+          {/* Main Content */}
+          <div
+            className={`transition-all duration-1000 delay-700 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
           >
-            {renderMessage()}
-          </h1>
+            <h1
+              className="!text-xl md:!text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#B7950B] bg-clip-text text-transparent mb-4"
+              dir="rtl"
+            >
+              {renderMessage()}
+            </h1>
+            {renderDescription()}
+          </div>
 
-          {renderDescription()}
-          {renderActionButtons()}
-
-          {/* Reference number for all statuses except loading */}
-          {status !== "loading" && (
-            <div className="mt-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-600" dir="rtl">
-                رقم المرجع: <span className="font-mono font-bold text-[#D4AF37]">{referenceNumber}</span>
+          {/* Service Information */}
+          {serviceName && (
+            <div
+              className={`mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 transition-all duration-1000 delay-800 ${
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              }`}
+            >
+              <p className="text-sm text-blue-700" dir="rtl">
+                {serviceLabel}: <span className="font-bold text-blue-800">{serviceName}</span>
               </p>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div
+            className={`transition-all duration-1000 delay-900 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
+            {renderActionButtons()}
+          </div>
+
+          {/* Footer Info */}
+          <div
+            className={`mt-8 pt-6 border-t border-gray-200/50 transition-all duration-1000 delay-1100 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
+            <div className="text-center space-y-2">
+              <p
+                className="text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#B7950B] bg-clip-text text-transparent"
+                dir="rtl"
+              >
+                عيادات ماسترز
+              </p>
+            </div>
+          </div>
+
+          {/* Decorative Elements */}
+          <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#D4AF37]/20 rounded-full"></div>
+          <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-[#D4AF37]/20 rounded-full"></div>
         </div>
+      </div>
+
+      {/* Floating Particles */}
+      <div className="absolute inset-0 pointer-events-none">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className={`absolute w-2 h-2 bg-[#D4AF37]/30 rounded-full animate-float`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${3 + Math.random() * 2}s`,
+            }}
+          ></div>
+        ))}
       </div>
     </div>
   )

@@ -56,12 +56,11 @@ export const makeAppointment = async (data) => {
   return response.data;
 };
 
-export const createStripePayment = async (id,entityId) => {
-  if (!id || !entityId ) throw new Error("ID is required");
-
+export const createStripePayment = async (id, entityId) => {
+  if (!id || !entityId) throw new Error("ID is required");
 
   const response = await axios.post("https://www.ss.mastersclinics.com/payment", {
-   appointmentId: id,entityId
+    appointmentId: id, entityId
   });
 
   return response.data;
@@ -166,12 +165,27 @@ const SimpleCtaForm = ({
   
   const { status: paymentStatus } = usePaymentStatus(paymentSessionId);
 
+  // Get service name based on type
+  const getServiceName = (doctor, device, offer) => {
+    if (doctor) return doctor;
+    if (device) return device;
+    if (offer) return offer;
+    return "خدمات التجميل"; // Default fallback
+  };
+
   // Redirect to thank you page if payment is successful
   useEffect(() => {
     if (paymentStatus === 'paid') {
       toast.success("تم الدفع بنجاح!");
       setTimeout(() => {
-        router.push("/thankyou");
+        const queryParams = new URLSearchParams({
+          session_id: paymentSessionId,
+          name: encodeURIComponent(formData.name),
+          type: type || "",
+          service: encodeURIComponent(getServiceName())
+        }).toString();
+        
+        router.push(`/thankyou?${queryParams}`);
       }, 2000);
     }
   }, [paymentStatus, router]);
@@ -275,15 +289,12 @@ const SimpleCtaForm = ({
 
       if (formData.payNow && result?.appointmentId) {
         try {
-          const paymentData = await createStripePayment(result.appointmentId,entityId);
+          const paymentData = await createStripePayment(result.appointmentId, entityId);
 
           if (paymentData?.url) {
-            // Store session ID for status checking
             if (paymentData.sessionId) {
               setPaymentSessionId(paymentData.sessionId);
             }
-            
-            // Redirect to Stripe payment page
             window.location.href = paymentData.url;
             return;
           } else {
@@ -299,9 +310,31 @@ const SimpleCtaForm = ({
       }
 
       setSubmitStatus("success");
-      setTimeout(() => {
-        router.push("/thankyou");
-      }, 1500);
+
+      /* ✅ هنا ناخد كل الـ attributes من الـ appointment */
+      if (result?.appointment) {
+        const appointment = result.appointment;
+
+        const queryParams = new URLSearchParams({
+          appointment_id: appointment.id,
+          name: encodeURIComponent(appointment.name || ""),
+          phone: encodeURIComponent(appointment.phone || ""),
+          branch: encodeURIComponent(appointment.branch || ""),
+          doctor: encodeURIComponent(appointment.doctor || ""),
+          offer: encodeURIComponent(appointment.offer || ""),
+          device: encodeURIComponent(appointment.device || ""),
+          service: encodeURIComponent(getServiceName(appointment.doctor, appointment.device, appointment.offer)),
+          type: appointment.type || "",
+          utmSource: encodeURIComponent(appointment.utmSource || ""),
+          createdAt: appointment.createdAt || "",
+          scheduledAt: appointment.scheduledAt || "",
+          payment_status: appointment.payment_status || "unpaid",
+        }).toString();
+
+        setTimeout(() => {
+          router.push(`/thankyou?${queryParams}`);
+        }, 1500);
+      }
 
       setFormData({ name: "", phone: "", payNow: false });
     } catch (error) {
@@ -325,7 +358,6 @@ const SimpleCtaForm = ({
       setIsSubmitting(false);
     }
   };
-
   // Show payment processing status if we have a session ID
   if (paymentSessionId) {
     return (
