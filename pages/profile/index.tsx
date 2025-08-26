@@ -33,10 +33,7 @@ import {
   RefreshCw,
   Calendar,
   CreditCard,
-  Stethoscope,
-  Percent,
-  Monitor,
-  Building2,
+
   Star,
   Clock,
   MapPin,
@@ -51,38 +48,12 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
 
-const getTypeIcon = (type: string) => {
-  const iconClass = "w-5 h-5"
-  switch (type) {
-    case "doctor":
-      return <Stethoscope className={`${iconClass} text-emerald-600`} />
-    case "offer":
-      return <Percent className={`${iconClass} text-orange-500`} />
-    case "device":
-      return <Monitor className={`${iconClass} text-[#CBA853]`} />
-    case "branch":
-      return <Building2 className={`${iconClass} text-purple-600`} />
-    default:
-      return <Calendar className={`${iconClass} text-gray-500`} />
-  }
-}
 
-const getTypeColor = (type: string) => {
+const getTypeColor = () => {
 
   
       return "border-r-4 border-r-orange-500 bg-gradient-to-l from-orange-50 to-white hover:from-orange-100 dark:from-orange-950/20 dark:to-background dark:hover:from-orange-950/30"
 
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date)
 }
 
 
@@ -175,13 +146,46 @@ interface ApiWishlistItem {
 interface ProfileResponse {
   client: ClientInfo
   wishlist: ApiWishlistItem[]
-  appointments: any[]
+  appointments: Appointment[]
 }
-
+interface Appointment {
+  id: number
+  type: "doctor" | "offer" | "device" | "branch"
+  scheduledAt: string | null
+  createdAt: string
+  phone?: string
+  related?: {
+    // Doctor properties
+    specialty?: string
+    rating?: number
+    experience?: string
+    services?: string
+    image?: string
+    
+    // Offer properties
+    title?: string
+    description?: string
+    priceBefore?: string
+    priceAfter?: string
+    discountPercentage?: string
+    validUntil?: string
+    
+    // Device properties
+    name?: string
+    type?: string
+    available_times?: string
+    location?: string
+    
+    // Branch properties
+    address?: string
+    google_map_link?: string
+    image_url?: string
+  }
+}
 export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
-  const [appointments, setAppointments] = useState<any[]>([])
+const [appointments, setAppointments] = useState<Appointment[]>([])
   const [editState, setEditState] = useState({
     isEditing: false,
     isLoading: false,
@@ -1299,7 +1303,7 @@ const formatScheduledDate = (dateString: string | null) => {
                     {appointments.map((appointment) => (
                       <Card
                         key={appointment.id}
-                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor(appointment.type)}`}
+                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor()}`}
                       >
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start mb-5">
@@ -1418,7 +1422,7 @@ const formatScheduledDate = (dateString: string | null) => {
                                 </div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
                                   <Clock className="w-4 h-4" />
-                                  صالح حتى: {new Date(appointment.related.validUntil).toLocaleDateString("ar-EG")}
+                                  صالح حتى: {appointment.related.validUntil ? new Date(appointment.related.validUntil).toLocaleDateString("ar-EG") : "غير محدد"}
                                 </p>
                               </div>
                               {appointment.related.image && (
@@ -1447,7 +1451,7 @@ const formatScheduledDate = (dateString: string | null) => {
                                   <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
                                     <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                                     <span className="text-gray-700 dark:text-gray-300">
-                                      {appointment.related.available_times.replace(/^"|"$/g, "")}
+                                      {appointment.related.available_times ? appointment.related.available_times.replace(/^"|"$/g, "") : "غير محدد"}
                                     </span>
                                   </div>
                                   <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
