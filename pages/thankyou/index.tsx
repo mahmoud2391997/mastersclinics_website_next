@@ -48,9 +48,7 @@ const ThankYouPage: React.FC = () => {
   const requesterName = safeDecode(searchParams.get("name"))
   const serviceType = searchParams.get("type") || "" // doctor | device | offer
   const serviceName = safeDecode(searchParams.get("service")) || searchQuery
-  const branchName = safeDecode(searchParams.get("branch"))
-  const offerName = safeDecode(searchParams.get("offer"))
-  const utmSource = safeDecode(searchParams.get("utmSource"))
+
   // map type to arabic label
   const serviceLabel =
     serviceType === "doctor"
