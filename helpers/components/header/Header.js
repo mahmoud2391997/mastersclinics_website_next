@@ -3,9 +3,10 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import MobileMenu from "../MobileMenu/MobileMenu";
 import ContactBar from "./socialMedia";
-import { FaChevronDown, FaChevronLeft, FaHeart, FaSearch, FaTimes, FaUser } from "react-icons/fa";
+import { FaChevronDown, FaChevronLeft,  FaSearch,FaHeart, FaTimes, FaUser } from "react-icons/fa";
 import { useRouter } from "next/router";
-import WishlistHeader from "./wishlistsidebar";
+import wishlistsidebar from "./wishlistsidebar";
+import WishlistSidebar from "./wishlistsidebar";
 
 const Logo = () => (
   <div>
@@ -81,43 +82,70 @@ const Logo = () => (
   </div>
 );
 
+
+
 const Header = (props) => {
   const [menuData, setMenuData] = useState({
     branches: [],
     departments: [],
     offers: [],
     blogs: [],
-  })
-  const [query, setQuery] = useState("")
-  const [results, setResults] = useState(null)
-  const [showSearch, setShowSearch] = useState(false)
-  const [showAuthPopup, setShowAuthPopup] = useState(false)
+  });
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
   const [clientName, setClientName] = useState("");
 
-  const [authStep, setAuthStep] = useState(1) // 1: email, 2: verification, 3: user info
-  const [email, setEmail] = useState("")
-  const [verificationCode, setVerificationCode] = useState("")
+  const [authStep, setAuthStep] = useState(1);
+  const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [userInfo, setUserInfo] = useState({
     firstName: "",
     lastName: "",
     phoneNumber: "",
     identity_number: "",
-  })
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [authError, setAuthError] = useState("")
-  const [clientInfo, setClientInfo] = useState(null)
-  const [codeExpirationTime, setCodeExpirationTime] = useState(null)
-  const [timeRemaining, setTimeRemaining] = useState(0)
-  const [isCodeExpired, setIsCodeExpired] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const authPopupRef = useRef()
-  const searchRef = useRef()
-  const router = useRouter()
-  const debounceRef = useRef()
-  const timerRef = useRef()
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [clientInfo, setClientInfo] = useState(null);
+  const [codeExpirationTime, setCodeExpirationTime] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isCodeExpired, setIsCodeExpired] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const authPopupRef = useRef();
+  const searchRef = useRef();
+  const routerRef = useRef(null);
+  
+  // Wishlist sidebar state
+  const [wishlistOpen, setWishlistOpen] = useState(false);
+  
+  try {
+    routerRef.current = useRouter();
+  } catch (error) {
+    console.warn("Router not available yet:", error.message);
+  }
+  
+  const debounceRef = useRef();
+  const timerRef = useRef();
+
+  const getRouter = () => {
+    return routerRef.current;
+  };
+
+  const safeNavigate = (path) => {
+    const router = getRouter();
+    if (router) {
+      router.push(path);
+    } else {
+      window.location.href = path;
+    }
+  };
+  
   const [isMobile, setIsMobile] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
+const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
 
   useEffect(() => {
     const handleShowAuthPopup = () => {
@@ -131,7 +159,6 @@ const Header = (props) => {
     };
   }, []);
 
-  // Get client ID from localStorage
   const getClientId = () => {
     const clientInfo = localStorage.getItem("clientInfo");
     if (!clientInfo) return null;
@@ -143,16 +170,15 @@ const Header = (props) => {
     }
   };
 
-  // Sync unauthenticated wishlist with server after authentication
   const syncUnauthenticatedWishlist = async (userId) => {
-    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]")
+    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
     
     if (unauthWishlist.length === 0) {
       console.log("[Header] No unauthenticated wishlist items to sync");
       return;
     }
     
-    console.log(`[Header] Syncing ${unauthWishlist.length} items from unauthenticated wishlist`)
+    console.log(`[Header] Syncing ${unauthWishlist.length} items from unauthenticated wishlist`);
     
     try {
       const syncPromises = unauthWishlist.map(async (item) => {
@@ -187,7 +213,6 @@ const Header = (props) => {
       
       console.log(`[Header] Sync completed: ${successfulSyncs.length} successful, ${failedSyncs.length} failed`);
       
-      // Only clear successfully synced items from localStorage
       if (successfulSyncs.length > 0) {
         const remainingItems = unauthWishlist.filter(unauthItem => 
           !successfulSyncs.some(successItem => 
@@ -200,25 +225,21 @@ const Header = (props) => {
         console.log("[Header] Successfully synced items removed from unauthenticated wishlist");
       }
       
-      // Refresh the wishlist count after sync
       fetchWishlist();
       
     } catch (err) {
       console.error("[Header] Failed to sync unauthenticated wishlist:", err);
     }
-  }
+  };
 
-  // Fetch wishlist from API and update session storage
   const fetchWishlist = async () => {
     const clientId = getClientId();
     
-    // If not authenticated, get count from localStorage unauthWishlist
     if (!clientId) {
       const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
       setWishlistItems(unauthWishlist);
       setWishlistCount(unauthWishlist.length);
       
-      // Update session storage for consistency
       sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist));
       sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString());
       return;
@@ -236,11 +257,9 @@ const Header = (props) => {
       const data = await response.json();
       const wishlistItems = data.data || [];
       
-      // Update session storage
       sessionStorage.setItem("wishlist", JSON.stringify(wishlistItems));
       sessionStorage.setItem("wishlistCount", wishlistItems.length.toString());
       
-      // Update state
       setWishlistItems(wishlistItems);
       setWishlistCount(wishlistItems.length);
       
@@ -249,19 +268,16 @@ const Header = (props) => {
     }
   };
 
-  // Initialize wishlist on mount and auth changes
   useEffect(() => {
     const initializeWishlist = () => {
       const clientId = getClientId();
       if (clientId) {
         fetchWishlist();
       } else {
-        // Use localStorage unauthWishlist for unauthenticated users
         const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
         setWishlistItems(unauthWishlist);
         setWishlistCount(unauthWishlist.length);
         
-        // Update session storage for consistency
         sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist));
         sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString());
       }
@@ -269,7 +285,6 @@ const Header = (props) => {
 
     initializeWishlist();
 
-    // Listen for wishlist changes from other components
     const handleWishlistUpdate = (event) => {
       const { count, items, action, itemId, itemType } = event.detail;
       console.log("Header received wishlist update:", { count, action, itemId, itemType });
@@ -277,7 +292,6 @@ const Header = (props) => {
       setWishlistItems(items);
       setWishlistCount(count);
       
-      // Also update session storage to keep it in sync
       sessionStorage.setItem("wishlist", JSON.stringify(items));
       sessionStorage.setItem("wishlistCount", count.toString());
     };
@@ -290,21 +304,18 @@ const Header = (props) => {
         setWishlistCount(storedCount);
       }
       
-      // Handle unauthWishlist changes in localStorage
       if (e.key === "unauthWishlist") {
         const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
         if (!isAuthenticated) {
           setWishlistItems(unauthWishlist);
           setWishlistCount(unauthWishlist.length);
           
-          // Update session storage for consistency
           sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist));
           sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString());
         }
       }
     };
 
-    // Listen for custom wishlist events
     window.addEventListener("wishlistUpdated", handleWishlistUpdate);
     window.addEventListener("storage", handleStorageChange);
     
@@ -319,18 +330,18 @@ const Header = (props) => {
       doctors: "أطباء",
       services: "خدمات",
       offers: "عروض",
-    }
-    const prefix = prefixMap[type]
-    if (!prefix) return name
-    const cleanedName = name.replace(/^قسم\s+/, "").trim()
-    return `${prefix} ${cleanedName}`
-  }
+    };
+    const prefix = prefixMap[type];
+    if (!prefix) return name;
+    const cleanedName = name.replace(/^قسم\s+/, "").trim();
+    return `${prefix} ${cleanedName}`;
+  };
   
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const res = await fetch("https://www.ss.mastersclinics.com/navbar-data")
-        const data = await res.json()
+        const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
+        const data = await res.json();
         setMenuData({
           branches: data.branches || [],
           departments: data.departments || [],
@@ -338,47 +349,46 @@ const Header = (props) => {
           offers: data.offers || [],
           blogs: data.blogs || [],
           services: data.services || [],
-        })
+        });
       } catch (error) {
-        console.error("Failed to fetch navbar data", error)
+        console.error("Failed to fetch navbar data", error);
       }
-    }
+    };
 
-    fetchMenuData()
-  }, [])
+    fetchMenuData();
+  }, []);
 
-  const mainDepartments = ["قسم الجلدية", "قسم الاسنان", "قسم النساء والولادة", "قسم التغذية"]
+  const mainDepartments = ["قسم الجلدية", "قسم الاسنان", "قسم النساء والولادة", "قسم التغذية"];
 
   const groupedDepartments = {
     main: (menuData.departments || []).filter((dept) => mainDepartments.includes(dept.name)),
     general: (menuData.departments || []).filter((dept) => !mainDepartments.includes(dept.name)),
-  }
+  };
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("userEmail")
-    const savedAuthState = localStorage.getItem("isAuthenticated")
-    const savedClientInfo = localStorage.getItem("clientInfo")
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedAuthState = localStorage.getItem("isAuthenticated");
+    const savedClientInfo = localStorage.getItem("clientInfo");
 
     if (savedEmail && savedAuthState === "true") {
-      setEmail(savedEmail)
-      setIsAuthenticated(true)
+      setEmail(savedEmail);
+      setIsAuthenticated(true);
 
       if (savedClientInfo) {
         try {
-          const parsedClientInfo = JSON.parse(savedClientInfo)
-          setClientName(parsedClientInfo.first_name + " " + parsedClientInfo.last_name)
-          setClientInfo(parsedClientInfo)
+          const parsedClientInfo = JSON.parse(savedClientInfo);
+          setClientName(parsedClientInfo.first_name + " " + parsedClientInfo.last_name);
+          setClientInfo(parsedClientInfo);
           console.log("Restored client info from localStorage:", {
             clientData: parsedClientInfo,
             timestamp: new Date().toISOString(),
             source: "localStorage",
-          })
+          });
           
-          // Sync unauthenticated wishlist after login
-          syncUnauthenticatedWishlist(parsedClientInfo.id)
+          syncUnauthenticatedWishlist(parsedClientInfo.id);
         } catch (error) {
-          console.error("Error parsing saved client info:", error)
-          localStorage.removeItem("clientInfo")
+          console.error("Error parsing saved client info:", error);
+          localStorage.removeItem("clientInfo");
         }
       }
 
@@ -387,27 +397,25 @@ const Header = (props) => {
         isAuthenticated: true,
         hasClientInfo: !!savedClientInfo,
         timestamp: new Date().toISOString(),
-      })
+      });
     } else {
-      // User is not authenticated, show unauthWishlist count
       const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
       setWishlistItems(unauthWishlist);
       setWishlistCount(unauthWishlist.length);
       
-      // Update session storage for consistency
       sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist));
       sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString());
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (isAuthenticated && email) {
         try {
-          localStorage.setItem("userEmail", email)
-          localStorage.setItem("isAuthenticated", "true")
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("isAuthenticated", "true");
           if (clientInfo) {
-            localStorage.setItem("clientInfo", JSON.stringify(clientInfo))
+            localStorage.setItem("clientInfo", JSON.stringify(clientInfo));
           }
 
           console.log("Saved user session before page unload:", {
@@ -415,46 +423,46 @@ const Header = (props) => {
             isAuthenticated,
             clientInfo: clientInfo ? "saved" : "none",
             timestamp: new Date().toISOString(),
-          })
+          });
         } catch (error) {
-          console.error("Error saving user session:", error)
+          console.error("Error saving user session:", error);
         }
       }
-    }
+    };
 
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
-  }, [isAuthenticated, email, clientInfo])
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isAuthenticated, email, clientInfo]);
 
   useEffect(() => {
     if (codeExpirationTime && authStep === 2) {
       const updateTimer = () => {
-        const now = Date.now()
-        const remaining = Math.max(0, codeExpirationTime - now)
-        setTimeRemaining(remaining)
+        const now = Date.now();
+        const remaining = Math.max(0, codeExpirationTime - now);
+        setTimeRemaining(remaining);
 
         if (remaining === 0) {
-          setIsCodeExpired(true)
+          setIsCodeExpired(true);
           if (timerRef.current) {
-            clearInterval(timerRef.current)
+            clearInterval(timerRef.current);
           }
         }
-      }
+      };
 
-      updateTimer()
-      timerRef.current = setInterval(updateTimer, 1000)
+      updateTimer();
+      timerRef.current = setInterval(updateTimer, 1000);
 
       return () => {
         if (timerRef.current) {
-          clearInterval(timerRef.current)
+          clearInterval(timerRef.current);
         }
-      }
+      };
     }
-  }, [codeExpirationTime, authStep])
+  }, [codeExpirationTime, authStep]);
 
   const handleEmailSubmit = async (e) => {
-    e.preventDefault()
-    setAuthError("")
+    e.preventDefault();
+    setAuthError("");
 
     try {
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
@@ -463,39 +471,39 @@ const Header = (props) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to send verification code")
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send verification code");
       }
 
-      const data = await response.json()
+      const data = await response.json();
       console.log("Authorization response:", {
         response: data,
         email,
         timestamp: new Date().toISOString(),
-      })
+      });
 
-      const expirationTime = Date.now() + 5 * 60 * 1000
-      setCodeExpirationTime(expirationTime)
-      setIsCodeExpired(false)
-      setTimeRemaining(5 * 60 * 1000)
+      const expirationTime = Date.now() + 5 * 60 * 1000;
+      setCodeExpirationTime(expirationTime);
+      setIsCodeExpired(false);
+      setTimeRemaining(5 * 60 * 1000);
 
-      setAuthStep(2)
+      setAuthStep(2);
     } catch (error) {
-      console.error("Error sending verification code:", error)
-      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.")
+      console.error("Error sending verification code:", error);
+      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.");
     }
-  }
+  };
 
   const handleVerificationSubmit = async (e) => {
-    e.preventDefault()
-    setAuthError("")
+    e.preventDefault();
+    setAuthError("");
 
     if (isCodeExpired) {
-      setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.")
-      return
+      setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.");
+      return;
     }
 
     try {
@@ -508,135 +516,133 @@ const Header = (props) => {
           email,
           code: verificationCode,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json();
         if (errorData.message?.includes("expired") || errorData.code === "CODE_EXPIRED") {
-          setIsCodeExpired(true)
-          setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.")
-          return
+          setIsCodeExpired(true);
+          setAuthError("انتهت صلاحية رمز التحقق. يرجى طلب رمز جديد.");
+          return;
         }
-        throw new Error(errorData.message || "Invalid verification code")
+        throw new Error(errorData.message || "Invalid verification code");
       }
 
-      const data = await response.json()
+      const data = await response.json();
       console.log("Verification response:", {
         response: data,
         email,
         timestamp: new Date().toISOString(),
-      })
+      });
 
       if (data.requiresUserInfo) {
-        setAuthStep(3)
+        setAuthStep(3);
       } else {
         if (data.client) {
-          setClientInfo(data.client)
+          setClientInfo(data.client);
           console.log("Fetched existing client info:", {
             clientData: data.client,
             timestamp: new Date().toISOString(),
-          })
-          localStorage.setItem("clientInfo", JSON.stringify(data.client))
+          });
+          localStorage.setItem("clientInfo", JSON.stringify(data.client));
           
-          // Sync wishlist after authentication
-          syncUnauthenticatedWishlist(data.client.id)
+          syncUnauthenticatedWishlist(data.client.id);
         }
 
-        setIsAuthenticated(true)
-        localStorage.setItem("userEmail", email)
-        localStorage.setItem("isAuthenticated", "true")
+        setIsAuthenticated(true);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("isAuthenticated", "true");
 
         console.log("User authenticated successfully:", {
           email,
           clientInfo: data.client ? "loaded" : "none",
           timestamp: new Date().toISOString(),
-        })
+        });
 
-        setShowAuthPopup(false)
-        resetAuthForm()
+        setShowAuthPopup(false);
+        resetAuthForm();
       }
     } catch (error) {
-      console.error("Error verifying code:", error)
-      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.")
+      console.error("Error verifying code:", error);
+      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.");
     }
-  }
+  };
 
-const handleUserInfoSubmit = async (e) => {
-  e.preventDefault();
-  setAuthError("");
+  const handleUserInfoSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
 
-  const { firstName, lastName, phoneNumber, identity_number } = userInfo;
+    const { firstName, lastName, phoneNumber, identity_number } = userInfo;
 
-  // Validate identity number
-  if (!identity_number || !/^\d{10}$/.test(identity_number.trim())) {
-    setAuthError("يرجى إدخال رقم هوية صالح مكون من 10 أرقام.");
-    return;
-  }
-
-  try {
-    const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        firstName,
-        lastName,
-        phoneNumber,
-        email: email,
-        code: verificationCode,
-        identity_number: identity_number.trim(), // 👈 Send identity_number
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to create user");
+    if (!identity_number || !/^\d{10}$/.test(identity_number.trim())) {
+      setAuthError("يرجى إدخال رقم هوية صالح مكون من 10 أرقام.");
+      return;
     }
 
-    const data = await response.json();
-    console.log("User creation response:", {
-      response: data,
-      email,
-      timestamp: new Date().toISOString(),
-    });
+    try {
+      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          phoneNumber,
+          email: email,
+          code: verificationCode,
+          identity_number: identity_number.trim(),
+        }),
+      });
 
-    const newClientInfo = {
-      id: data.clientId,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-      phone_number: phoneNumber,
-      identity_number: identity_number.trim(), // 👈 Save in clientInfo
-      unique_number: data.uniqueNumber,
-      created_at: new Date().toISOString(),
-    };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create user");
+      }
 
-    setClientInfo(newClientInfo);
-    setIsAuthenticated(true);
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("clientInfo", JSON.stringify(newClientInfo));
+      const data = await response.json();
+      console.log("User creation response:", {
+        response: data,
+        email,
+        timestamp: new Date().toISOString(),
+      });
 
-    // Sync wishlist
-    syncUnauthenticatedWishlist(data.clientId);
+      const newClientInfo = {
+        id: data.clientId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        phone_number: phoneNumber,
+        identity_number: identity_number.trim(),
+        unique_number: data.uniqueNumber,
+        created_at: new Date().toISOString(),
+      };
 
-    console.log("New user created and authenticated:", {
-      email,
-      clientInfo: newClientInfo,
-      timestamp: new Date().toISOString(),
-    });
+      setClientInfo(newClientInfo);
+      setIsAuthenticated(true);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("clientInfo", JSON.stringify(newClientInfo));
 
-    setShowAuthPopup(false);
-    resetAuthForm();
-  } catch (error) {
-    console.error("Error creating user:", error);
-    setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
-  }
-};
+      syncUnauthenticatedWishlist(data.clientId);
+
+      console.log("New user created and authenticated:", {
+        email,
+        clientInfo: newClientInfo,
+        timestamp: new Date().toISOString(),
+      });
+
+      setShowAuthPopup(false);
+      resetAuthForm();
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+    }
+  };
+
   const handleResendCode = async () => {
-    setIsResending(true)
-    setAuthError("")
+    setIsResending(true);
+    setAuthError("");
 
     try {
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
@@ -645,168 +651,168 @@ const handleUserInfoSubmit = async (e) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to resend verification code")
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to resend verification code");
       }
 
-      const data = await response.json()
+      const data = await response.json();
       console.log("Resend verification code response:", {
         response: data,
         email,
         timestamp: new Date().toISOString(),
-      })
+      });
 
-      const expirationTime = Date.now() + 5 * 60 * 1000
-      setCodeExpirationTime(expirationTime)
-      setIsCodeExpired(false)
-      setTimeRemaining(5 * 60 * 1000)
-      setVerificationCode("")
+      const expirationTime = Date.now() + 5 * 60 * 1000;
+      setCodeExpirationTime(expirationTime);
+      setIsCodeExpired(false);
+      setTimeRemaining(5 * 60 * 1000);
+      setVerificationCode("");
 
-      setAuthError("")
-      setAuthError("تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني.")
-      setTimeout(() => setAuthError(""), 3000)
+      setAuthError("");
+      setAuthError("تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني.");
+      setTimeout(() => setAuthError(""), 3000);
     } catch (error) {
-      console.error("Error resending verification code:", error)
-      setAuthError(error.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق.")
+      console.error("Error resending verification code:", error);
+      setAuthError(error.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق.");
     } finally {
-      setIsResending(false)
+      setIsResending(false);
     }
-  }
+  };
 
   const resetAuthForm = () => {
-    setAuthStep(1)
-    setEmail("")
-    setVerificationCode("")
-    setUserInfo({ firstName: "", lastName: "", phoneNumber: "" ,identity_number:""})
-    setAuthError("")
-    setCodeExpirationTime(null)
-    setTimeRemaining(0)
-    setIsCodeExpired(false)
+    setAuthStep(1);
+    setEmail("");
+    setVerificationCode("");
+    setUserInfo({ firstName: "", lastName: "", phoneNumber: "", identity_number: "" });
+    setAuthError("");
+    setCodeExpirationTime(null);
+    setTimeRemaining(0);
+    setIsCodeExpired(false);
     if (timerRef.current) {
-      clearInterval(timerRef.current)
+      clearInterval(timerRef.current);
     }
-  }
+  };
 
-const handleLogout = () => {
-  localStorage.removeItem("userEmail")
-  localStorage.removeItem("isAuthenticated")
-  localStorage.removeItem("clientInfo")
+  const handleLogout = () => {
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("clientInfo");
 
-  console.log("User logged out:", {
-    email,
-    timestamp: new Date().toISOString(),
-  })
+    console.log("User logged out:", {
+      email,
+      timestamp: new Date().toISOString(),
+    });
 
-  setIsAuthenticated(false)
-  setClientInfo(null)
-  setShowAuthPopup(false)
-  resetAuthForm()
+    setIsAuthenticated(false);
+    setClientInfo(null);
+    setShowAuthPopup(false);
+    resetAuthForm();
 
-  // Reset wishlist to use localStorage for unauthenticated users
-  const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]")
-  setWishlistItems(unauthWishlist)
-  setWishlistCount(unauthWishlist.length)
+    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+    setWishlistItems(unauthWishlist);
+    setWishlistCount(unauthWishlist.length);
 
-  // Update session storage for consistency
-  sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist))
-  sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString())
+    sessionStorage.setItem("wishlist", JSON.stringify(unauthWishlist));
+    sessionStorage.setItem("wishlistCount", unauthWishlist.length.toString());
 
-  // ✅ Redirect if currently on /profile
- if (router && router.asPath && router.asPath.startsWith("/profile")) {
+    const router = getRouter();
+    if (router && router.asPath && router.asPath.startsWith("/profile")) {
       router.push("/");
     }
-}
+  };
 
   const handleSearch = async (searchQuery) => {
     if (!searchQuery.trim()) {
-      setResults(null)
-      return
+      setResults(null);
+      return;
     }
     try {
-      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`)
-      const data = await res.json()
-      setResults(data)
+      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      setResults(data);
     } catch (err) {
-      console.error("Search failed", err)
+      console.error("Search failed", err);
     }
-  }
+  };
 
   const debouncedSearch = useCallback((value) => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      handleSearch(value)
-    }, 500)
-  }, [])
+      handleSearch(value);
+    }, 500);
+  }, []);
 
   const handleInputChange = (e) => {
-    const value = e.target.value
-    setQuery(value)
-    debouncedSearch(value)
-  }
+    const value = e.target.value;
+    setQuery(value);
+    debouncedSearch(value);
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      handleSearch(query)
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      handleSearch(query);
     }
-  }
+  };
 
   const handleItemClick = (entity, id) => {
-    const route = `/${entity}/${id}`
-    router.push(route)
-    setShowSearch(false)
-    setQuery("")
-    setResults(null)
-  }
+    const route = `/${entity}/${id}`;
+    const router = getRouter();
+    if (router) {
+      router.push(route);
+    }
+    setShowSearch(false);
+    setQuery("");
+    setResults(null);
+  };
 
   const ClickHandler = () => {
-    window.scrollTo(10, 0)
-  }
+    window.scrollTo(10, 0);
+  };
 
   const toggleSearch = () => {
-    setShowSearch(!showSearch)
+    setShowSearch(!showSearch);
     if (showSearch) {
-      setQuery("")
-      setResults(null)
+      setQuery("");
+      setResults(null);
     }
-  }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setShowSearch(false)
-        setResults(null)
+        setShowSearch(false);
+        setResults(null);
       }
       if (authPopupRef.current && !authPopupRef.current.contains(e.target)) {
-        setShowAuthPopup(false)
+        setShowAuthPopup(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   
   useEffect(() => {
-    // Run only on client
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    checkScreenSize(); // initial check
+    checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
   
   const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
     if (!acc[branch.region_name]) {
-      acc[branch.region_name] = []
+      acc[branch.region_name] = [];
     }
-    acc[branch.region_name].push(branch)
-    return acc
-  }, {})
+    acc[branch.region_name].push(branch);
+    return acc;
+  }, {});
 
   const renderEntityDropdown = (items, entityType) => (
     <ul 
@@ -878,7 +884,7 @@ const handleLogout = () => {
                 href={`/departments/${dept.id}`}
                 className="block px-4 py-2 text-black hover:!text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right"
                 onClick={ClickHandler}
-                >
+              >
                 {dept.name}
               </Link>
             </li>
@@ -888,138 +894,142 @@ const handleLogout = () => {
     </div>
   );
 
-  // Update the wishlist icon rendering to handle both authenticated and unauthenticated states
   const renderWishlistIcon = () => {
-    // Get wishlist count from state (which handles both authenticated and unauthenticated)
     const count = wishlistCount;
     
     return (
       <div className="relative">
-        <Link
-          href={isAuthenticated ? "/profile?tab=wishlist" : "#"}
-          onClick={(e) => !isAuthenticated && (e.preventDefault(), setShowAuthPopup(true))}
+        <div
+          onClick={() => {
+            if (isAuthenticated) {
+              safeNavigate("/profile?tab=wishlist");
+            } else {
+              if (count > 0) {
+                setWishlistOpen(true);
+              } else {
+                setShowAuthPopup(true);
+              }
+            }
+          }}
           className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
         >
-          <FaHeart className="text-[#dec06a]" size={24} />
-          {/* Notification Badge */}
+          <FaHeart className="text-[#dec06a]" size={20} />
           {count > 0 && (
-            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
               {count > 99 ? "99+" : count}
             </div>
           )}
-        </Link>
+        </div>
       </div>
     );
   };
 
   return (
-     <div className="relative w-[100vw]">
+    <div className="relative w-full">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
         <div className={`${props.hclass} m-auto !w-full`}>
           <ContactBar nav={props.nav} />
        
-        <div
-          ref={searchRef}
-          className={`w-full px-4 bg-transparent 
-            mt-3
-          `}
-        >
-          <div className="relative w-full max-w-[600px] m-auto">
-            <input
-              type="text"
-              placeholder="ابحث هنا..."
-              value={query}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
-            />
-            <FaSearch
-              className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
-              size={20}
-            />
-            {results && (
-              <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
-                {results.doctors && results.doctors.length > 0 && (
-                  <div className="p-2">
-                    <h3 className="font-semibold mb-2 border-b pb-1">الأطباء</h3>
-                    {results.doctors.map((doctor) => (
-                      <div 
-                        key={doctor.id} 
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleItemClick('doctors', doctor.id)}
-                      >
-                        {doctor.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {results.services && results.services.length > 0 && (
-                  <div className="p-2">
-                    <h3 className="font-semibold mb-2 border-b pb-1">الخدمات</h3>
-                    {results.services.map((service) => (
-                      <div 
-                        key={service.id} 
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleItemClick('services', service.id)}
-                      >
-                        {service.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {results.offers && results.offers.length > 0 && (
-                  <div className="p-2">
-                    <h3 className="font-semibold mb-2 border-b pb-1">العروض</h3>
-                    {results.offers.map((offer) => (
-                      <div 
-                        key={offer.id} 
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleItemClick('offers', offer.id)}
-                      >
-                        {offer.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {results.departments && results.departments.length > 0 && (
-                  <div className="p-2">
-                    <h3 className="font-semibold mb-2 border-b pb-1">الأقسام</h3>
-                    {results.departments.map((department) => (
-                      <div 
-                        key={department.id} 
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleItemClick('departments', department.id)}
-                      >
-                        {department.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {results.blogs && results.blogs.length > 0 && (
-                  <div className="p-2">
-                    <h3 className="font-semibold mb-2 border-b pb-1">المقالات</h3>
-                    {results.blogs.map((blog) => (
-                      <div 
-                        key={blog.id} 
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => handleItemClick('blogs', blog.id)}
-                      >
-                        {blog.title}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {(!results.doctors || results.doctors.length === 0) &&
-                 (!results.services || results.services.length === 0) &&
-                 (!results.offers || results.offers.length === 0) &&
-                 (!results.departments || results.departments.length === 0) &&
-                 (!results.blogs || results.blogs.length === 0) && (
-                  <div className="p-4 text-center">لا توجد نتائج</div>
-                )}
-              </div>
-            )}
+          <div
+            ref={searchRef}
+            className="w-full px-4 bg-transparent mt-3"
+          >
+            <div className="relative w-full max-w-[600px] m-auto">
+              <input
+                type="text"
+                placeholder="ابحث هنا..."
+                value={query}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
+              />
+              <FaSearch
+                className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
+                size={20}
+              />
+              {results && (
+                <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-[9999] text-right">
+                  {results.doctors && results.doctors.length > 0 && (
+                    <div className="p-2">
+                      <h3 className="font-semibold mb-2 border-b pb-1">الأطباء</h3>
+                      {results.doctors.map((doctor) => (
+                        <div 
+                          key={doctor.id} 
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleItemClick('doctors', doctor.id)}
+                        >
+                          {doctor.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {results.services && results.services.length > 0 && (
+                    <div className="p-2">
+                      <h3 className="font-semibold mb-2 border-b pb-1">الخدمات</h3>
+                      {results.services.map((service) => (
+                        <div 
+                          key={service.id} 
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleItemClick('services', service.id)}
+                        >
+                          {service.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {results.offers && results.offers.length > 0 && (
+                    <div className="p-2">
+                      <h3 className="font-semibold mb-2 border-b pb-1">العروض</h3>
+                      {results.offers.map((offer) => (
+                        <div 
+                          key={offer.id} 
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleItemClick('offers', offer.id)}
+                        >
+                          {offer.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {results.departments && results.departments.length > 0 && (
+                    <div className="p-2">
+                      <h3 className="font-semibold mb-2 border-b pb-1">الأقسام</h3>
+                      {results.departments.map((department) => (
+                        <div 
+                          key={department.id} 
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleItemClick('departments', department.id)}
+                        >
+                          {department.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {results.blogs && results.blogs.length > 0 && (
+                    <div className="p-2">
+                      <h3 className="font-semibold mb-2 border-b pb-1">المقالات</h3>
+                      {results.blogs.map((blog) => (
+                        <div 
+                          key={blog.id} 
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => handleItemClick('blogs', blog.id)}
+                        >
+                          {blog.title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {(!results.doctors || results.doctors.length === 0) &&
+                   (!results.services || results.services.length === 0) &&
+                   (!results.offers || results.offers.length === 0) &&
+                   (!results.departments || results.departments.length === 0) &&
+                   (!results.blogs || results.blogs.length === 0) && (
+                    <div className="p-4 text-center">لا توجد نتائج</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
           <nav className="navigation !w-full mx-auto relative mt-[35px] md:mt-0">
             <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
@@ -1132,21 +1142,17 @@ const handleLogout = () => {
               </div>
 
               {/* Search and Account Icons */}
-              <div className="flex flex-col md:flex-row items-center order-3 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2 gap-4">
-                {/* Search Icon */}
-          
-                
+              <div className="flex flex-col md:flex-row items-center order-3 md:order-3 md:absolute md:left-4 lg:left-8 md:top-1/2 md:transform md:-translate-y-1/2 gap-3">
                 {/* Wishlist Icon */}
                 {renderWishlistIcon()}
-                   {/* Wishlist Icon - Add this component */}
-              
+                
                 {/* Account Icon */}
                 <div className="relative">
                   <div 
                     onClick={() => setShowAuthPopup(!showAuthPopup)}
                     className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
-                    <FaUser className="text-[#dec06a]" size={24} />
+                    <FaUser className="text-[#dec06a]" size={20} />
                     {isAuthenticated && (
                       <div className="flex flex-col">
                         <span className="text-black text-sm hidden md:inline">مرحبًا</span>
@@ -1188,153 +1194,144 @@ const handleLogout = () => {
                           )}
                           
                           {authStep === 2 && (
-                         <form onSubmit={handleVerificationSubmit}>
-  <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
-  {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-  <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
-  
-  <div className="mb-4">
-    <label className="block text-right mb-2">رمز التحقق</label>
-    <div className="flex gap-2 justify-end" dir="ltr">
-      {[0, 1, 2, 3].map((index) => (
-        <input
-          key={index}
-          type="text"
-          maxLength="1"
-          value={verificationCode[index] || ''}
-          onChange={(e) => {
-            // Handle paste
-            if (e.target.value.length > 1) {
-              const pastedCode = e.target.value.slice(0, 4);
-              setVerificationCode(pastedCode);
-              return;
-            }
-            
-            const newCode = [...verificationCode.padEnd(4, ' ')];
-            newCode[index] = e.target.value;
-            setVerificationCode(newCode.join('').trim());
-            
-            // Auto focus to next input
-            if (e.target.value && index < 3) {
-              e.target.nextElementSibling.focus();
-            }
-          }}
-          onKeyDown={(e) => {
-            // Handle backspace to move to previous input
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-              e.target.previousElementSibling.focus();
-            }
-          }}
-          onPaste={(e) => {
-            e.preventDefault();
-            const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
-            if (pastedData.length === 4) {
-              setVerificationCode(pastedData);
-            }
-          }}
-          required
-          className="w-12 h-12 px-3 py-2 border border-gray-300 rounded text-center text-xl"
-          pattern="[0-9]"
-          inputMode="numeric"
-        />
-      ))}
-    </div>
-  </div>
-  
-  <button
-    type="submit"
-    className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-  >
-    تأكيد
-  </button>
-  
-  <button
-    type="button"
-    onClick={() => setAuthStep(1)}
-    className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
-  >
-     تغيير البريد الإلكتروني او ارسال رمز جديد
-  </button>
-</form>
+                            <form onSubmit={handleVerificationSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
+                              
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رمز التحقق</label>
+                                <div className="flex gap-2 justify-end" dir="ltr">
+                                  {[0, 1, 2, 3].map((index) => (
+                                    <input
+                                      key={index}
+                                      type="text"
+                                      maxLength="1"
+                                      value={verificationCode[index] || ''}
+                                      onChange={(e) => {
+                                        if (e.target.value.length > 1) {
+                                          const pastedCode = e.target.value.slice(0, 4);
+                                          setVerificationCode(pastedCode);
+                                          return;
+                                        }
+                                        
+                                        const newCode = [...verificationCode.padEnd(4, ' ')];
+                                        newCode[index] = e.target.value;
+                                        setVerificationCode(newCode.join('').trim());
+                                        
+                                        if (e.target.value && index < 3) {
+                                          e.target.nextElementSibling.focus();
+                                        }
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                                          e.target.previousElementSibling.focus();
+                                        }
+                                      }}
+                                      onPaste={(e) => {
+                                        e.preventDefault();
+                                        const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
+                                        if (pastedData.length === 4) {
+                                          setVerificationCode(pastedData);
+                                        }
+                                      }}
+                                      required
+                                      className="w-12 h-12 px-3 py-2 border border-gray-300 rounded text-center text-xl"
+                                      pattern="[0-9]"
+                                      inputMode="numeric"
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                تأكيد
+                              </button>
+                              
+                              <button
+                                type="button"
+                                onClick={() => setAuthStep(1)}
+                                className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
+                              >
+                                تغيير البريد الإلكتروني او ارسال رمز جديد
+                              </button>
+                            </form>
                           )}
                           
-                      {authStep === 3 && (
-  <form onSubmit={handleUserInfoSubmit}>
-    <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
-    {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-    
-    <div className="mb-4">
-      <label className="block text-right mb-2">الاسم الأول</label>
-      <input
-        type="text"
-        value={userInfo.firstName}
-        onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
-        required
-        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-      />
-    </div>
+                          {authStep === 3 && (
+                            <form onSubmit={handleUserInfoSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأول</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.firstName}
+                                  onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
 
-    <div className="mb-4">
-      <label className="block text-right mb-2">الاسم الأخير</label>
-      <input
-        type="text"
-        value={userInfo.lastName}
-        onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
-        required
-        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-      />
-    </div>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأخير</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.lastName}
+                                  onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
 
-    <div className="mb-4">
-      <label className="block text-right mb-2">رقم الهاتف</label>
-      <input
-        type="tel"
-        value={userInfo.phoneNumber}
-        onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
-        required
-        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-      />
-    </div>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رقم الهاتف</label>
+                                <input
+                                  type="tel"
+                                  value={userInfo.phoneNumber}
+                                  onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
 
-    {/* 👇 New: Identity Number Field */}
-    <div className="mb-4">
-      <label className="block text-right mb-2">رقم الهوية</label>
-      <input
-        type="text"
-        inputMode="numeric"
-        value={userInfo.identity_number || ""}
-        onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
-        placeholder="1234567890"
-        required
-        minLength="10"
-        maxLength="10"
-        className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-      />
-    </div>
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رقم الهوية</label>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={userInfo.identity_number || ""}
+                                  onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
+                                  placeholder="1234567890"
+                                  required
+                                  minLength="10"
+                                  maxLength="10"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
 
-    <button
-      type="submit"
-      className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-    >
-      حفظ
-    </button>
-  </form>
-)}
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                حفظ
+                              </button>
+                            </form>
+                          )}
                         </>
                       ) : (
                         <div className="text-right">
                           <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
                           <p className="mb-4">الاسم: {clientName}</p>
                           <p className="mb-4">البريد الإلكتروني: {email}</p>
-                          <button
-                            className="w-full gradient  py-2 rounded transition mb-1 "
-                          >
-                          <Link
-                          href={"/profile"}
-                          className="!text-white"
-                          >
-                          حسابي
-                          </Link>
+                          <button className="w-full gradient py-2 rounded transition mb-1">
+                            <Link href={"/profile"} className="!text-white">
+                              حسابي
+                            </Link>
                           </button>
                           <button
                             onClick={handleLogout}
@@ -1354,15 +1351,18 @@ const handleLogout = () => {
                 <MobileMenu menuData={menuData} />
               </div>
             </div>
-
-            {/* Search Bar */}
-     
-
           </nav>
         </div>
       </header>
+
+      {/* Wishlist Sidebar */}
+      <WishlistSidebar 
+        wishlistOpen={wishlistOpen} 
+        setWishlistOpen={setWishlistOpen} 
+      />
     </div>
   );
 };
 
 export default Header;
+
