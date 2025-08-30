@@ -1,5 +1,4 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -33,11 +32,11 @@ import {
   RefreshCw,
   Calendar,
   CreditCard,
-
   Star,
   Clock,
   MapPin,
   Eye,
+  EyeOff,
 } from "lucide-react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUserDoctor, faLaptopMedical, faGift } from "@fortawesome/free-solid-svg-icons"
@@ -48,15 +47,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
 
-
-const getTypeColor = () => {
-
-  
-      return "border-r-4 border-r-orange-500 bg-gradient-to-l from-orange-50 to-white hover:from-orange-100 dark:from-orange-950/20 dark:to-background dark:hover:from-orange-950/30"
-
-}
-
-
+// Types
 interface ClientInfo {
   id: number
   unique_number: string
@@ -143,56 +134,237 @@ interface ApiWishlistItem {
   typee?: string
 }
 
-interface ProfileResponse {
-  client: ClientInfo
-  wishlist: ApiWishlistItem[]
-  appointments: Appointment[]
-}
 interface Appointment {
+  status: "pending" | "confirmed" | "completed" | "cancelled"
   id: number
+  bookingId: string
   type: "doctor" | "offer" | "device" | "branch"
   scheduledAt: string | null
   createdAt: string
   phone?: string
   related?: {
-    // Doctor properties
+    name?: string
     specialty?: string
     rating?: number
     experience?: string
     services?: string
     image?: string
-    
-    // Offer properties
     title?: string
     description?: string
     priceBefore?: string
     priceAfter?: string
     discountPercentage?: string
     validUntil?: string
-    
-    // Device properties
-    name?: string
     type?: string
     available_times?: string
     location?: string
-    
-    // Branch properties
     address?: string
     google_map_link?: string
     image_url?: string
   }
 }
+
+interface ProfileResponse {
+  client: ClientInfo
+  wishlist: ApiWishlistItem[]
+  appointments: Appointment[]
+}
+
+interface EditState {
+  isEditing: boolean
+  isLoading: boolean
+  errors: Record<string, string>
+  tempData: Partial<ClientInfo>
+}
+
+interface EmailEditState {
+  isEditing: boolean
+  newEmail: string
+  verificationCode: string
+  isSendingCode: boolean
+  isVerifying: boolean
+  error: string
+  codeSent: boolean
+}
+
+// Helper Functions
+const getTypeColor = () => {
+  return "border-r-4 border-r-orange-500 bg-gradient-to-l from-orange-50 to-white hover:from-orange-100 dark:from-orange-950/20 dark:to-background dark:hover:from-orange-950/30"
+}
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case "doctor":
+      return <FontAwesomeIcon icon={faUserDoctor} className="text-[#CBA853] text-xl" />
+    case "offer":
+      return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
+    case "device":
+      return <FontAwesomeIcon icon={faLaptopMedical} className="text-[#CBA853] text-xl" />
+    default:
+      return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
+  }
+}
+
+const formatDate = (dateString: string) => {
+  try {
+    return new Date(dateString).toLocaleDateString("ar-SA")
+  } catch {
+    return dateString
+  }
+}
+
+const formatScheduledDate = (dateString: string | null) => {
+  if (!dateString) return null
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat("ar-EG", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date)
+}
+
+const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
+  if (!item) return null
+  if (item.name && item.specialty) {
+    return {
+      id: item.id,
+      name: item.name,
+      specialty: item.specialty,
+      branch_id: item.branch_id || 0,
+      department_id: item.department_id || 0,
+      services: item.services || "",
+      image: item.image || null,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      priority: item.priority,
+      is_active: item.is_active,
+      type: "doctor",
+    } as DoctorWishlistItem
+  }
+  if (item.title) {
+    return {
+      id: item.id,
+      title: item.title,
+      description: item.description || "",
+      image: item.image || "",
+      priceBefore: item.priceBefore || "",
+      priceAfter: item.priceAfter || "",
+      discountPercentage: item.discountPercentage || "",
+      branches: item.branches || "",
+      services_ids: item.services_ids || "",
+      doctors_ids: item.doctors_ids || "",
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      is_active: item.is_active,
+      priority: item.priority,
+      type: "offer",
+    } as OfferWishlistItem
+  }
+  if (item.name && item.image_url) {
+    return {
+      id: item.id,
+      name: item.name,
+      typee: item.typee || "",
+      branches_ids: item.branches_ids || "",
+      available_times: item.available_times || "",
+      image_url: item.image_url,
+      is_active: item.is_active,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      priority: item.priority,
+      type: "device",
+    } as DeviceWishlistItem
+  }
+  return null
+}
+
+// Sub-component for Appointment Status Dialog
+const AppointmentStatusDialog = ({ appointment, onStatusUpdate }: {
+  appointment: Appointment,
+  onStatusUpdate: (id: number, status: string) => Promise<boolean>
+}) => {
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdating(true)
+    const success = await onStatusUpdate(appointment.id, newStatus)
+    setIsUpdating(false)
+    return success
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`transition-colors p-2 h-auto rounded-full ${
+            appointment.status === "cancelled"
+              ? "text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20"
+              : "text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+          }`}
+          disabled={isUpdating}
+        >
+          {isUpdating ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Trash2 className="w-4 h-4" />
+          )}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent dir="rtl" className="max-w-md">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-xl font-bold">
+            {appointment.status === "cancelled" ? "إعادة تفعيل الموعد" : "تأكيد الإلغاء"}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-base text-gray-600 dark:text-gray-400">
+            {appointment.status === "cancelled"
+              ? "هل تريد إعادة تفعيل هذا الموعد؟"
+              : "هل أنت متأكد من إلغاء هذا الموعد؟ يمكن استعادته لاحقًا."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="font-medium">إلغاء</AlertDialogCancel>
+          <AlertDialogAction
+            className={`font-medium ${
+              appointment.status === "cancelled"
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-red-500 hover:bg-red-600"
+            }`}
+            onClick={async (e) => {
+              e.preventDefault()
+              const newStatus = appointment.status === "cancelled" ? "pending" : "cancelled"
+              await handleStatusChange(newStatus)
+            }}
+            disabled={isUpdating}
+          >
+            {isUpdating ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : null}
+            {appointment.status === "cancelled" ? "نعم، إعادة التفعيل" : "نعم، إلغاء الموعد"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+// Main Component
 export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
-const [appointments, setAppointments] = useState<Appointment[]>([])
-  const [editState, setEditState] = useState({
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [editState, setEditState] = useState<EditState>({
     isEditing: false,
     isLoading: false,
-    errors: {} as Record<string, string>,
-    tempData: {} as Partial<ClientInfo>,
+    errors: {},
+    tempData: {},
   })
-  const [emailEditState, setEmailEditState] = useState({
+  console.log(appointments);
+
+  const [emailEditState, setEmailEditState] = useState<EmailEditState>({
     isEditing: false,
     newEmail: "",
     verificationCode: "",
@@ -229,63 +401,90 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
     }
   }
 
-  const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
-    if (!item) return null
-
-    if (item.name && item.specialty) {
-      return {
-        id: item.id,
-        name: item.name,
-        specialty: item.specialty,
-        branch_id: item.branch_id || 0,
-        department_id: item.department_id || 0,
-        services: item.services || "",
-        image: item.image || null,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        priority: item.priority,
-        is_active: item.is_active,
-        type: "doctor",
-      } as DoctorWishlistItem
+  const validateFields = (data: Partial<ClientInfo>) => {
+    const errors: Record<string, string> = {}
+    if (data.first_name !== undefined && !data.first_name.trim()) {
+      errors.first_name = "الاسم الأول مطلوب"
     }
-
-    if (item.title) {
-      return {
-        id: item.id,
-        title: item.title,
-        description: item.description || "",
-        image: item.image || "",
-        priceBefore: item.priceBefore || "",
-        priceAfter: item.priceAfter || "",
-        discountPercentage: item.discountPercentage || "",
-        branches: item.branches || "",
-        services_ids: item.services_ids || "",
-        doctors_ids: item.doctors_ids || "",
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        is_active: item.is_active,
-        priority: item.priority,
-        type: "offer",
-      } as OfferWishlistItem
+    if (data.last_name !== undefined && !data.last_name.trim()) {
+      errors.last_name = "الاسم الأخير مطلوب"
     }
-
-    if (item.name && item.image_url) {
-      return {
-        id: item.id,
-        name: item.name,
-        typee: item.typee || "",
-        branches_ids: item.branches_ids || "",
-        available_times: item.available_times || "",
-        image_url: item.image_url,
-        is_active: item.is_active,
-        created_at: item.created_at,
-        updated_at: item.updated_at,
-        priority: item.priority,
-        type: "device",
-      } as DeviceWishlistItem
+    if (data.phone_number !== undefined) {
+      if (!data.phone_number.trim()) {
+        errors.phone_number = "رقم الهاتف مطلوب"
+      } else if (!/^[0-9+\-\s()]+$/.test(data.phone_number)) {
+        errors.phone_number = "رقم الهاتف غير صحيح"
+      }
     }
+    if (data.identity_number !== undefined) {
+      if (!data.identity_number.trim()) {
+        errors.identity_number = "رقم الهوية مطلوب"
+      } else if (!/^\d{10,14}$/.test(data.identity_number.replace(/\s/g, ""))) {
+        errors.identity_number = "رقم الهوية يجب أن يكون من 10 إلى 14 رقم"
+      }
+    }
+    return errors
+  }
 
-    return null
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const clientId = getClientId()
+      if (!clientId) {
+        console.error("Authentication failed - missing clientId")
+        router.push("/")
+        return
+      }
+      const response = await fetch(`https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`, {
+        method: "GET",
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
+console.log(response);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem("clientInfo")
+          router.push("/")
+          return
+        }
+        const errorText = await response.text()
+        throw new Error(`API Error: ${response.status} - ${errorText}`)
+      }
+
+      const data: ProfileResponse = await response.json()
+
+      if (!data || !data.client) {
+        throw new Error("Invalid response format: missing client data")
+      }
+
+      setAppointments(data.appointments || [])
+      setClientInfo(data.client)
+      localStorage.setItem("clientInfo", JSON.stringify(data.client))
+
+      const transformedWishlist = (data.wishlist || [])
+        .map(transformWishlistItem)
+        .filter((item): item is WishlistItem => item !== null)
+
+      setWishlist(transformedWishlist)
+      sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist))
+      sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString())
+    } catch (err) {
+      console.error("Failed to load profile:", err)
+      setError(err instanceof Error ? err.message : "Unknown error occurred")
+      if (retryCount < 3) {
+        setTimeout(() => setRetryCount((c) => c + 1), 2000)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const refreshWishlistData = async () => {
@@ -294,7 +493,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       if (!clientId) return
 
       const response = await fetch(`https://www.ss.mastersclinics.com/api/wishlist/${clientId}`)
-
       if (response.ok) {
         const data = await response.json()
         const transformedWishlist = (data.data || [])
@@ -302,7 +500,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
           .filter((item: WishlistItem) => item !== null)
 
         setWishlist(transformedWishlist)
-
         sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist))
         sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString())
 
@@ -318,67 +515,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       }
     } catch (err) {
       console.error("Error refreshing wishlist:", err)
-    }
-  }
-
-  const fetchProfileData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const clientId = getClientId()
-
-      if (!clientId) {
-        console.error("Authentication failed - missing clientId")
-        router.push("/")
-        return
-      }
-
-      const response = await fetch(`https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`, {
-        method: "GET",
-        headers: {
-          'Cache-Control': 'no-cache',
-        }
-      })
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem("clientInfo")
-          router.push("/")
-          return
-        }
-        const errorText = await response.text()
-        throw new Error(`API Error: ${response.status} - ${errorText}`)
-      }
-
-      const data: ProfileResponse = await response.json()
-      console.log(data)
-
-      if (!data || !data.client) {
-        throw new Error("Invalid response format: missing client data")
-      }
-      
-      setAppointments(data.appointments || [])
-      setClientInfo(data.client)
-      localStorage.setItem("clientInfo", JSON.stringify(data.client))
-
-      const transformedWishlist = (data.wishlist || [])
-        .map(transformWishlistItem)
-        .filter((item): item is WishlistItem => item !== null)
-
-      setWishlist(transformedWishlist)
-
-      sessionStorage.setItem("wishlist", JSON.stringify(transformedWishlist))
-      sessionStorage.setItem("wishlistCount", transformedWishlist.length.toString())
-    } catch (err) {
-      console.error("Failed to load profile:", err)
-      setError(err instanceof Error ? err.message : "Unknown error occurred")
-
-      if (retryCount < 3) {
-        setTimeout(() => setRetryCount((c) => c + 1), 2000)
-      }
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -432,40 +568,51 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
     }
   }
 
-  const validateFields = (data: Partial<ClientInfo>) => {
-    const errors: Record<string, string> = {}
+const updateAppointmentStatus = async (appointmentId: number, newStatus: string) => {
+  try {
+    const response = await fetch(`https://www.ss.mastersclinics.com/appointments/${appointmentId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: newStatus
+      }),
+    });
 
-    if (data.first_name !== undefined && !data.first_name.trim()) {
-      errors.first_name = "الاسم الأول مطلوب"
-    }
-
-    if (data.last_name !== undefined && !data.last_name.trim()) {
-      errors.last_name = "الاسم الأخير مطلوب"
-    }
-
-    if (data.phone_number !== undefined) {
-      if (!data.phone_number.trim()) {
-        errors.phone_number = "رقم الهاتف مطلوب"
-      } else if (!/^[0-9+\-\s()]+$/.test(data.phone_number)) {
-        errors.phone_number = "رقم الهاتف غير صحيح"
+    if (!response.ok) {
+      if (response.status === 401) {
+        toast.error("انتهت جلسة التسجيل، يرجى تسجيل الدخول مرة أخرى");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("clientInfo");
+        router.push("/");
+        return false;
       }
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "فشل في تحديث حالة الموعد");
     }
 
-    if (data.identity_number !== undefined) {
-      if (!data.identity_number.trim()) {
-        errors.identity_number = "رقم الهوية مطلوب"
-      } else if (!/^\d{10,14}$/.test(data.identity_number.replace(/\s/g, ""))) {
-        errors.identity_number = "رقم الهوية يجب أن يكون من 10 إلى 14 رقم"
-      }
-    }
+    // Update local state
+    setAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === appointmentId ? { ...apt, status: newStatus as "pending" | "confirmed" | "completed" | "cancelled" } : apt
+      )
+    );
 
-    return errors
+    const statusMessages = {
+      "cancelled": "تم إلغاء الموعد بنجاح",
+      "confirmed": "تم تأكيد الموعد بنجاح",
+      "completed": "تم تحديث الموعد كمكتمل",
+      "pending": "تم إعادة الموعد إلى قيد الانتظار"
+    };
+    toast.success(statusMessages[newStatus as keyof typeof statusMessages] || "تم تحديث الموعد بنجاح");
+    return true;
+  } catch (err) {
+    console.error("Update appointment status error:", err);
+    toast.error(err instanceof Error ? err.message : "فشل في تحديث حالة الموعد. يرجى المحاولة لاحقًا.");
+    return false;
   }
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+}
 
   const handleEditProfile = () => {
     if (!clientInfo) return
@@ -517,8 +664,8 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       if (!response.ok) throw new Error(`Failed with status ${response.status}`)
 
       const data = await response.json()
-
       const newClientInfo = data.data?.client || updatedClientData
+
       setClientInfo(newClientInfo)
       localStorage.setItem("clientInfo", JSON.stringify(newClientInfo))
 
@@ -539,7 +686,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
 
   const handleCancelEdit = () => {
     if (Object.keys(editState.tempData).length > 0 && !window.confirm("هل تريد تجاهل التغييرات؟")) return
-
     setEditState({
       isEditing: false,
       isLoading: false,
@@ -561,15 +707,12 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       setEmailEditState((prev) => ({ ...prev, error: "البريد الإلكتروني مطلوب" }))
       return
     }
-
     if (!validateEmail(emailEditState.newEmail)) {
       setEmailEditState((prev) => ({ ...prev, error: "البريد الإلكتروني غير صحيح" }))
       return
     }
-
     try {
       setEmailEditState((prev) => ({ ...prev, isSendingCode: true, error: "" }))
-
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
@@ -604,7 +747,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       setEmailEditState((prev) => ({ ...prev, error: "رمز التحقق مطلوب" }))
       return
     }
-
     try {
       setEmailEditState((prev) => ({ ...prev, isVerifying: true, error: "" }))
       const clientId = getClientId()
@@ -629,7 +771,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       localStorage.setItem("clientInfo", JSON.stringify(data.client))
 
       toast.success("تم تغيير البريد الإلكتروني بنجاح")
-
       setEmailEditState({
         isEditing: false,
         newEmail: "",
@@ -659,38 +800,6 @@ const [appointments, setAppointments] = useState<Appointment[]>([])
       codeSent: false,
     })
   }
-const formatScheduledDate = (dateString: string | null) => {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("ar-EG", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "doctor":
-        return <FontAwesomeIcon icon={faUserDoctor} className="text-[#CBA853] text-xl" />
-      case "offer":
-        return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
-      case "device":
-        return <FontAwesomeIcon icon={faLaptopMedical} className="text-[#CBA853] text-xl" />
-      default:
-        return <FontAwesomeIcon icon={faGift} className="text-[#CBA853] text-xl" />
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString("ar-SA")
-    } catch {
-      return dateString
-    }
-  }
 
   useEffect(() => {
     fetchProfileData()
@@ -700,10 +809,8 @@ const formatScheduledDate = (dateString: string | null) => {
     const handleWishlistUpdate = (event: CustomEvent) => {
       const { action, itemId, itemType, items, count } = event.detail
       console.log("[Profile] Wishlist update received:", { action, itemId, itemType })
-
       if (action === "removed") {
         setWishlist((prev) => prev.filter((item) => !(item.id === itemId && item.type === itemType)))
-
         const updatedItems = items || wishlist.filter((item) => !(item.id === itemId && item.type === itemType))
         sessionStorage.setItem("wishlist", JSON.stringify(updatedItems))
         sessionStorage.setItem("wishlistCount", (count || updatedItems.length).toString())
@@ -739,10 +846,10 @@ const formatScheduledDate = (dateString: string | null) => {
         setLoading(false)
       }
     }, 10000)
-
     return () => clearTimeout(timer)
   }, [loading])
 
+  // Render Loading State
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -758,6 +865,7 @@ const formatScheduledDate = (dateString: string | null) => {
     )
   }
 
+  // Render Error State
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -784,6 +892,7 @@ const formatScheduledDate = (dateString: string | null) => {
     )
   }
 
+  // Render No Data State
   if (!clientInfo) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -800,6 +909,7 @@ const formatScheduledDate = (dateString: string | null) => {
     )
   }
 
+  // Main Render
   return (
     <div className="min-h-screen">
       <Navbar nav={true} />
@@ -809,9 +919,9 @@ const formatScheduledDate = (dateString: string | null) => {
 
           <Tabs value={activeTab} className="w-full" dir="rtl">
             <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger 
-                value="info" 
-                className="flex items-center gap-2" 
+              <TabsTrigger
+                value="info"
+                className="flex items-center gap-2"
                 onClick={() => handleTabChange("info")}
               >
                 <User className="w-4 h-4" />
@@ -945,9 +1055,7 @@ const formatScheduledDate = (dateString: string | null) => {
                               </div>
                             )}
                           </div>
-
                           {emailEditState.error && <p className="text-red-500 text-sm">{emailEditState.error}</p>}
-
                           <div className="flex gap-2">
                             {!emailEditState.codeSent ? (
                               <>
@@ -1133,7 +1241,6 @@ const formatScheduledDate = (dateString: string | null) => {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-
                           {/* Doctor Item */}
                           {item.type === "doctor" && (
                             <>
@@ -1162,7 +1269,6 @@ const formatScheduledDate = (dateString: string | null) => {
                               </div>
                             </>
                           )}
-
                           {/* Offer Item */}
                           {item.type === "offer" && (
                             <>
@@ -1199,13 +1305,11 @@ const formatScheduledDate = (dateString: string | null) => {
                               </div>
                             </>
                           )}
-
                           {/* Device Item */}
                           {item.type === "device" && (
                             <>
                               <h3 className="font-semibold text-lg mt-6">{item.name}</h3>
                               <p className="text-[#CBA853] text-sm">{item.typee}</p>
-
                               {item.available_times && item.available_times !== "null" && (
                                 <div className="mt-2">
                                   <Label className="text-sm text-gray-600">مواعيد العمل:</Label>
@@ -1221,7 +1325,6 @@ const formatScheduledDate = (dateString: string | null) => {
                                   </p>
                                 </div>
                               )}
-
                               {item.image_url && (
                                 <div className="mt-4">
                                   <img
@@ -1231,7 +1334,6 @@ const formatScheduledDate = (dateString: string | null) => {
                                   />
                                 </div>
                               )}
-
                               <div className="mt-4 flex justify-between items-center">
                                 <div className="text-xs text-gray-500">أضيف في: {formatDate(item.created_at)}</div>
                                 <Button
@@ -1259,325 +1361,289 @@ const formatScheduledDate = (dateString: string | null) => {
               </Card>
             </TabsContent>
 
-       <TabsContent value="appointments" className="space-y-6">
- 
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8 text-center sm:text-right">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
-            لوحة المواعيد الطبية
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto sm:mx-0">
-            إدارة مواعيدك الطبية بسهولة وفعالية مع نظام متطور ومتكامل
-          </p>
-        </div>
-
-        <Tabs defaultValue="appointments" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto sm:mx-0 grid-cols-1 mb-8 h-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm">
-            <TabsTrigger
-              value="appointments"
-              className="text-base font-medium data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
-            >
-              <Calendar className="w-5 h-5 ml-2" />
-              المواعيد ({appointments.length})
-            </TabsTrigger>
-          </TabsList>
-<TabsContent value="appointments" className="space-y-8 text-[#CBA853]">
-  <Card className="shadow-xl border-0 bg-white dark:bg-gray-900 overflow-hidden">
-    <CardHeader className="bg-gradient-to-l from-emerald-500/10 via-emerald-500/5 to-transparent border-b border-gray-100 dark:border-gray-800 p-6 sm:p-8">
-      <CardTitle className="flex items-center gap-4 text-2xl font-bold text-[#CBA853]">   <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                    <Calendar className="w-7 h-7 text-[#CBA853]" />
-                  </div>
-                  <div>
-                    <div>المواعيد المحجوزة</div>
-                    <div className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
-                      {appointments.length} موعد نشط
+            <TabsContent value="appointments">
+              <Card className="shadow-xl border-0 bg-white dark:bg-gray-900 overflow-hidden">
+                <CardHeader className="bg-gradient-to-l from-emerald-500/10 via-emerald-500/5 to-transparent border-b border-gray-100 dark:border-gray-800 p-6">
+                  <CardTitle className="flex items-center gap-4 text-2xl font-bold text-[#CBA853]">
+                    <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                      <Calendar className="w-7 h-7 text-[#CBA853]" />
                     </div>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-
-    <CardContent className="p-6 sm:p-8 text-[#CBA853]">
-                {appointments.length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                    {appointments.map((appointment) => (
-                      <Card
-                        key={appointment.id}
-                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor()}`}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-5">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
-                                {getTypeIcon(appointment.type)}
-                              </div>
-                              <Badge
-                                variant="secondary"
-                                className="text-xs font-semibold px-3 py-1 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 border-0 shadow-sm"
-                              >
-                                {appointment.type === "doctor" && "طبيب"}
-                                {appointment.type === "offer" && "عرض"}
-                                {appointment.type === "device" && "جهاز"}
-                                {appointment.type === "branch" && "فرع"}
-                              </Badge>
-                            </div>
-
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-red-500 hover:text-[#CBA853] hover:bg-red-50 dark:hover:bg-red-950/20 p-2 h-auto rounded-full transition-colors"
+                    <div>
+                      <div>المواعيد المحجوزة</div>
+                      <div className="text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+                        {appointments.length} موعد نشط
+                      </div>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {appointments.length > 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {appointments.map((appointment) => (
+                        <Card
+                          key={appointment.id}
+                          className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor()}`}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex justify-between items-start mb-5">
+                              <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/80 dark:bg-gray-800/80 rounded-lg shadow-sm">
+                                  {getTypeIcon(appointment.type)}
+                                </div>
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs font-semibold px-3 py-1 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-300 border-0 shadow-sm"
                                 >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent dir="rtl" className="max-w-md">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-xl font-bold">تأكيد الإلغاء</AlertDialogTitle>
-                                  <AlertDialogDescription className="text-base text-gray-600 dark:text-gray-400">
-                                    هل أنت متأكد من إلغاء هذا الموعد؟ لا يمكن التراجع عن هذا الإجراء.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="font-medium">إلغاء</AlertDialogCancel>
-                                  <AlertDialogAction className="bg-red-500 hover:bg-red-600 font-medium">
-                                    نعم، إلغاء الموعد
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-{appointment.scheduledAt ? (
-  <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50  px-3 py-2 rounded-lg">
-    <span className="text-black font-medium">
-   موعد الحجز :   {formatScheduledDate(appointment.scheduledAt)} 
-    </span>
-    <Clock className="w-4 h-4 text-black" />
-  </div>
-) : (
-  <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 dark:bg-gray-950/20 px-3 py-2 rounded-lg">
-    <span className="text-gray-700 dark:text-gray-300 font-medium">
-      لم يتم الحجز موعد بعد
-    </span>
-    <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-  </div>
-)}
-
-                          {/* Doctor Appointment */}
-                          {appointment.type === "doctor" && appointment.related && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
-                                  {appointment.related.name}
-                                </h3>
-                                <p className="text-[#CBA853] dark:text-emerald-400 font-semibold text-sm mb-3">
-                                  {appointment.related.specialty}
-                                </p>
-                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                  <span className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/20 px-2 py-1 rounded-full">
-                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                    {appointment.related.rating}
-                                  </span>
-                                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs">
-                                    {appointment.related.experience}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                                  {appointment.related.services}
-                                </p>
+                                  {appointment.type === "doctor" && "طبيب"}
+                                  {appointment.type === "offer" && "عرض"}
+                                  {appointment.type === "device" && "جهاز"}
+                                  {appointment.type === "branch" && "فرع"}
+                                </Badge>
                               </div>
-                              {appointment.related.image && (
-                                <div className="rounded-xl overflow-hidden shadow-md">
-                                  <img
-                                    src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
-                                    alt={appointment.related.name}
-                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
-                                  />
-                                </div>
-                              )}
+                              <AppointmentStatusDialog
+                                appointment={appointment}
+                                onStatusUpdate={updateAppointmentStatus}
+                              />
                             </div>
-                          )}
 
-                          {/* Offer Appointment */}
-                          {appointment.type === "offer" && appointment.related && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-3 leading-tight">
-                                  {appointment.related.title}
-                                </h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
-                                  {appointment.related.description}
-                                </p>
-                                <div className="flex items-center gap-3 mb-3">
-                                  <span className="text-gray-500 dark:text-gray-400 line-through text-base">
-                                    {appointment.related.priceBefore} ج.م
-                                  </span>
-                                  <span className="text-[#CBA853] dark:text-orange-400 font-bold text-xl">
-                                    {appointment.related.priceAfter} ج.م
-                                  </span>
-                                  <Badge className="bg-red-500 hover:bg-red-600 text-white border-0 text-xs font-semibold">
-                                    خصم {appointment.related.discountPercentage}%
+                            {appointment.scheduledAt ? (
+                              <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 px-3 py-2 rounded-lg">
+                                <span className="text-black font-medium">
+                                  موعد الحجز : {formatScheduledDate(appointment.scheduledAt)}
+                                </span>
+                                <Clock className="w-4 h-4 text-black" />
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 dark:bg-gray-950/20 px-3 py-2 rounded-lg">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                  لم يتم الحجز موعد بعد
+                                </span>
+                                <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                              </div>
+                            )}
+
+                            {/* Doctor Appointment */}
+                            {appointment.type === "doctor" && appointment.related && (
+                              <div className="space-y-4">
+                                <div>
+                                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+                                    {appointment.related.name}
+                                  </h3>
+                                  <p className="text-[#CBA853] dark:text-emerald-400 font-semibold text-sm mb-3">
+                                    {appointment.related.specialty}
+                                  </p>
+                                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                    <span className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/20 px-2 py-1 rounded-full">
+                                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                      {appointment.related.rating}
+                                    </span>
+                                    <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs">
+                                      {appointment.related.experience}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                    {appointment.related.services}
+                                  </p>
+                                </div>
+                                {appointment.related.image && (
+                                  <div className="rounded-xl overflow-hidden shadow-md">
+                                    <img
+                                      src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
+                                      alt={appointment.related.name}
+                                      className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Offer Appointment */}
+                            {appointment.type === "offer" && appointment.related && (
+                              <div className="space-y-4">
+                                <div>
+                                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-3 leading-tight">
+                                    {appointment.related.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
+                                    {appointment.related.description}
+                                  </p>
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <span className="text-gray-500 dark:text-gray-400 line-through text-base">
+                                      {appointment.related.priceBefore} ج.م
+                                    </span>
+                                    <span className="text-[#CBA853] dark:text-orange-400 font-bold text-xl">
+                                      {appointment.related.priceAfter} ج.م
+                                    </span>
+                                    <Badge className="bg-red-500 hover:bg-red-600 text-white border-0 text-xs font-semibold">
+                                      خصم {appointment.related.discountPercentage}%
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
+                                    <Clock className="w-4 h-4" />
+                                    صالح حتى: {appointment.related.validUntil ? new Date(appointment.related.validUntil).toLocaleDateString("ar-EG") : "غير محدد"}
+                                  </p>
+                                </div>
+                                {appointment.related.image && (
+                                  <div className="rounded-xl overflow-hidden shadow-md">
+                                    <img
+                                      src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
+                                      alt={appointment.related.title}
+                                      className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Device Appointment */}
+                            {appointment.type === "device" && appointment.related && (
+                              <div className="space-y-4">
+                                <div>
+                                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+                                    {appointment.related.name}
+                                  </h3>
+                                  <p className="text-[#CBA853] dark:text-blue-400 font-semibold text-sm mb-4">
+                                    {appointment.related.type}
+                                  </p>
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                      <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700 dark:text-gray-300">
+                                        {appointment.related.available_times ? appointment.related.available_times.replace(/^"|"$/g, "") : "غير محدد"}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700 dark:text-gray-300">
+                                        {appointment.related.location}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {appointment.related.image_url && (
+                                  <div className="rounded-xl overflow-hidden shadow-md">
+                                    <img
+                                      src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
+                                      alt={appointment.related.name}
+                                      className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Branch Appointment */}
+                            {appointment.type === "branch" && appointment.related && (
+                              <div className="space-y-4">
+                                <div>
+                                  {appointment.related.image_url && (
+                                    <img
+                                      src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
+                                      alt={appointment.related.name}
+                                      className="w-full h-40 object-cover rounded-lg mb-4"
+                                    />
+                                  )}
+                                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
+                                    {appointment.related.name}
+                                  </h3>
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700 dark:text-gray-300">
+                                        {appointment.related.address?.replace(/^"|"$/g, "")}
+                                      </span>
+                                    </div>
+                                    {appointment.phone && (
+                                      <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                        <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                        <span className="text-gray-700 dark:text-gray-300 font-mono">
+                                          {appointment.phone}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {appointment.related.google_map_link && (
+                                      <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                        <a
+                                          href={appointment.related.google_map_link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[#CBA853] hover:underline"
+                                        >
+                                          عرض على الخريطة
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className="mt-3 border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300"
+                                  >
+                                    حجز مباشر بالفرع
                                   </Badge>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
-                                  <Clock className="w-4 h-4" />
-                                  صالح حتى: {appointment.related.validUntil ? new Date(appointment.related.validUntil).toLocaleDateString("ar-EG") : "غير محدد"}
-                                </p>
                               </div>
-                              {appointment.related.image && (
-                                <div className="rounded-xl overflow-hidden shadow-md">
-                                  <img
-                                    src={getImageUrl(appointment.related.image) || "/placeholder.svg"}
-                                    alt={appointment.related.title}
-                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
-                                  />
-                                </div>
+                            )}
+
+                            {/* Status Badge */}
+                            <div className="absolute top-6 left-4">
+                              {appointment.status === "pending" && (
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                  ⏳ قيد الانتظار
+                                </Badge>
+                              )}
+                              {appointment.status === "confirmed" && (
+                                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
+                                  ✅ مؤكد
+                                </Badge>
+                              )}
+                              {appointment.status === "completed" && (
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
+                                  ✔️ مكتمل
+                                </Badge>
+                              )}
+                              {appointment.status === "cancelled" && (
+                                <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+                                  ❌ ملغى
+                                </Badge>
                               )}
                             </div>
-                          )}
 
-                          {/* Device Appointment */}
-                          {appointment.type === "device" && appointment.related && (
-                            <div className="space-y-4">
-                              <div>
-                                <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
-                                  {appointment.related.name}
-                                </h3>
-                                <p className="text-[#CBA853] dark:text-blue-400 font-semibold text-sm mb-4">
-                                  {appointment.related.type}
-                                </p>
-                                <div className="space-y-3 text-sm">
-                                  <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-                                    <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-gray-700 dark:text-gray-300">
-                                      {appointment.related.available_times ? appointment.related.available_times.replace(/^"|"$/g, "") : "غير محدد"}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-                                    <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-gray-700 dark:text-gray-300">
-                                      {appointment.related.location}
-                                    </span>
-                                  </div>
-                                </div>
+                            <div className="flex justify-between items-center mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">
+                                {formatDate(appointment.createdAt)}
                               </div>
-                              {appointment.related.image_url && (
-                                <div className="rounded-xl overflow-hidden shadow-md">
-                                  <img
-                                    src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
-                                    alt={appointment.related.name}
-                                    className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
-                                  />
-                                </div>
-                              )}
+                              <Button
+                                                                onClick={() => router.push(`/${appointment.type}s/${appointment.bookingId}`)}
+
+                                variant="outline"
+                                size="sm"
+                                className="text-[#CBA853] border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/20 font-medium shadow-sm hover:shadow-xl transition-all bg-transparent"
+                              >
+                                <Eye className="w-4 h-4 ml-1" />
+                                التفاصيل
+                              </Button>
                             </div>
-                          )}
-
-                          {/* Branch Appointment */}
-           {appointment.type === "branch" && appointment.related && (
-  <div className="space-y-4">
-    <div>
-      {/* صورة الفرع */}
-      {appointment.related.image_url && (
-        <img
-          src={getImageUrl(appointment.related.image_url) || "/placeholder.svg"}
-          alt={appointment.related.name}
-          className="w-full h-40 object-cover rounded-lg mb-4"
-        />
-      )}
-
-      {/* اسم الفرع */}
-      <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2 leading-tight">
-        {appointment.related.name}
-      </h3>
-
-      <div className="space-y-3 text-sm">
-        {/* العنوان */}
-        <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-          <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-          <span className="text-gray-700 dark:text-gray-300">
-            {appointment.related.address?.replace(/^"|"$/g, "")}
-          </span>
-        </div>
-
-        {/* رقم الهاتف */}
-        {appointment.phone && (
-          <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-            <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700 dark:text-gray-300 font-mono">
-              {appointment.phone}
-            </span>
-          </div>
-        )}
-
-        {/* رابط الخريطة */}
-        {appointment.related.google_map_link && (
-          <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-            <a
-              href={appointment.related.google_map_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#CBA853] hover:underline"
-            >
-              عرض على الخريطة
-            </a>
-          </div>
-        )}
-      </div>
-
-      {/* Badge */}
-      <Badge
-        variant="outline"
-        className="mt-3 border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300"
-      >
-        حجز مباشر بالفرع
-      </Badge>
-    </div>
-  </div>
-)}
-
-
-                          <div className="flex justify-between items-center mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">
-                              {formatDate(appointment.createdAt)}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-[#CBA853] border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/20 font-medium shadow-sm hover:shadow-xl transition-all bg-transparent"
-                            >
-                              <Eye className="w-4 h-4 ml-1" />
-                              التفاصيل
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  /* Enhanced empty state with better visual hierarchy */
-                  <div className="text-center py-20">
-                    <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-950/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center shadow-lg">
-                      <Calendar className="w-16 h-16 text-emerald-500" />
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">لا توجد مواعيد محجوزة</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
-                      ابدأ رحلتك الصحية معنا واحجز موعدك الأول مع أفضل الأطباء والمتخصصين
-                    </p>
-                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 text-base shadow-lg hover:shadow-xl transition-all">
-                      احجز موعد جديد
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-</TabsContent>
-
+                  ) : (
+                    <div className="text-center py-20">
+                      <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-950/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center shadow-lg">
+                        <Calendar className="w-16 h-16 text-emerald-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">لا توجد مواعيد محجوزة</h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                        ابدأ رحلتك الصحية معنا واحجز موعدك الأول مع أفضل الأطباء والمتخصصين
+                      </p>
+                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 text-base shadow-lg hover:shadow-xl transition-all">
+                        احجز موعد جديد
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </div>
