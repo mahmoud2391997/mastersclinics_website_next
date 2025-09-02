@@ -141,8 +141,11 @@ interface Appointment {
   type: "doctor" | "offer" | "device" | "branch"
   scheduledAt: string | null
   createdAt: string
+  payment_status: string 
   phone?: string
   related?: {
+    id: number
+    payment_status: string
     name?: string
     specialty?: string
     rating?: number
@@ -185,6 +188,12 @@ interface EmailEditState {
   isVerifying: boolean
   error: string
   codeSent: boolean
+}
+
+interface PaymentState {
+  isProcessing: boolean
+  sessionId: string | null
+  appointmentId: number | null
 }
 
 // Helper Functions
@@ -362,8 +371,6 @@ export default function ProfilePage() {
     errors: {},
     tempData: {},
   })
-  console.log(appointments);
-
   const [emailEditState, setEmailEditState] = useState<EmailEditState>({
     isEditing: false,
     newEmail: "",
@@ -372,6 +379,11 @@ export default function ProfilePage() {
     isVerifying: false,
     error: "",
     codeSent: false,
+  })
+  const [paymentState, setPaymentState] = useState<PaymentState>({
+    isProcessing: false,
+    sessionId: null,
+    appointmentId: null,
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -447,7 +459,6 @@ export default function ProfilePage() {
           'Cache-Control': 'no-cache',
         }
       })
-console.log(response);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -460,6 +471,7 @@ console.log(response);
       }
 
       const data: ProfileResponse = await response.json()
+      console.log(data);
 
       if (!data || !data.client) {
         throw new Error("Invalid response format: missing client data")
@@ -568,51 +580,131 @@ console.log(response);
     }
   }
 
-const updateAppointmentStatus = async (appointmentId: number, newStatus: string) => {
+  const updateAppointmentStatus = async (appointmentId: number, newStatus: string) => {
+    try {
+      const response = await fetch(`https://www.ss.mastersclinics.com/appointments/${appointmentId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: newStatus
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("انتهت جلسة التسجيل، يرجى تسجيل الدخول مرة أخرى");
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("clientInfo");
+          router.push("/");
+          return false;
+        }
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "فشل في تحديث حالة الموعد");
+      }
+
+      // Update local state
+      setAppointments((prev) =>
+        prev.map((apt) =>
+          apt.id === appointmentId ? { ...apt, status: newStatus as "pending" | "confirmed" | "completed" | "cancelled" } : apt
+        )
+      );
+
+      const statusMessages = {
+        "cancelled": "تم إلغاء الموعد بنجاح",
+        "confirmed": "تم تأكيد الموعد بنجاح",
+        "completed": "تم تحديث الموعد كمكتمل",
+        "pending": "تم إعادة الموعد إلى قيد الانتظار"
+      };
+      toast.success(statusMessages[newStatus as keyof typeof statusMessages] || "تم تحديث الموعد بنجاح");
+      return true;
+    } catch (err) {
+      console.error("Update appointment status error:", err);
+      toast.error(err instanceof Error ? err.message : "فشل في تحديث حالة الموعد. يرجى المحاولة لاحقًا.");
+      return false;
+    }
+  }
+const handleCreatePayment = async (appointmentId: number, id: number) => {
+  console.log("Creating payment for appointment:", appointmentId, "and entity:", id);
+
   try {
-    const response = await fetch(`https://www.ss.mastersclinics.com/appointments/${appointmentId}/status`, {
-      method: "PUT",
+    setPaymentState({
+      isProcessing: true,
+      sessionId: null,
+      appointmentId,
+    });
+
+    const response = await fetch("https://www.ss.mastersclinics.com/payment", {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        status: newStatus
+        appointmentId,
+        entityId: id,
       }),
     });
 
+    // 🔎 Log raw response status
+    console.log("Payment API status:", response.status);
+
+    const data = await response.json().catch(() => {
+      throw new Error("Failed to parse JSON from server");
+    });
+
+    // 🔎 Log full response body
+    console.log("Payment API response:", data);
+
     if (!response.ok) {
-      if (response.status === 401) {
-        toast.error("انتهت جلسة التسجيل، يرجى تسجيل الدخول مرة أخرى");
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("clientInfo");
-        router.push("/");
-        return false;
-      }
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "فشل في تحديث حالة الموعد");
+      // Show backend error if provided
+      throw new Error(data?.error || `Failed with status ${response.status}`);
     }
 
-    // Update local state
-    setAppointments((prev) =>
-      prev.map((apt) =>
-        apt.id === appointmentId ? { ...apt, status: newStatus as "pending" | "confirmed" | "completed" | "cancelled" } : apt
-      )
-    );
-
-    const statusMessages = {
-      "cancelled": "تم إلغاء الموعد بنجاح",
-      "confirmed": "تم تأكيد الموعد بنجاح",
-      "completed": "تم تحديث الموعد كمكتمل",
-      "pending": "تم إعادة الموعد إلى قيد الانتظار"
-    };
-    toast.success(statusMessages[newStatus as keyof typeof statusMessages] || "تم تحديث الموعد بنجاح");
-    return true;
+    if (data.success && data.url && data.sessionId) {
+      setPaymentState((prev) => ({ ...prev, sessionId: data.sessionId }));
+      console.log("Redirecting to Stripe checkout:", data.url);
+      window.location.href = data.url;
+    } else {
+      throw new Error(data?.error || "Invalid payment response");
+    }
   } catch (err) {
-    console.error("Update appointment status error:", err);
-    toast.error(err instanceof Error ? err.message : "فشل في تحديث حالة الموعد. يرجى المحاولة لاحقًا.");
-    return false;
+    console.error("Payment creation failed:", err);
+    toast.error("فشل في إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.");
+    setPaymentState({
+      isProcessing: false,
+      sessionId: null,
+      appointmentId: null,
+    });
   }
-}
+};
+
+
+  const checkPaymentStatus = async (sessionId: string) => {
+    try {
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/payment/status/${sessionId}`
+      )
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.paymentStatus === 'paid') {
+          toast.success("تم الدفع بنجاح!")
+          // Refresh appointments to update status
+          fetchProfileData()
+          setPaymentState({
+            isProcessing: false,
+            sessionId: null,
+            appointmentId: null,
+          })
+        }
+      }
+    } catch (err) {
+      console.error("Error checking payment status:", err)
+    }
+  }
+
+
 
   const handleEditProfile = () => {
     if (!clientInfo) return
@@ -848,6 +940,17 @@ const updateAppointmentStatus = async (appointmentId: number, newStatus: string)
     }, 10000)
     return () => clearTimeout(timer)
   }, [loading])
+
+  useEffect(() => {
+    if (paymentState.sessionId) {
+      // Check status every 5 seconds
+      const interval = setInterval(() => {
+        checkPaymentStatus(paymentState.sessionId as string)
+      }, 5000)
+
+      return () => clearInterval(interval)
+    }
+  }, [paymentState.sessionId])
 
   // Render Loading State
   if (loading) {
@@ -1407,18 +1510,17 @@ const updateAppointmentStatus = async (appointmentId: number, newStatus: string)
                             </div>
 
                             {appointment.scheduledAt ? (
-                              <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 px-3 py-2 rounded-lg">
+                              <div className="flex items-center justify-start gap-2 mt-3 mb-4 bg-gray-50 px-3 py-2 rounded-lg">
+                                <Clock className="w-4 h-4 text-black" />
                                 <span className="text-black font-medium">
                                   موعد الحجز : {formatScheduledDate(appointment.scheduledAt)}
                                 </span>
-                                <Clock className="w-4 h-4 text-black" />
                               </div>
                             ) : (
-                              <div className="flex items-center justify-end gap-2 mt-3 mb-4 bg-gray-50 dark:bg-gray-950/20 px-3 py-2 rounded-lg">
-                                <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                  لم يتم الحجز موعد بعد
-                                </span>
+                              <div className="flex items-center justify-start gap-2 mt-3 mb-4 bg-gray-50 dark:bg-gray-950/20 px-3 py-2 rounded-lg">
                                 <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">
+لم يتم تحديد موعد الحجز بعد                                </span>
                               </div>
                             )}
 
@@ -1478,10 +1580,17 @@ const updateAppointmentStatus = async (appointmentId: number, newStatus: string)
                                       خصم {appointment.related.discountPercentage}%
                                     </Badge>
                                   </div>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
-                                    <Clock className="w-4 h-4" />
-                                    صالح حتى: {appointment.related.validUntil ? new Date(appointment.related.validUntil).toLocaleDateString("ar-EG") : "غير محدد"}
-                                  </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
+                                      <CreditCard className="w-4 h-4 ml-2" />
+  دفع الحجز : {
+    appointment.payment_status === "paid" ? "مدفوع" :
+    appointment.payment_status === "pending" ? "قيد المعالجة" :
+    appointment.payment_status === "failed" ? "فشل الدفع" :
+    appointment.payment_status === "unpaid" ? "غير مدفوع" :
+    "غير محدد"
+  }
+</p>
+
                                 </div>
                                 {appointment.related.image && (
                                   <div className="rounded-xl overflow-hidden shadow-md">
@@ -1608,13 +1717,61 @@ const updateAppointmentStatus = async (appointmentId: number, newStatus: string)
                               )}
                             </div>
 
+                            {/* Payment Status */}
+                            {appointment.related?.payment_status && appointment.related.payment_status !== "paid" && (
+                              <div className="absolute top-6 right-4">
+                                <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+                                  ❌ غير مدفوع
+                                </Badge>
+                              </div>
+                            )}
+
+                            {/* Payment Processing Indicator */}
+                            {paymentState.isProcessing && paymentState.appointmentId === appointment.id && (
+                              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 ml-2">
+                                <Loader2 className="w-3 h-3 ml-1 animate-spin" />
+                                جاري الدفع
+                              </Badge>
+                            )}
+
+                            {/* Payment Button for Unpaid Appointments */}
+                            {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
+                              <div className="mt-4">
+                                <Button
+                                  onClick={() => {
+                                    const entityId = appointment.related?.id
+                                    if (entityId) {
+                                      handleCreatePayment(appointment.id, entityId)
+                                    } else {
+                                      console.log("asdasd");
+                                      
+                                      toast.error("لا يمكن معالجة الدفع لهذا الموعد - معلومات ناقصة")
+                                    }
+                                  }}
+                                  disabled={paymentState.isProcessing && paymentState.appointmentId === appointment.id}
+                                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  {paymentState.isProcessing && paymentState.appointmentId === appointment.id ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                      جاري التوجيه للدفع...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CreditCard className="w-4 h-4 ml-2" />
+                                      ادفع الآن
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            )}
+
                             <div className="flex justify-between items-center mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
                               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">
                                 {formatDate(appointment.createdAt)}
                               </div>
                               <Button
-                                                                onClick={() => router.push(`/${appointment.type}s/${appointment.bookingId}`)}
-
+                                onClick={() => router.push(`/${appointment.type}s/${appointment.related?.id}`)}
                                 variant="outline"
                                 size="sm"
                                 className="text-[#CBA853] border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 dark:text-emerald-400 dark:border-emerald-800 dark:hover:bg-emerald-950/20 font-medium shadow-sm hover:shadow-xl transition-all bg-transparent"

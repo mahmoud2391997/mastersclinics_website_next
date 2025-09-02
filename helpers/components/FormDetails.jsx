@@ -151,6 +151,8 @@ const SimpleCtaForm = ({
   device = null,
   landingPageId = null,
 }) => {
+  console.log(entityId);
+  
   const [formData, setFormData] = useState({
     name: "",
     phone: "",

@@ -55,7 +55,7 @@ const TestimonialArabic = (props) => {
 console.log(testimonials);
 
   return (
-    <section dir="rtl" className={`${props.tClass || ""} w-full overflow-hidden pt-5`}>
+    <section dir="rtl" className={`${props.tClass || ""} w-full overflow-hidden pt-5`} id="testimonials-section" >
       <div className="container-fluid px-3 md:px-4 lg:px-6">
         <div className="row justify-content-right">
           <div className="col-12">

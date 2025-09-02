@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar/Navbar'
 import Hero from '../../components/hero/hero';
 import ServiceSection from '../../components/ServiceSection/ServiceSection';
@@ -13,11 +13,21 @@ import Footer from '../../components/footer/Footer';
 import Scrollbar from '../../components/scrollbar/scrollbar';
 import ImageSlider from '../../components/adsSlider/index';
 import DepartmentsGrid from '@/pages/departments/grid';
-
+import { useRouter } from 'next/router';
 
 const HomePage = () => {
   const [showAuthPopup, setShowAuthPopup] = useState(false);
   const [isBackgroundBlack, setIsBackgroundBlack] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (router.query.scroll === "testimonials") {
+      const section = document.getElementById("testimonials-section");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [router.query.scroll]);
 
   const handleToggleBackground = () => {
     setIsBackgroundBlack(!isBackgroundBlack);
@@ -32,8 +42,6 @@ const HomePage = () => {
         handleToggleBackground={handleToggleBackground}
         isBackgroundBlack={isBackgroundBlack}
       />
-
-   
 
       <Hero hclass={'static-hero'} />
       <ImageSlider setShowAuthPopup={setShowAuthPopup} />
