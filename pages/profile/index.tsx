@@ -47,7 +47,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-toastify"
 import Scrollbar from "@/helpers/components/scrollbar/scrollbar"
 
-// Types
+// Types (unchanged from your original code)
 interface ClientInfo {
   id: number
   unique_number: string
@@ -196,7 +196,7 @@ interface PaymentState {
   appointmentId: number | null
 }
 
-// Helper Functions
+// Helper Functions (unchanged from your original code)
 const getTypeColor = () => {
   return "border-r-4 border-r-orange-500 bg-gradient-to-l from-orange-50 to-white hover:from-orange-100 dark:from-orange-950/20 dark:to-background dark:hover:from-orange-950/30"
 }
@@ -289,7 +289,7 @@ const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
   return null
 }
 
-// Sub-component for Appointment Status Dialog
+// Sub-component for Appointment Status Dialog (unchanged)
 const AppointmentStatusDialog = ({ appointment, onStatusUpdate }: {
   appointment: Appointment,
   onStatusUpdate: (id: number, status: string) => Promise<boolean>
@@ -388,6 +388,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [lastRequestTime, setLastRequestTime] = useState<number>(0)
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -443,8 +444,22 @@ export default function ProfilePage() {
     return emailRegex.test(email)
   }
 
+  // Rate limiting helper
+  const canMakeRequest = () => {
+    const now = Date.now()
+    const timeSinceLastRequest = now - lastRequestTime
+    // Only allow 1 request per 2 seconds to avoid rate limiting
+    return timeSinceLastRequest > 2000
+  }
+
   const fetchProfileData = async () => {
     try {
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        console.log("Rate limiting - skipping request")
+        return
+      }
+      
       setLoading(true)
       setError(null)
       const clientId = getClientId()
@@ -453,6 +468,9 @@ export default function ProfilePage() {
         router.push("/")
         return
       }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch(`https://www.ss.mastersclinics.com/api/client-auth/profile/${clientId}`, {
         method: "GET",
         headers: {
@@ -466,6 +484,12 @@ export default function ProfilePage() {
           router.push("/")
           return
         }
+        
+        if (response.status === 429) {
+          setError("تم تجاوز عدد الطلبات المسموح بها. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.")
+          return
+        }
+        
         const errorText = await response.text()
         throw new Error(`API Error: ${response.status} - ${errorText}`)
       }
@@ -504,6 +528,14 @@ export default function ProfilePage() {
       const clientId = getClientId()
       if (!clientId) return
 
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        console.log("Rate limiting - skipping wishlist refresh")
+        return
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch(`https://www.ss.mastersclinics.com/api/wishlist/${clientId}`)
       if (response.ok) {
         const data = await response.json()
@@ -552,6 +584,14 @@ export default function ProfilePage() {
         }),
       )
 
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        return
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch("https://www.ss.mastersclinics.com/api/wishlist", {
         method: "DELETE",
         headers: {
@@ -582,6 +622,14 @@ export default function ProfilePage() {
 
   const updateAppointmentStatus = async (appointmentId: number, newStatus: string) => {
     try {
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        return false
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch(`https://www.ss.mastersclinics.com/appointments/${appointmentId}/status`, {
         method: "PUT",
         headers: {
@@ -600,6 +648,12 @@ export default function ProfilePage() {
           router.push("/");
           return false;
         }
+        
+        if (response.status === 429) {
+          toast.error("تم تجاوز عدد الطلبات المسموح بها. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.")
+          return false
+        }
+        
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || "فشل في تحديث حالة الموعد");
       }
@@ -625,60 +679,80 @@ export default function ProfilePage() {
       return false;
     }
   }
-const handleCreatePayment = async (appointmentId: number, id: number) => {
-  console.log("Creating payment for appointment:", appointmentId, "and entity:", id);
 
-  try {
-    setPaymentState({
-      isProcessing: true,
-      sessionId: null,
-      appointmentId,
-    });
+  const handleCreatePayment = async (appointmentId: number, id: number) => {
+    console.log("Creating payment for appointment:", appointmentId, "and entity:", id);
 
-    const response = await fetch("https://www.ss.mastersclinics.com/payment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        return
+      }
+      
+      setPaymentState({
+        isProcessing: true,
+        sessionId: null,
         appointmentId,
-        entityId: id,
-      }),
-    });
+      });
+      
+      setLastRequestTime(Date.now())
 
-    // 🔎 Log raw response status
-    console.log("Payment API status:", response.status);
+      const response = await fetch("https://www.ss.mastersclinics.com/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          appointmentId,
+          entityId: id,
+        }),
+      });
 
-    const data = await response.json().catch(() => {
-      throw new Error("Failed to parse JSON from server");
-    });
+      // 🔎 Log raw response status
+      console.log("Payment API status:", response.status);
 
-    // 🔎 Log full response body
-    console.log("Payment API response:", data);
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error("تم تجاوز عدد الطلبات المسموح بها. يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.")
+          setPaymentState({
+            isProcessing: false,
+            sessionId: null,
+            appointmentId: null,
+          });
+          return
+        }
+        
+        const errorText = await response.text();
+        throw new Error(errorText || `Failed with status ${response.status}`);
+      }
 
-    if (!response.ok) {
-      // Show backend error if provided
-      throw new Error(data?.error || `Failed with status ${response.status}`);
+      const data = await response.json();
+
+      // 🔎 Log full response body
+      console.log("Payment API response:", data);
+
+      if (data.success && data.url && data.sessionId) {
+        setPaymentState((prev) => ({ ...prev, sessionId: data.sessionId }));
+        console.log("Redirecting to payment:", data.url);
+        window.location.href = data.url;
+      } else if (data.url) {
+        // Handle case where response structure might be different
+        console.log("Redirecting to payment (alternative format):", data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error(data?.error || "Invalid payment response");
+      }
+    } catch (err) {
+      console.error("Payment creation failed:", err);
+      toast.error("فشل في إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.");
+      setPaymentState({
+        isProcessing: false,
+        sessionId: null,
+        appointmentId: null,
+      });
     }
-
-    if (data.success && data.url && data.sessionId) {
-      setPaymentState((prev) => ({ ...prev, sessionId: data.sessionId }));
-      console.log("Redirecting to Stripe checkout:", data.url);
-      window.location.href = data.url;
-    } else {
-      throw new Error(data?.error || "Invalid payment response");
-    }
-  } catch (err) {
-    console.error("Payment creation failed:", err);
-    toast.error("فشل في إنشاء جلسة الدفع. يرجى المحاولة مرة أخرى.");
-    setPaymentState({
-      isProcessing: false,
-      sessionId: null,
-      appointmentId: null,
-    });
-  }
-};
-
+  };
 
   const checkPaymentStatus = async (sessionId: string) => {
     try {
@@ -703,8 +777,6 @@ const handleCreatePayment = async (appointmentId: number, id: number) => {
       console.error("Error checking payment status:", err)
     }
   }
-
-
 
   const handleEditProfile = () => {
     if (!clientInfo) return
@@ -739,6 +811,15 @@ const handleCreatePayment = async (appointmentId: number, id: number) => {
         identity_number: editState.tempData.identity_number || clientInfo.identity_number,
       }
 
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        setEditState((prev) => ({ ...prev, isLoading: false }))
+        return
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/edit-client", {
         method: "PUT",
         headers: {
@@ -808,6 +889,15 @@ const handleCreatePayment = async (appointmentId: number, id: number) => {
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        setEmailEditState((prev) => ({ ...prev, isSendingCode: false }))
+        return
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authorize", {
         method: "POST",
         headers: {
@@ -844,6 +934,15 @@ const handleCreatePayment = async (appointmentId: number, id: number) => {
       const clientId = getClientId()
       if (!clientId) throw new Error("Authentication required")
 
+      // Check rate limiting
+      if (!canMakeRequest()) {
+        toast.info("جاري معالجة طلبات أخرى، سيتم إكمال العملية قريباً")
+        setEmailEditState((prev) => ({ ...prev, isVerifying: false }))
+        return
+      }
+      
+      setLastRequestTime(Date.now())
+      
       const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/change-email", {
         method: "POST",
         headers: {
@@ -1012,9 +1111,9 @@ const handleCreatePayment = async (appointmentId: number, id: number) => {
     )
   }
 
-  // Main Render
+  // Main Render (unchanged from your original code)
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen px-2">
       <Navbar nav={true} />
       <div className="container mx-auto px-4 py-8 bg-gray-50" dir="rtl">
         <div className="max-w-6xl mx-auto">

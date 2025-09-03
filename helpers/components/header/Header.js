@@ -123,6 +123,9 @@ const Header = (props) => {
   // Wishlist sidebar state
   const [wishlistOpen, setWishlistOpen] = useState(false);
   
+  // Appointment count state
+  const [appointmentCount, setAppointmentCount] = useState(0);
+  
   try {
     routerRef.current = useRouter();
   } catch (error) {
@@ -148,7 +151,36 @@ const Header = (props) => {
   const [isMobile, setIsMobile] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
-const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
+  const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
+
+  // Fetch appointment count
+  const fetchAppointmentCount = async () => {
+    const clientId = getClientId();
+    
+    if (!clientId) {
+      setAppointmentCount(0);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/count`
+      );
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch appointment count");
+      }
+      
+      const data = await response.json();
+      console.log(data);
+      
+      setAppointmentCount(data.totalAppointments || 0);
+      
+    } catch (err) {
+      console.error("Error fetching appointment count:", err);
+      setAppointmentCount(0);
+    }
+  };
 
   useEffect(() => {
     const handleShowAuthPopup = () => {
@@ -172,6 +204,20 @@ const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
       return null;
     }
   };
+
+  // Update appointment count when authentication status changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAppointmentCount();
+      
+      // Set up interval to refresh appointment count every 30 seconds
+      const intervalId = setInterval(fetchAppointmentCount, 30000);
+      
+      return () => clearInterval(intervalId);
+    } else {
+      setAppointmentCount(0);
+    }
+  }, [isAuthenticated]);
 
   const syncUnauthenticatedWishlist = async (userId) => {
     const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
@@ -766,32 +812,31 @@ const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
       handleSearch(query);
     }
   };
-const handleItemClick = async (entity, id) => {
-  const router = getRouter();
+  const handleItemClick = async (entity, id) => {
+    const router = getRouter();
 
-  if (entity === "testimonials") {
-    if (router && router.pathname !== "/") {
-      setIsNavigating(true);
-      await router.push("/?scroll=testimonials");
-      setIsNavigating(false);
+    if (entity === "testimonials") {
+      if (router && router.pathname !== "/") {
+        setIsNavigating(true);
+        await router.push("/?scroll=testimonials");
+        setIsNavigating(false);
+      } else {
+        // Already on homepage, just scroll
+        const testimonialsSection = document.getElementById("testimonials-section");
+        if (testimonialsSection) {
+          testimonialsSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }
     } else {
-      // Already on homepage, just scroll
-      const testimonialsSection = document.getElementById("testimonials-section");
-      if (testimonialsSection) {
-        testimonialsSection.scrollIntoView({ behavior: "smooth" });
+      if (router) {
+        await router.push(`/${entity}/${id}`);
       }
     }
-  } else {
-    if (router) {
-      await router.push(`/${entity}/${id}`);
-    }
-  }
 
-  setShowSearch(false);
-  setQuery("");
-  setResults(null);
-};
-
+    setShowSearch(false);
+    setQuery("");
+    setResults(null);
+  };
 
   const ClickHandler = () => {
     window.scrollTo(10, 0);
@@ -941,6 +986,24 @@ const handleItemClick = async (entity, id) => {
           {count > 0 && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
               {count > 99 ? "99+" : count}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderAppointmentIcon = () => {
+    return (
+      <div className="relative">
+        <div
+          onClick={() => safeNavigate("/profile?tab=appointments")}
+          className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <FaRegCalendarAlt className="text-[#dec06a]" size={20} />
+          {appointmentCount > 0 && (
+            <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
+              {appointmentCount > 99 ? "99+" : appointmentCount}
             </div>
           )}
         </div>
@@ -1181,7 +1244,7 @@ const handleItemClick = async (entity, id) => {
               </div>
 
               {/* Search and Account Icons */}
-           <div
+        <div
   className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3
     ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
 >
@@ -1207,7 +1270,180 @@ const handleItemClick = async (entity, id) => {
         ref={authPopupRef}
         className="absolute top-full left-0 md:top-[-115px] !left-15 mt-2 w-70 bg-white rounded-lg shadow-lg p-4 z-50"
       >
-        {/* your existing auth logic here */}
+        {!isAuthenticated ? (
+          <>
+            {authStep === 1 && (
+              <form onSubmit={handleEmailSubmit}>
+                <h3 className="text-lg font-semibold mb-4 text-right">تسجيل الدخول</h3>
+                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                <div className="mb-4">
+                  <label className="block text-right mb-2">البريد الإلكتروني</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-2 py-2 border border-gray-300 rounded text-right"
+                    placeholder="example@example.com"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                >
+                  إرسال رمز التحقق 
+                </button>
+              </form>
+            )}
+            
+            {authStep === 2 && (
+              <form onSubmit={handleVerificationSubmit}>
+                <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
+                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
+                
+                <div className="mb-4">
+                  <label className="block text-right mb-2">رمز التحقق</label>
+                  <div className="flex gap-2 justify-end" dir="ltr">
+                    {[0, 1, 2, 3].map((index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        maxLength="1"
+                        value={verificationCode[index] || ''}
+                        onChange={(e) => {
+                          if (e.target.value.length > 1) {
+                            const pastedCode = e.target.value.slice(0, 4);
+                            setVerificationCode(pastedCode);
+                            return;
+                          }
+                          
+                          const newCode = [...verificationCode.padEnd(4, ' ')];
+                          newCode[index] = e.target.value;
+                          setVerificationCode(newCode.join('').trim());
+                          
+                          if (e.target.value && index < 3) {
+                            e.target.nextElementSibling.focus();
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                            e.target.previousElementSibling.focus();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
+                          if (pastedData.length === 4) {
+                            setVerificationCode(pastedData);
+                          }
+                        }}
+                        required
+                        className="w-12 h-12 px-3 py-2 border border-gray-300 rounded text-center text-xl"
+                        pattern="[0-9]"
+                        inputMode="numeric"
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <button
+                  type="submit"
+                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                >
+                  تأكيد
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setAuthStep(1)}
+                  className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
+                >
+                  تغيير البريد الإلكتروني او ارسال رمز جديد
+                </button>
+              </form>
+            )}
+            
+            {authStep === 3 && (
+              <form onSubmit={handleUserInfoSubmit}>
+                <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
+                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                
+                <div className="mb-4">
+                  <label className="block text-right mb-2">الاسم الأول</label>
+                  <input
+                    type="text"
+                    value={userInfo.firstName}
+                    onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-right mb-2">الاسم الأخير</label>
+                  <input
+                    type="text"
+                    value={userInfo.lastName}
+                    onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-right mb-2">رقم الهاتف</label>
+                  <input
+                    type="tel"
+                    value={userInfo.phoneNumber}
+                    onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-right mb-2">رقم الهوية</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={userInfo.identity_number || ""}
+                    onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
+                    placeholder="1234567890"
+                    required
+                    minLength="10"
+                    maxLength="10"
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                >
+                  حفظ
+                </button>
+              </form>
+            )}
+          </>
+        ) : (
+          <div className="text-right">
+            <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
+            <p className="mb-4">الاسم: {clientName}</p>
+            <p className="mb-4">البريد الإلكتروني: {email}</p>
+            <button className="w-full gradient py-2 rounded transition mb-1">
+              <Link href={"/profile"} className="!text-white">
+                حسابي
+              </Link>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
+            >
+              تسجيل الخروج
+            </button>
+          </div>
+        )}
       </div>
     )}
   </div>
@@ -1217,15 +1453,8 @@ const handleItemClick = async (entity, id) => {
     {/* Wishlist Icon */}
     {renderWishlistIcon()}
 
-    {/* Calendar Icon */}
-    <div className="relative">
-      <div
-        onClick={() => safeNavigate("/profile?tab=appointments")}
-        className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
-      >
-        <FaRegCalendarAlt className="text-[#dec06a]" size={20} />
-      </div>
-    </div>
+    {/* Calendar Icon with appointment count */}
+    {renderAppointmentIcon()}
   </div>
 </div>
 
@@ -1243,6 +1472,12 @@ const handleItemClick = async (entity, id) => {
       <WishlistSidebar 
         wishlistOpen={wishlistOpen} 
         setWishlistOpen={setWishlistOpen} 
+        wishlistItems={wishlistItems}
+        setWishlistItems={setWishlistItems}
+        wishlistCount={wishlistCount}
+        setWishlistCount={setWishlistCount}
+        isAuthenticated={isAuthenticated}
+        setShowAuthPopup={setShowAuthPopup}
       />
 
       {/* Navigation Loading Indicator */}
@@ -1257,7 +1492,6 @@ const handleItemClick = async (entity, id) => {
     </div>
   );
 };
-
 
 export default Header;
 
