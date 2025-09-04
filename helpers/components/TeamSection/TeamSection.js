@@ -175,17 +175,18 @@ const TeamSection = ({
         {/* Image container */}
         <div className="relative p-4 flex-shrink-0 overflow-hidden rounded-t-[30px]">
           <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-br from-[#dec06a] via-[#d4b45c] to-[#c9a347] p-3">
-            <div className="relative overflow-hidden rounded-[20px] aspect-w-3 aspect-h-2">
-              <img
-                src={team.image ? getImageUrl(team.image) : V0_PLACEHOLDER_IMAGE}
-                alt={team.name || "Team Member"}
-                className="w-full h-full object-cover transform transition-transform duration-500"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.src = V0_PLACEHOLDER_IMAGE;
-                }}
-              />
-            </div>
+          <div className="w-full h-[500px] overflow-hidden">
+  <img
+    src={team.image ? getImageUrl(team.image) : V0_PLACEHOLDER_IMAGE}
+    alt={team.name || "Team Member"}
+    className="w-full h-full object-cover transform transition-transform duration-500"
+    loading="lazy"
+    onError={(e) => {
+      e.currentTarget.src = V0_PLACEHOLDER_IMAGE;
+    }}
+  />
+</div>
+
             {team.branch_name && (
               <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 text-xs font-bold text-gray-800 shadow-lg border border-[#dec06a]/30">
                 {team.branch_name}

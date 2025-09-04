@@ -144,6 +144,9 @@ const ServiceSection = ({
                   slidesPerView: 3,
                 },
               }}
+                centerInsufficientSlides={true}   // 👈 forces centering if slides are less than perView
+  className="!flex !items-center" // 👈 tailwind to force center
+
               loop={true}
               autoplay={{
                 delay: 5000,
@@ -157,7 +160,7 @@ const ServiceSection = ({
                     onClick={() => handleServiceClick(service.id)}
                   >
             
-                    <div className="flex-grow">
+                    <div className="flex-grow ">
                       <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300">
                         {service.name_ar}
                       </h2>
@@ -186,24 +189,37 @@ const ServiceSection = ({
                             ))}
                           </div>
                         </div>
-                      ) : null}
+                      ) :   <div className="mb-3">
+                          <span className="text-xs text-gray-500">الفروع المتاحة:</span>
+    <div className="mt-1 text-[#dec06a] text-lg">
+      غير محدد
+    </div>
+  </div>}
 
                       {/* Doctors Information */}
-                      {service.doctor_names && service.doctor_names.length > 0 ? (
-                        <div className="mb-3">
-                          <span className="text-xs text-gray-500">الأطباء المتاحون:</span>
-                          <div className="mt-1">
-                            {service.doctor_names.map((doctor, doctorIndex) => (
-                              <span
-                                key={doctorIndex}
-                                className="inline-block text-[#dec06a] text-lg px-2 py-1 rounded-full mr-1 mb-1"
-                              >
-                                {doctor}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
+                   {service.doctor_names && service.doctor_names.length > 0 ? (
+  <div className="mb-3">
+    <span className="text-xs text-gray-500">الأطباء المتاحون:</span>
+    <div className="mt-1">
+      {service.doctor_names.map((doctor, doctorIndex) => (
+        <span
+          key={doctorIndex}
+          className="inline-block text-[#dec06a] text-lg px-2 py-1 rounded-full mr-1 mb-1"
+        >
+          {doctor}
+        </span>
+      ))}
+    </div>
+  </div>
+) : (
+  <div className="mb-3">
+    <span className="text-xs text-gray-500">الأطباء المتاحون:</span>
+    <div className="mt-1 text-[#dec06a] text-lg">
+      غير محدد
+    </div>
+  </div>
+)}
+
                     </div>
 
                     {/* View Details Button */}
