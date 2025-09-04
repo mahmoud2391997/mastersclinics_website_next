@@ -36,7 +36,6 @@ import {
   Clock,
   MapPin,
   Eye,
-  EyeOff,
 } from "lucide-react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUserDoctor, faLaptopMedical, faGift } from "@fortawesome/free-solid-svg-icons"

@@ -163,18 +163,24 @@ const Header = (props) => {
     }
 
     try {
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/count`
-      );
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch appointment count");
-      }
-      
-      const data = await response.json();
-      console.log(data);
-      
-      setAppointmentCount(data.totalAppointments || 0);
+const response = await fetch(
+  `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/count`,
+  { cache: "no-store" }
+);
+
+console.log("Raw response:", response);
+
+if (!response.ok) {
+  const text = await response.text(); // see what server actually sent
+  console.error("Error response text:", text);
+  throw new Error(`Failed to fetch appointment count: ${response.status}`);
+}
+
+const data = await response.json();
+console.log("Appointment count response:", data);
+
+setAppointmentCount(data.totalAppointments || 0);
+
       
     } catch (err) {
       console.error("Error fetching appointment count:", err);

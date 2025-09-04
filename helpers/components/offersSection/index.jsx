@@ -141,7 +141,7 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
       {isOfferPage && (
         <>
           {/* Horizontal Filter Bar */}
-          <div className="container mx-auto px-4 mb-8">
+          <div className="container mx-auto px-4 mb-8 !z-[99999999]">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               {/* Desktop Department Tabs - Hidden on mobile */}
               <div className="hidden md:block mb-4">
@@ -219,7 +219,7 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
 
                 {/* Branches Filter */}
                 {branches.length > 0 && (
-                  <div className="branches_widget flex-1">
+                  <div className="branches_widget flex-1 z-[9999]">
                     <CustomSelect
                       options={[
                         { value: "all", label: "جميع الفروع" },

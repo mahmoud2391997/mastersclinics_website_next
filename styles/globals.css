@@ -5967,6 +5967,10 @@ Version:        1.0.0
     padding: 20px 30px;
   }
 }
+.z-dropdown {
+  z-index: 9999; 
+}
+
 .project_card .text h2 {
   margin-bottom: 0;
 }

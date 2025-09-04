@@ -316,7 +316,7 @@ const WishlistButton = ({
   return (
     <button
       onClick={toggleWishlist}
-      className={`${className} ${sizeClasses[size]} bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors ${
+      className={`${className} ${sizeClasses[size]} bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-gray-100 transition-colors !z-[111] ${
         isLoading ? "opacity-70 cursor-not-allowed" : ""
       }`}
       aria-label={
