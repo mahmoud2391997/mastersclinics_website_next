@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { XCircle, Phone, MessageCircle, Home, Calendar, MapPin } from "lucide-react"
+import { XCircle, Phone, MessageCircle, Home,  } from "lucide-react"
 
 const safeDecode = (val: string | null): string => {
   if (!val) return ""
