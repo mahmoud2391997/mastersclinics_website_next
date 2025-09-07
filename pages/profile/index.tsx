@@ -32,7 +32,6 @@ import {
   RefreshCw,
   Calendar,
   CreditCard,
-  Star,
   Clock,
   MapPin,
   Eye,
