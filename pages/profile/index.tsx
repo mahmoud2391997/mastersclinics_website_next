@@ -364,6 +364,8 @@ export default function ProfilePage() {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  console.log(appointments);
+  
   const [editState, setEditState] = useState<EditState>({
     isEditing: false,
     isLoading: false,
