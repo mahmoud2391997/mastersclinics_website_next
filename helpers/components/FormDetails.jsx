@@ -56,11 +56,15 @@ export const makeAppointment = async (data) => {
   return response.data;
 };
 
-export const createStripePayment = async (id, entityId) => {
+export const createStripePayment = async (id, entityId, name, type, serviceName) => {
   if (!id || !entityId) throw new Error("ID is required");
 
   const response = await axios.post("https://www.ss.mastersclinics.com/payment", {
-    appointmentId: id, entityId
+    appointmentId: id, 
+    entityId,
+    customerName: name,
+    serviceType: type,
+    serviceName: serviceName
   });
 
   return response.data;
@@ -291,7 +295,14 @@ const SimpleCtaForm = ({
 
       if (formData.payNow && result?.appointmentId) {
         try {
-          const paymentData = await createStripePayment(result.appointmentId, entityId);
+          const serviceName = getServiceName(doctor, device, offer);
+          const paymentData = await createStripePayment(
+            result.appointmentId, 
+            entityId, 
+            formData.name, 
+            type, 
+            serviceName
+          );
 
           if (paymentData?.url) {
             if (paymentData.sessionId) {
@@ -360,6 +371,7 @@ const SimpleCtaForm = ({
       setIsSubmitting(false);
     }
   };
+  
   // Show payment processing status if we have a session ID
   if (paymentSessionId) {
     return (
