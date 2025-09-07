@@ -305,8 +305,8 @@ const SimpleCtaForm = ({
         } catch (paymentError) {
           console.error("❌ Payment creation failed:", paymentError);
           setSubmitStatus("partial_success");
-          setErrorMessage("تم إنشاء الموعد ولكن فشل إنشاء جلسة الدفع. سنتواصل معك قريباً.");
-          toast.error("تم إنشاء الموعد ولكن فشل إنشاء جلسة الدفع.");
+          setErrorMessage("تم إنشاء طلب حجز الموعد ولكن فشل إنشاء جلسة الدفع. سنتواصل معك قريباً.");
+          toast.error("تم إنشاء طلب حجز الموعد ولكن فشل إنشاء جلسة الدفع. سنتواصل معك قريباً.");
           return;
         }
       }

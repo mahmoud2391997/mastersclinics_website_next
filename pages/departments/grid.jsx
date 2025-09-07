@@ -113,11 +113,12 @@ export default function DepartmentsGrid({
         </div>
       )}
 
-      {branchId && (
-        <div className='m-auto mt-5'>
-          <SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقسام التالية"}/>
-        </div>
-      )}  
+     {branchId && filteredDepartments.length > 0 && (
+  <div className='m-auto mt-5'>
+    <SectionTitle title={"اقسام الفرع"} subtitle={"يوفر الفرع جميع الاقسام التالية"} />
+  </div>
+)}
+
       
       {/* Search and Filter Section - Only shown if isDepartmentPage is true */}
       {isDepartmentPage && (

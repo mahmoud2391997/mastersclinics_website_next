@@ -84,8 +84,6 @@ const Logo = () => (
 );
 
 
-
-
 const Header = (props) => {
   const [menuData, setMenuData] = useState({
     branches: [],
@@ -123,8 +121,10 @@ const Header = (props) => {
   // Wishlist sidebar state
   const [wishlistOpen, setWishlistOpen] = useState(false);
   
-  // Appointment count state
+  // Appointment count state with error tracking
   const [appointmentCount, setAppointmentCount] = useState(0);
+  const [lastFetchTime, setLastFetchTime] = useState(null);
+  const [fetchRetryCount, setFetchRetryCount] = useState(0);
   
   try {
     routerRef.current = useRouter();
@@ -134,6 +134,7 @@ const Header = (props) => {
   
   const debounceRef = useRef();
   const timerRef = useRef();
+  const appointmentIntervalRef = useRef();
 
   const getRouter = () => {
     return routerRef.current;
@@ -153,38 +154,85 @@ const Header = (props) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
 
-  // Fetch appointment count
-  const fetchAppointmentCount = async () => {
+  // Improved fetch appointment count with better error handling and rate limiting
+  const fetchAppointmentCount = async (retryCount = 0) => {
     const clientId = getClientId();
+    const maxRetries = 3;
+    const baseDelay = 2000; // 2 seconds
+    const minInterval = 120000; // 2 minutes minimum between requests
     
     if (!clientId) {
       setAppointmentCount(0);
+      setLastFetchTime(null);
+      return;
+    }
+
+    // Rate limiting: don't fetch if we fetched recently
+    const now = Date.now();
+    if (lastFetchTime && (now - lastFetchTime) < minInterval) {
+      console.log("Skipping appointment count fetch - too soon since last fetch");
       return;
     }
 
     try {
-const response = await fetch(
-  `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/count`,
-  { cache: "no-store" }
-);
+      console.log(`Fetching appointment count (attempt ${retryCount + 1})`);
+      
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/count`,
+        { 
+          cache: "no-store",
+          headers: {
+            'Content-Type': 'application/json',
+            // Add auth token if available
+            ...(localStorage.getItem("token") && {
+              'Authorization': `Bearer ${localStorage.getItem("token")}`
+            })
+          }
+        }
+      );
 
-console.log("Raw response:", response);
+      console.log("Appointment count response status:", response.status);
 
-if (!response.ok) {
-  const text = await response.text(); // see what server actually sent
-  console.error("Error response text:", text);
-  throw new Error(`Failed to fetch appointment count: ${response.status}`);
-}
+      // Handle rate limiting (429)
+      if (response.status === 429) {
+        if (retryCount < maxRetries) {
+          const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+          console.warn(`Rate limit hit, retrying in ${delay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+          
+          setTimeout(() => {
+            fetchAppointmentCount(retryCount + 1);
+          }, delay);
+          return;
+        } else {
+          console.error("Max retries reached for appointment count due to rate limiting");
+          setFetchRetryCount(retryCount);
+          return;
+        }
+      }
 
-const data = await response.json();
-console.log("Appointment count response:", data);
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Error response text:", text);
+        throw new Error(`Failed to fetch appointment count: ${response.status} - ${text}`);
+      }
 
-setAppointmentCount(data.totalAppointments || 0);
+      const data = await response.json();
+      console.log("Appointment count response:", data);
 
+      setAppointmentCount(data.totalAppointments || 0);
+      setLastFetchTime(now);
+      setFetchRetryCount(0); // Reset retry count on success
       
     } catch (err) {
       console.error("Error fetching appointment count:", err);
-      setAppointmentCount(0);
+      
+      // Only reset count to 0 if it's a genuine error, not rate limiting
+      if (!err.message?.includes('429') && retryCount === 0) {
+        // Don't immediately set to 0, keep existing value and try again later
+        console.log("Keeping existing appointment count due to fetch error");
+      }
+      
+      setFetchRetryCount(retryCount);
     }
   };
 
@@ -211,18 +259,38 @@ setAppointmentCount(data.totalAppointments || 0);
     }
   };
 
-  // Update appointment count when authentication status changes
+  // Update appointment count when authentication status changes with improved timing
   useEffect(() => {
+    // Clear any existing interval
+    if (appointmentIntervalRef.current) {
+      clearInterval(appointmentIntervalRef.current);
+      appointmentIntervalRef.current = null;
+    }
+
     if (isAuthenticated) {
-      fetchAppointmentCount();
+      // Initial fetch with slight delay to allow auth to settle
+      setTimeout(() => {
+        fetchAppointmentCount();
+      }, 1000);
       
-      // Set up interval to refresh appointment count every 30 seconds
-      const intervalId = setInterval(fetchAppointmentCount, 30000);
+      // Set up interval to refresh appointment count every 3 minutes (increased from 30 seconds)
+      appointmentIntervalRef.current = setInterval(() => {
+        fetchAppointmentCount();
+      }, 180000); // 3 minutes
       
-      return () => clearInterval(intervalId);
     } else {
       setAppointmentCount(0);
+      setLastFetchTime(null);
+      setFetchRetryCount(0);
     }
+
+    // Cleanup function
+    return () => {
+      if (appointmentIntervalRef.current) {
+        clearInterval(appointmentIntervalRef.current);
+        appointmentIntervalRef.current = null;
+      }
+    };
   }, [isAuthenticated]);
 
   const syncUnauthenticatedWishlist = async (userId) => {
@@ -818,6 +886,7 @@ setAppointmentCount(data.totalAppointments || 0);
       handleSearch(query);
     }
   };
+
   const handleItemClick = async (entity, id) => {
     const router = getRouter();
 

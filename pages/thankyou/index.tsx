@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { CheckCircle, Phone, MessageCircle, Home, XCircle, Clock, Calendar } from "lucide-react"
+import { CheckCircle, Phone, MessageCircle, Home, XCircle, Clock, Calendar, MapPin } from "lucide-react"
 import axios from "axios"
 
 declare global {
@@ -46,7 +46,8 @@ const ThankYouPage: React.FC = () => {
   const sessionId = searchParams.get("session_id")
   const searchQuery = safeDecode(searchParams.get("query")) || safeDecode(searchParams.get("search")) || "خدمات التجميل"
   const requesterName = safeDecode(searchParams.get("name"))
-  const serviceType = searchParams.get("type") || "" // doctor | device | offer
+  const branchName = safeDecode(searchParams.get("branch"))
+  const serviceType = searchParams.get("type") || "" // doctor | device | offer | branch
   const serviceName = safeDecode(searchParams.get("service")) || searchQuery
 
   // map type to arabic label
@@ -57,6 +58,8 @@ const ThankYouPage: React.FC = () => {
       ? "جلسة"
       : serviceType === "offer"
       ? "عرض"
+      : serviceType === "branch"
+      ? "زيارة فرع"
       : "خدمة"
 
   const [status, setStatus] = useState<"loading" | "paid" | "pending" | "failed" | "no_payment">(
@@ -160,7 +163,7 @@ const ThankYouPage: React.FC = () => {
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-ping"></div>
             <div className="relative bg-gradient-to-r from-blue-400 to-blue-600 rounded-full p-4">
-              <Calendar className="w-12 h-12 text-white" />
+              {serviceType === "branch" ? <MapPin className="w-12 h-12 text-white" /> : <Calendar className="w-12 h-12 text-white" />}
             </div>
           </div>
         )
@@ -180,6 +183,9 @@ const ThankYouPage: React.FC = () => {
       case "failed":
         return `عزيزي/عزيزتي ${customerData.name}، فشلت عملية الدفع. يرجى المحاولة مرة أخرى.`
       case "no_payment":
+        if (serviceType === "branch") {
+          return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب ${serviceLabel} (${branchName || serviceName}) بنجاح!`
+        }
         return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب حجز ${serviceLabel} (${serviceName}) بنجاح!`
       default:
         return ""
@@ -197,6 +203,13 @@ const ThankYouPage: React.FC = () => {
           </p>
         )
       case "no_payment":
+        if (serviceType === "branch") {
+          return (
+            <p className="text-lg text-gray-600 mb-6 leading-relaxed" dir="rtl">
+              سوف يتم التواصل معكم خلال 24 ساعة لتأكيد زيارة الفرع
+            </p>
+          )
+        }
         return (
           <p className="text-lg text-gray-600 mb-6 leading-relaxed" dir="rtl">
             سوف يتم التواصل معكم خلال 24 ساعة لتأكيد الموعد
@@ -311,8 +324,8 @@ const ThankYouPage: React.FC = () => {
           {/* Main Content */}
           <div
             className={`transition-all duration-1000 delay-700 ${
-              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-            }`}
+          isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+        }`}
           >
             <h1
               className="!text-xl md:!text-2xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#B7950B] bg-clip-text text-transparent mb-4"
@@ -324,14 +337,14 @@ const ThankYouPage: React.FC = () => {
           </div>
 
           {/* Service Information */}
-          {serviceName && (
+          {(serviceName || branchName) && (
             <div
               className={`mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200 transition-all duration-1000 delay-800 ${
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
               }`}
             >
               <p className="text-sm text-blue-700" dir="rtl">
-                {serviceLabel}: <span className="font-bold text-blue-800">{serviceName}</span>
+                {serviceLabel}: <span className="font-bold text-blue-800">{branchName || serviceName}</span>
               </p>
             </div>
           )}
