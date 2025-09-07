@@ -142,6 +142,7 @@ interface Appointment {
   createdAt: string
   payment_status: string 
   phone?: string
+  branch?: string
   related?: {
     id: number
     payment_status: string
@@ -478,6 +479,7 @@ export default function ProfilePage() {
           'Cache-Control': 'no-cache',
         }
       })
+console.log(response);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -1566,9 +1568,9 @@ export default function ProfilePage() {
 
             <TabsContent value="appointments">
               <Card className="shadow-xl border-0 bg-white dark:bg-gray-900 overflow-hidden">
-                <CardHeader className="bg-gradient-to-l from-emerald-500/10 via-emerald-500/5 to-transparent border-b border-gray-100 dark:border-gray-800 p-6">
+                <CardHeader className=" border-b border-gray-100 dark:border-gray-800 p-6">
                   <CardTitle className="flex items-center gap-4 text-2xl font-bold text-[#CBA853]">
-                    <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <div className="p-3  rounded-xl border border-emerald-500/20">
                       <Calendar className="w-7 h-7 text-[#CBA853]" />
                     </div>
                     <div>
@@ -1623,6 +1625,16 @@ export default function ProfilePage() {
 لم يتم تحديد موعد الحجز بعد                                </span>
                               </div>
                             )}
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg mt-3">
+  <CreditCard className="w-4 h-4 ml-2" />
+  دفع الحجز : {
+    appointment.payment_status === "paid" ? "مدفوع" :
+    appointment.payment_status === "pending" ? "قيد المعالجة" :
+    appointment.payment_status === "failed" ? "فشل الدفع" :
+    appointment.payment_status === "unpaid" ? "غير مدفوع" :
+    "غير محدد"
+  }
+</p>
 
                             {/* Doctor Appointment */}
                             {appointment.type === "doctor" && appointment.related && (
@@ -1634,7 +1646,7 @@ export default function ProfilePage() {
                                   <p className="text-[#CBA853] dark:text-emerald-400 font-semibold text-sm mb-3">
                                     {appointment.related.specialty}
                                   </p>
-                                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                  {/* <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                                     <span className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/20 px-2 py-1 rounded-full">
                                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                                       {appointment.related.rating}
@@ -1642,7 +1654,7 @@ export default function ProfilePage() {
                                     <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-xs">
                                       {appointment.related.experience}
                                     </span>
-                                  </div>
+                                  </div> */}
                                   <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
                                     {appointment.related.services}
                                   </p>
@@ -1654,6 +1666,36 @@ export default function ProfilePage() {
                                       alt={appointment.related.name}
                                       className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
                                     />
+                                  </div>
+                                )}
+                                
+                                {/* Payment Button for Unpaid Doctor Appointments */}
+                                {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
+                                  <div className="mt-4">
+                                    <Button
+                                      onClick={() => {
+                                        const entityId = appointment.related?.id
+                                        if (entityId) {
+                                          handleCreatePayment(appointment.id, entityId)
+                                        } else {
+                                          toast.error("لا يمكن معالجة الدفع لهذا الموعد - معلومات ناقصة")
+                                        }
+                                      }}
+                                      disabled={paymentState.isProcessing && paymentState.appointmentId === appointment.id}
+                                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      {paymentState.isProcessing && paymentState.appointmentId === appointment.id ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                          جاري التوجيه للدفع...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CreditCard className="w-4 h-4 ml-2" />
+                                          ادفع الآن
+                                        </>
+                                      )}
+                                    </Button>
                                   </div>
                                 )}
                               </div>
@@ -1680,16 +1722,7 @@ export default function ProfilePage() {
                                       خصم {appointment.related.discountPercentage}%
                                     </Badge>
                                   </div>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-lg">
-                                      <CreditCard className="w-4 h-4 ml-2" />
-  دفع الحجز : {
-    appointment.payment_status === "paid" ? "مدفوع" :
-    appointment.payment_status === "pending" ? "قيد المعالجة" :
-    appointment.payment_status === "failed" ? "فشل الدفع" :
-    appointment.payment_status === "unpaid" ? "غير مدفوع" :
-    "غير محدد"
-  }
-</p>
+          
 
                                 </div>
                                 {appointment.related.image && (
@@ -1699,6 +1732,36 @@ export default function ProfilePage() {
                                       alt={appointment.related.title}
                                       className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
                                     />
+                                  </div>
+                                )}
+                                
+                                {/* Payment Button for Unpaid Offer Appointments */}
+                                {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
+                                  <div className="mt-4">
+                                    <Button
+                                      onClick={() => {
+                                        const entityId = appointment.related?.id
+                                        if (entityId) {
+                                          handleCreatePayment(appointment.id, entityId)
+                                        } else {
+                                          toast.error("لا يمكن معالجة الدفع لهذا الموعد - معلومات ناقصة")
+                                        }
+                                      }}
+                                      disabled={paymentState.isProcessing && paymentState.appointmentId === appointment.id}
+                                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      {paymentState.isProcessing && paymentState.appointmentId === appointment.id ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                          جاري التوجيه للدفع...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CreditCard className="w-4 h-4 ml-2" />
+                                          ادفع الآن
+                                        </>
+                                      )}
+                                    </Button>
                                   </div>
                                 )}
                               </div>
@@ -1714,21 +1777,27 @@ export default function ProfilePage() {
                                   <p className="text-[#CBA853] dark:text-blue-400 font-semibold text-sm mb-4">
                                     {appointment.related.type}
                                   </p>
+                                  
+                                  {/* Branch Information */}
+                                  {appointment.branch && (
+                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg mb-3">
+                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700 dark:text-gray-300">
+                                        الفرع: {appointment.branch}
+                                      </span>
+                                    </div>
+                                  )}
+                                  
                                   <div className="space-y-3 text-sm">
                                     <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
                                       <Clock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                                       <span className="text-gray-700 dark:text-gray-300">
-                                        {appointment.related.available_times ? appointment.related.available_times.replace(/^"|"$/g, "") : "غير محدد"}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                      <span className="text-gray-700 dark:text-gray-300">
-                                        {appointment.related.location}
+                                        مواعيد الفرع: {appointment.related.available_times ? appointment.related.available_times.replace(/^"|"$/g, "") : "غير محدد"}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
+                        
                                 {appointment.related.image_url && (
                                   <div className="rounded-xl overflow-hidden shadow-md">
                                     <img
@@ -1736,6 +1805,36 @@ export default function ProfilePage() {
                                       alt={appointment.related.name}
                                       className="w-full h-36 object-cover hover:scale-105 transition-transform duration-300"
                                     />
+                                  </div>
+                                )}
+                                
+                                {/* Payment Button for Unpaid Device Appointments */}
+                                {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
+                                  <div className="mt-4">
+                                    <Button
+                                      onClick={() => {
+                                        const entityId = appointment.related?.id
+                                        if (entityId) {
+                                          handleCreatePayment(appointment.id, entityId)
+                                        } else {
+                                          toast.error("لا يمكن معالجة الدفع لهذا الموعد - معلومات ناقصة")
+                                        }
+                                      }}
+                                      disabled={paymentState.isProcessing && paymentState.appointmentId === appointment.id}
+                                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      {paymentState.isProcessing && paymentState.appointmentId === appointment.id ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                                          جاري التوجيه للدفع...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CreditCard className="w-4 h-4 ml-2" />
+                                          ادفع الآن
+                                        </>
+                                      )}
+                                    </Button>
                                   </div>
                                 )}
                               </div>
@@ -1762,14 +1861,7 @@ export default function ProfilePage() {
                                         {appointment.related.address?.replace(/^"|"$/g, "")}
                                       </span>
                                     </div>
-                                    {appointment.phone && (
-                                      <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
-                                        <Phone className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                        <span className="text-gray-700 dark:text-gray-300 font-mono">
-                                          {appointment.phone}
-                                        </span>
-                                      </div>
-                                    )}
+                                 
                                     {appointment.related.google_map_link && (
                                       <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
                                         <a
@@ -1783,6 +1875,7 @@ export default function ProfilePage() {
                                       </div>
                                     )}
                                   </div>
+     
                                   <Badge
                                     variant="outline"
                                     className="mt-3 border-purple-200 text-purple-700 dark:border-purple-800 dark:text-purple-300"
@@ -1817,14 +1910,11 @@ export default function ProfilePage() {
                               )}
                             </div>
 
-                            {/* Payment Status */}
-                            {appointment.related?.payment_status && appointment.related.payment_status !== "paid" && (
-                              <div className="absolute top-6 right-4">
-                                <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-                                  ❌ غير مدفوع
-                                </Badge>
-                              </div>
-                            )}
+                            {/* Payment Status Badge */}
+       
+
+                            {/* Paid Status Badge */}
+       
 
                             {/* Payment Processing Indicator */}
                             {paymentState.isProcessing && paymentState.appointmentId === appointment.id && (
@@ -1835,7 +1925,7 @@ export default function ProfilePage() {
                             )}
 
                             {/* Payment Button for Unpaid Appointments */}
-                            {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
+                            {/* {appointment.payment_status !== "paid" && appointment.status !== "cancelled" && (
                               <div className="mt-4">
                                 <Button
                                   onClick={() => {
@@ -1864,7 +1954,7 @@ export default function ProfilePage() {
                                   )}
                                 </Button>
                               </div>
-                            )}
+                            )} */}
 
                             <div className="flex justify-between items-center mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
                               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">

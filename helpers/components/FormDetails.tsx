@@ -6,20 +6,72 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 /* =========================
+   🔹 Types
+   ========================= */
+interface User {
+  id?: number;
+  client_id?: number;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+}
+
+interface AppointmentData {
+  name: string;
+  phone: string;
+  utmSource: string;
+  clientId: number | null;
+  entityId: number | null;
+  type: string;
+  scheduledAt: string | null;
+  is_authed: boolean;
+  branch?: string;
+}
+
+interface BranchOption {
+  value: string | number;
+  label: string;
+}
+
+interface SimpleCtaFormProps {
+  type: string;
+  entityId: number;
+  setShowAuthPopup: (show: boolean) => void;
+  availableBranches?: BranchOption[];
+  branch?: any;
+  doctor?: any;
+  offer?: any;
+  device?: any;
+  landingPageId?: any;
+}
+
+interface FormData {
+  name: string;
+  phone: string;
+  payNow: boolean;
+  branch: string;
+}
+
+interface AuthInfo {
+  isAuthenticated: boolean;
+  clientInfo: string | null;
+}
+
+/* =========================
    🔹 LocalStorage Utilities
    ========================= */
-export const saveAuth = (user) => {
+export const saveAuth = (user: User): void => {
   if (!user) return;
   localStorage.setItem("isAuthenticated", "true");
   localStorage.setItem("clientInfo", JSON.stringify(user));
 };
 
-export const clearAuth = () => {
+export const clearAuth = (): void => {
   localStorage.removeItem("isAuthenticated");
   localStorage.removeItem("clientInfo");
 };
 
-export const getAuthInfo = () => {
+export const getAuthInfo = (): AuthInfo => {
   const isAuthenticatedLocal = localStorage.getItem("isAuthenticated") === "true";
   const isAuthenticatedSession = sessionStorage.getItem("isAuthenticated") === "true";
 
@@ -35,7 +87,7 @@ export const getAuthInfo = () => {
 /* =========================
    🔹 API Helpers
    ========================= */
-export const makeAppointment = async (data) => {
+export const makeAppointment = async (data: AppointmentData): Promise<any> => {
   const cleanData = {
     name: data.name,
     phone: data.phone,
@@ -56,7 +108,13 @@ export const makeAppointment = async (data) => {
   return response.data;
 };
 
-export const createStripePayment = async (id, entityId, name, type, serviceName) => {
+export const createStripePayment = async (
+  id: number, 
+  entityId: number, 
+  name: string, 
+  type: string, 
+  serviceName: string
+): Promise<any> => {
   if (!id || !entityId) throw new Error("ID is required");
 
   const response = await axios.post("https://www.ss.mastersclinics.com/payment", {
@@ -70,7 +128,7 @@ export const createStripePayment = async (id, entityId, name, type, serviceName)
   return response.data;
 };
 
-export const checkPaymentStatus = async (sessionId) => {
+export const checkPaymentStatus = async (sessionId: string): Promise<any> => {
   const response = await axios.get(`https://www.ss.mastersclinics.com/payment/status/${sessionId}`);
   return response.data;
 };
@@ -78,7 +136,7 @@ export const checkPaymentStatus = async (sessionId) => {
 /* =========================
    🔹 UTM Tracking
    ========================= */
-const getUtmSource = () => {
+const getUtmSource = (): string => {
   if (typeof window === "undefined") return "الموقع الرئيسي";
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -98,7 +156,7 @@ const getUtmSource = () => {
 /* =========================
    🔹 Phone Number Validation
    ========================= */
-const validatePhoneNumber = (phone) => {
+const validatePhoneNumber = (phone: string): boolean => {
   const cleanedPhone = phone.replace(/\D/g, '');
   return cleanedPhone.length >= 9 && cleanedPhone.length <= 12;
 };
@@ -106,10 +164,10 @@ const validatePhoneNumber = (phone) => {
 /* =========================
    🔹 Payment Status Checker Hook
    ========================= */
-const usePaymentStatus = (sessionId) => {
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const usePaymentStatus = (sessionId: string | null) => {
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -119,7 +177,7 @@ const usePaymentStatus = (sessionId) => {
       try {
         const result = await checkPaymentStatus(sessionId);
         setStatus(result.paymentStatus);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
         console.error("Error checking payment status:", err);
       } finally {
@@ -129,7 +187,6 @@ const usePaymentStatus = (sessionId) => {
 
     checkStatus();
 
-    // Check status every 5 seconds if not paid
     const interval = setInterval(() => {
       if (status !== 'paid') {
         checkStatus();
@@ -145,50 +202,72 @@ const usePaymentStatus = (sessionId) => {
 /* =========================
    🔹 SimpleCtaForm Component
    ========================= */
-const SimpleCtaForm = ({
+const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   type,
   entityId,
   setShowAuthPopup,
+  availableBranches = [],
   branch = null,
   doctor = null,
   offer = null,
   device = null,
   landingPageId = null,
 }) => {
-  console.log(entityId);
-  
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     phone: "",
     payNow: false,
+    branch: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-  const [paymentSessionId, setPaymentSessionId] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitStatus, setSubmitStatus] = useState<string>("idle");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [phoneError, setPhoneError] = useState<string>("");
+  const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
   const router = useRouter();
   
   const { status: paymentStatus } = usePaymentStatus(paymentSessionId);
 
-  // Get service name based on type
-  const getServiceName = (doctor, device, offer) => {
+  /* ✅ Auto-select branch if only one available */
+  useEffect(() => {
+    if (type === "device" && availableBranches.length === 1) {
+      const onlyBranch = availableBranches[0];
+      setSelectedBranch(String(onlyBranch.value));
+      setFormData((prev) => ({
+        ...prev,
+        branch: String(onlyBranch.value),
+      }));
+    }
+  }, [type, availableBranches]);
+
+  // Handle branch change
+  const handleBranchChange = (branchId: string) => {
+    setSelectedBranch(branchId);
+    setFormData(prev => ({
+      ...prev,
+      branch: branchId
+    }));
+  };
+
+  // Get service name
+  const getServiceName = (doctor: any, device: any, offer: any): string => {
     if (doctor) return doctor;
     if (device) return device;
     if (offer) return offer;
-    return "خدمات التجميل"; // Default fallback
+    return "خدمات التجميل";
   };
 
-  // Redirect to thank you page if payment is successful
+  // ✅ redirect after payment
   useEffect(() => {
     if (paymentStatus === 'paid') {
       toast.success("تم الدفع بنجاح!");
       setTimeout(() => {
         const queryParams = new URLSearchParams({
-          session_id: paymentSessionId,
+          session_id: paymentSessionId || "",
           name: encodeURIComponent(formData.name),
           type: type || "",
-          service: encodeURIComponent(getServiceName())
+          service: encodeURIComponent(getServiceName(doctor, device, offer))
         }).toString();
         
         router.push(`/thankyou?${queryParams}`);
@@ -202,7 +281,7 @@ const SimpleCtaForm = ({
 
     if (isAuthenticated && clientInfo) {
       try {
-        const parsed = JSON.parse(clientInfo);
+        const parsed: User = JSON.parse(clientInfo);
         setFormData((prev) => ({
           ...prev,
           name: `${parsed.first_name || ""} ${parsed.last_name || ""}`.trim(),
@@ -214,10 +293,10 @@ const SimpleCtaForm = ({
     }
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type: inputType, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type: inputType } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
 
-    // Clear phone error when user starts typing
     if (name === "phone" && phoneError) {
       setPhoneError("");
     }
@@ -227,7 +306,7 @@ const SimpleCtaForm = ({
 
       if (!isAuthenticated) {
         e.preventDefault();
-        e.target.checked = false;
+        (e.target as HTMLInputElement).checked = false;
         toast.error("يجب تسجيل الدخول أولاً");
 
         const scrollTarget = document.getElementById("scrool");
@@ -250,42 +329,48 @@ const SimpleCtaForm = ({
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus("idle");
     setErrorMessage("");
     setPhoneError("");
 
-    // Validate phone number
     if (!validatePhoneNumber(formData.phone)) {
       setPhoneError("يرجى إدخال رقم هاتف صحيح");
       setIsSubmitting(false);
       return;
     }
 
+    if (type === "device" && !formData.branch) {
+      setErrorMessage("يرجى اختيار الفرع");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const { isAuthenticated, clientInfo } = getAuthInfo();
-      let clientId = null;
+      let clientId: number | null = null;
 
       if (isAuthenticated && clientInfo) {
         try {
-          const parsed = JSON.parse(clientInfo);
+          const parsed: User = JSON.parse(clientInfo);
           clientId = Number(parsed.id) || Number(parsed.client_id) || null;
         } catch (err) {
           console.error("Failed to parse clientInfo for clientId", err);
         }
       }
 
-      const submissionData = {
+      const submissionData: AppointmentData = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         utmSource: getUtmSource(),
         clientId: clientId,
-        entityId: entityId ? Number(entityId) : null,
+        entityId: type === "device" ? Number(formData.branch) : (entityId ? Number(entityId) : null),
         type: type,
         scheduledAt: null,
         is_authed: isAuthenticated,
+        branch: formData.branch
       };
 
       console.log("📤 Final request payload:", submissionData);
@@ -298,7 +383,7 @@ const SimpleCtaForm = ({
           const serviceName = getServiceName(doctor, device, offer);
           const paymentData = await createStripePayment(
             result.appointmentId, 
-            entityId, 
+            type === "device" ? Number(formData.branch) : entityId, 
             formData.name, 
             type, 
             serviceName
@@ -313,7 +398,7 @@ const SimpleCtaForm = ({
           } else {
             throw new Error("Payment URL not received");
           }
-        } catch (paymentError) {
+        } catch (paymentError: any) {
           console.error("❌ Payment creation failed:", paymentError);
           setSubmitStatus("partial_success");
           setErrorMessage("تم إنشاء طلب حجز الموعد ولكن فشل إنشاء جلسة الدفع. سنتواصل معك قريباً.");
@@ -324,7 +409,6 @@ const SimpleCtaForm = ({
 
       setSubmitStatus("success");
 
-      /* ✅ هنا ناخد كل الـ attributes من الـ appointment */
       if (result?.appointment) {
         const appointment = result.appointment;
 
@@ -349,8 +433,9 @@ const SimpleCtaForm = ({
         }, 1500);
       }
 
-      setFormData({ name: "", phone: "", payNow: false });
-    } catch (error) {
+      setFormData({ name: "", phone: "", payNow: false, branch: "" });
+      setSelectedBranch("");
+    } catch (error: any) {
       console.error("❌ Appointment submission error:", error);
       setSubmitStatus("error");
 
@@ -371,8 +456,8 @@ const SimpleCtaForm = ({
       setIsSubmitting(false);
     }
   };
-  
-  // Show payment processing status if we have a session ID
+
+  /* ✅ Show payment processing if in progress */
   if (paymentSessionId) {
     return (
       <div className="w-full max-w-[90vw] mx-auto p-6 bg-white/10 rounded-xl border border-white/20">
@@ -450,86 +535,81 @@ const SimpleCtaForm = ({
           </div>
         </div>
 
+        {/* Branch Selection */}
+        {type === "device" && (
+          availableBranches.length > 1 ? (
+            <div className="w-full md:w-full relative group branch-field">
+              <label htmlFor="branch" className="block text-white text-right text-lg font-medium mb-2 opacity-80">
+                اختر الفرع*
+              </label>
+              <div className="relative">
+                <select
+                  id="branch"
+                  name="branch"
+                  value={selectedBranch}
+                  required
+                  onChange={(e) => {
+                    const newBranch = e.target.value;
+                    console.log("Branch selection changed:", newBranch);
+                    handleBranchChange(newBranch);
+                  }}
+                  dir="rtl"
+                  disabled={isSubmitting}
+                  className="w-full appearance-none text-white text-lg font-normal rounded-xl bg-white/20 py-4 px-5 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 pr-10 transition-all duration-200 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">{"اختر الفرع*"}</option>
+                  {availableBranches.map((branch) => (
+                    <option key={branch.value} value={branch.value} className="text-gray-900">
+                      {branch.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ) : availableBranches.length === 1 ? (
+            <div className="w-full text-right">
+              <p className="text-white text-lg">
+                الفرع: <span className="font-semibold">{availableBranches[0].label}</span>
+              </p>
+            </div>
+          ) : null
+        )}
+
         {/* Pay Now Checkbox */}
-        <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
-          <label htmlFor="payNow" className="text-white text-lg font-medium cursor-pointer pt-3">
-            الدفع الآن ببطاقة الائتمان
+        <div className="w-full flex items-center gap-3 justify-end">
+          <label htmlFor="payNow" className="text-white text-lg font-medium cursor-pointer flex items-center gap-2">
+            <input
+              id="payNow"
+              type="checkbox"
+              name="payNow"
+              checked={formData.payNow}
+              onChange={handleChange}
+              disabled={isSubmitting}
+              className="w-5 h-5 rounded border-white/40 bg-white/20 text-blue-500 focus:ring-white/30 cursor-pointer"
+            />
+            <span>ادفع الآن</span>
           </label>
-          <input
-            id="payNow"
-            type="checkbox"
-            name="payNow"
-            checked={formData.payNow}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            className="w-5 h-5 rounded focus:ring-2 focus:ring-white/30 focus:ring-offset-2 cursor-pointer"
-          />
         </div>
 
-        {/* Submit Button */}
-        <div className="w-full mt-2">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full px-8 h-[56px] md:h-[60px] rounded-full text-lg md:text-xl font-semibold border-2 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 shadow-lg ${
-              isSubmitting
-                ? "bg-white/50 text-gray-500 cursor-not-allowed"
-                : submitStatus === "success"
-                ? "bg-green-500 text-white border-green-400"
-                : submitStatus === "error"
-                ? "bg-red-500 text-white border-red-400"
-                : "bg-white text-[#D4AF37] hover:text-[#B7950B] hover:border-white/20 hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
-            }`}
-          >
-            {isSubmitting ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current ml-2"></div>
-                {formData.payNow ? "جاري الدفع..." : "جاري الإرسال..."}
-              </div>
-            ) : submitStatus === "success" ? (
-              <div className="flex items-center justify-center">
-                <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                تم الإرسال بنجاح!
-              </div>
-            ) : submitStatus === "error" ? (
-              <div className="flex items-center justify-center">
-                <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                حدث خطأ، حاول مرة أخرى
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                <span className="mr-2">←</span>
-                {formData.payNow ? "ادفع الآن" : "احجزي الآن"}
-              </div>
-            )}
-          </button>
-        </div>
+        {/* Error message */}
+        {errorMessage && (
+          <p className="text-red-300 text-sm">{errorMessage}</p>
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg font-medium py-4 px-8 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? "جاري الإرسال..." : "احجز الآن"}
+        </button>
       </form>
-
-      {/* Success Message */}
-      {submitStatus === "success" && !formData.payNow && (
-        <div className="mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-lg">
-          تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
-        </div>
-      )}
-
-      {/* Partial Success Message */}
-      {submitStatus === "partial_success" && (
-        <div className="mt-6 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-lg text-center text-lg">
-          {errorMessage}
-        </div>
-      )}
-
-      {/* Error Message */}
-      {submitStatus === "error" && (
-        <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-lg">
-          {errorMessage}
-        </div>
-      )}
     </div>
   );
 };

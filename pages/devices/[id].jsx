@@ -231,7 +231,15 @@ const ProjectSinglePage = () => {
               </p>
             </div>
             <div className="p-6">
-              <CtafromSection id={id} type={"device"} setShowAuthPopup={setShowAuthPopup} />
+<CtafromSection 
+  id={id} 
+  type={"device"}  // Changed from "branch" to "device"
+  setShowAuthPopup={setShowAuthPopup}
+  availableBranches={currentDevice.branches?.map(branch => ({
+    value: branch.id,
+    label: branch.name
+  })) || []}
+/>
             </div>
           </div>
         </div>

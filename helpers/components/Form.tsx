@@ -3,7 +3,15 @@
 import React from "react";
 import SimpleCtaForm from "./FormDetails";
 
-const CtafromSection = (id : {id:number,type:string},setShowAuthPopup:boolean,type:string) => {
+// Define the type for the component props
+interface CtafromSectionProps {
+  id: number;
+  type: string;
+  setShowAuthPopup: (show: boolean) => void;
+  availableBranches?: Array<{ value: string | number; label: string }>;
+}
+
+const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: CtafromSectionProps) => {
   console.log(id);
   
   return (
@@ -25,7 +33,12 @@ const CtafromSection = (id : {id:number,type:string},setShowAuthPopup:boolean,ty
           {/* Form container with wide inputs */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-4xl"> {/* Increased max-width */}
-              <SimpleCtaForm entityId={id.id} setShowAuthPopup={setShowAuthPopup} type={id.type} />
+              <SimpleCtaForm 
+                entityId={id} 
+                setShowAuthPopup={setShowAuthPopup} 
+                type={type} 
+                availableBranches={availableBranches}
+              />
             </div>
           </div>
         </div>
