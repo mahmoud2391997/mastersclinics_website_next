@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import MobileMenu from "../MobileMenu/MobileMenu";
 import ContactBar from "./socialMedia";
-import { FaChevronDown, FaChevronLeft,  FaSearch,FaHeart, FaTimes, FaUser, FaRegCalendarAlt, FaCheckCircle } from "react-icons/fa";
-import { useRouter } from "next/router";
+import { FaChevronDown, FaChevronLeft,  FaSearch,FaHeart, FaTimes, FaUser, FaRegCalendarAlt, FaCheckCircle, FaBell } from "react-icons/fa";
+import { NextRouter, useRouter } from "next/router";
 import wishlistsidebar from "./wishlistsidebar";
 import WishlistSidebar from "./wishlistsidebar";
 import { FaRightFromBracket } from "react-icons/fa6";
@@ -84,63 +84,285 @@ const Logo = () => (
 );
 
 
-const Header = (props) => {
-  const [menuData, setMenuData] = useState({
+// Interfaces
+interface Notification {
+  id: string;
+  appointment_id?: string;
+  appointmentId?: string;
+  title: string;
+  message?: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+interface ClientInfo {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  identity_number: string;
+  unique_number?: string;
+  created_at?: string;
+}
+
+interface UserInfo {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  identity_number: string;
+}
+
+interface MenuData {
+  branches: any[];
+  departments: any[];
+  doctors: any[];
+  offers: any[];
+  blogs: any[];
+  services: any[];
+}
+
+interface SearchResults {
+  doctors?: any[];
+  services?: any[];
+  offers?: any[];
+  departments?: any[];
+  blogs?: any[];
+  testimonials?: any[];
+}
+
+interface HeaderProps {
+  hclass?: string;
+  nav?: boolean;
+  showAuthprop?: boolean;
+}
+
+interface WishlistItem {
+  item_type: string;
+  item_id: string | number;
+  [key: string]: any;
+}
+
+// Notifications Hook
+export const useNotifications = () => {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout>();
+
+  const getClientId = (): string | null => {
+    const clientInfo = localStorage.getItem("clientInfo");
+    if (!clientInfo) return null;
+    try {
+      const parsed = JSON.parse(clientInfo);
+      return parsed.id || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchNotifications = async (): Promise<void> => {
+    try {
+      const clientId = getClientId();
+      if (!clientId) {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
+
+      const response = await fetch(
+        `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/notifications`,
+        {
+          cache: "no-store",
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem("token") && {
+              'Authorization': `Bearer ${localStorage.getItem("token")}`
+            })
+          }
+        }
+      );
+console.log("notification response:", response);
+
+      if (!response.ok) {
+        console.error("Failed to fetch notifications", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      const items = Array.isArray(data?.notifications) ? data.notifications : (Array.isArray(data) ? data : []);
+      setNotifications(items);
+      setUnreadCount(items.filter((n: Notification) => !n.is_read).length);
+    } catch (error) {
+      console.error("Error fetching notifications", error);
+    }
+  };
+
+  const markNotificationRead = async (notificationId: string): Promise<void> => {
+    try {
+      const clientId = getClientId();
+      if (!clientId) return;
+      
+      await fetch(
+        `https://www.ss.mastersclinics.com/api/client-auth/notifications/${notificationId}/read`,
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            ...(localStorage.getItem("token") && {
+              'Authorization': `Bearer ${localStorage.getItem("token")}`
+            })
+          }
+        }
+      );
+      
+      // Optimistically update UI
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Failed to mark notification as read", error);
+    }
+  };
+
+  // Initialize and set up polling
+  useEffect(() => {
+    const clientId = getClientId();
+    
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = undefined;
+    }
+
+    if (clientId) {
+      // Initial fetch
+      setTimeout(() => {
+        fetchNotifications();
+      }, 1200);
+      
+      // Poll every 2 minutes
+      intervalRef.current = setInterval(() => {
+        fetchNotifications();
+      }, 120000);
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
+      }
+    };
+  }, []);
+
+  // Refresh on focus/visibility changes
+  useEffect(() => {
+    const handleFocus = () => {
+      const clientId = getClientId();
+      if (clientId) fetchNotifications();
+    };
+    
+    const handleVisibility = () => {
+      const clientId = getClientId();
+      if (!document.hidden && clientId) fetchNotifications();
+    };
+    
+    const handleRefreshEvent = () => {
+      const clientId = getClientId();
+      if (clientId) fetchNotifications();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("refreshNotifications", handleRefreshEvent);
+    
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("refreshNotifications", handleRefreshEvent);
+    };
+  }, []);
+
+  return {
+    notifications,
+    unreadCount,
+    showNotifications,
+    setShowNotifications,
+    fetchNotifications,
+    markNotificationRead,
+  };
+};
+
+const Header = (props: HeaderProps) => {
+  const [menuData, setMenuData] = useState<MenuData>({
     branches: [],
     departments: [],
+    doctors: [],
     offers: [],
     blogs: [],
+    services: [],
   });
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState(null);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showAuthPopup, setShowAuthPopup] = useState(false);
-  const [clientName, setClientName] = useState("");
+  const [query, setQuery] = useState<string>("");
+  const [results, setResults] = useState<SearchResults | null>(null);
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+  const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
+  const [clientName, setClientName] = useState<string>("");
 
-  const [authStep, setAuthStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [userInfo, setUserInfo] = useState({
+  const [authStep, setAuthStep] = useState<number>(1);
+  const [email, setEmail] = useState<string>("");
+  const [verificationCode, setVerificationCode] = useState<string>("");
+  const [userInfo, setUserInfo] = useState<UserInfo>({
     firstName: "",
     lastName: "",
     phoneNumber: "",
     identity_number: "",
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authError, setAuthError] = useState("");
-  const [clientInfo, setClientInfo] = useState(null);
-  const [codeExpirationTime, setCodeExpirationTime] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [isCodeExpired, setIsCodeExpired] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const authPopupRef = useRef();
-  const searchRef = useRef();
-  const routerRef = useRef(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string>("");
+  const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
+  const [codeExpirationTime, setCodeExpirationTime] = useState<number | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [isCodeExpired, setIsCodeExpired] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const authPopupRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const routerRef = useRef<NextRouter | null>(null);
   
   // Wishlist sidebar state
-  const [wishlistOpen, setWishlistOpen] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState<boolean>(false);
   
   // Appointment count state with error tracking
-  const [appointmentCount, setAppointmentCount] = useState(0);
-  const [lastFetchTime, setLastFetchTime] = useState(null);
-  const [fetchRetryCount, setFetchRetryCount] = useState(0);
+  const [appointmentCount, setAppointmentCount] = useState<number>(0);
+  const [lastFetchTime, setLastFetchTime] = useState<number | null>(null);
+  const [fetchRetryCount, setFetchRetryCount] = useState<number>(0);
+  
+  // Use the notifications hook
+  const {
+    notifications,
+    unreadCount,
+    showNotifications,
+    setShowNotifications,
+    fetchNotifications,
+    markNotificationRead
+  } = useNotifications();
   
   try {
     routerRef.current = useRouter();
   } catch (error) {
-    console.warn("Router not available yet:", error.message);
+    console.warn("Router not available yet:", (error as Error).message);
   }
   
-  const debounceRef = useRef();
-  const timerRef = useRef();
-  const appointmentIntervalRef = useRef();
+  const debounceRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout>();
+  const appointmentIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const getRouter = () => {
+  const getRouter = (): NextRouter | null => {
     return routerRef.current;
   };
 
-  const safeNavigate = (path) => {
+  const safeNavigate = (path: string): void => {
     const router = getRouter();
     if (router) {
       router.push(path);
@@ -149,13 +371,13 @@ const Header = (props) => {
     }
   };
   
-  const [isMobile, setIsMobile] = useState(false);
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const toggleWishlist = () => setWishlistOpen(!wishlistOpen)
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [wishlistCount, setWishlistCount] = useState<number>(0);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const toggleWishlist = (): void => setWishlistOpen(!wishlistOpen)
 
   // Improved fetch appointment count with better error handling and rate limiting
-  const fetchAppointmentCount = async (retryCount = 0) => {
+  const fetchAppointmentCount = async (retryCount: number = 0): Promise<void> => {
     const clientId = getClientId();
     const maxRetries = 3;
     const baseDelay = 2000; // 2 seconds
@@ -227,7 +449,7 @@ const Header = (props) => {
       console.error("Error fetching appointment count:", err);
       
       // Only reset count to 0 if it's a genuine error, not rate limiting
-      if (!err.message?.includes('429') && retryCount === 0) {
+      if (!(err as Error).message?.includes('429') && retryCount === 0) {
         // Don't immediately set to 0, keep existing value and try again later
         console.log("Keeping existing appointment count due to fetch error");
       }
@@ -237,7 +459,7 @@ const Header = (props) => {
   };
 
   useEffect(() => {
-    const handleShowAuthPopup = () => {
+    const handleShowAuthPopup = (): void => {
       setShowAuthPopup(true);
     };
 
@@ -248,7 +470,7 @@ const Header = (props) => {
     };
   }, []);
 
-  const getClientId = () => {
+  const getClientId = (): string | null => {
     const clientInfo = localStorage.getItem("clientInfo");
     if (!clientInfo) return null;
     try {
@@ -277,7 +499,6 @@ const Header = (props) => {
       appointmentIntervalRef.current = setInterval(() => {
         fetchAppointmentCount();
       }, 180000); // 3 minutes
-      
     } else {
       setAppointmentCount(0);
       setLastFetchTime(null);
@@ -293,8 +514,8 @@ const Header = (props) => {
     };
   }, [isAuthenticated]);
 
-  const syncUnauthenticatedWishlist = async (userId) => {
-    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+  const syncUnauthenticatedWishlist = async (userId: string): Promise<void> => {
+    const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
     
     if (unauthWishlist.length === 0) {
       console.log("[Header] No unauthenticated wishlist items to sync");
@@ -304,7 +525,7 @@ const Header = (props) => {
     console.log(`[Header] Syncing ${unauthWishlist.length} items from unauthenticated wishlist`);
     
     try {
-      const syncPromises = unauthWishlist.map(async (item) => {
+      const syncPromises = unauthWishlist.map(async (item: WishlistItem) => {
         try {
           const response = await fetch("https://www.ss.mastersclinics.com/api/wishlist", {
             method: "POST",
@@ -326,7 +547,7 @@ const Header = (props) => {
           return { success: true, item };
         } catch (err) {
           console.error(`[Header] Failed to sync item ${item.item_id}:`, err);
-          return { success: false, item, error: err.message };
+          return { success: false, item, error: (err as Error).message };
         }
       });
       
@@ -355,11 +576,11 @@ const Header = (props) => {
     }
   };
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = async (): Promise<void> => {
     const clientId = getClientId();
     
     if (!clientId) {
-      const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+      const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
       setWishlistItems(unauthWishlist);
       setWishlistCount(unauthWishlist.length);
       
@@ -378,7 +599,7 @@ const Header = (props) => {
       }
       
       const data = await response.json();
-      const wishlistItems = data.data || [];
+      const wishlistItems: WishlistItem[] = data.data || [];
       
       sessionStorage.setItem("wishlist", JSON.stringify(wishlistItems));
       sessionStorage.setItem("wishlistCount", wishlistItems.length.toString());
@@ -392,12 +613,12 @@ const Header = (props) => {
   };
 
   useEffect(() => {
-    const initializeWishlist = () => {
+    const initializeWishlist = (): void => {
       const clientId = getClientId();
       if (clientId) {
         fetchWishlist();
       } else {
-        const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+        const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
         setWishlistItems(unauthWishlist);
         setWishlistCount(unauthWishlist.length);
         
@@ -408,7 +629,7 @@ const Header = (props) => {
 
     initializeWishlist();
 
-    const handleWishlistUpdate = (event) => {
+    const handleWishlistUpdate = (event: CustomEvent): void => {
       const { count, items, action, itemId, itemType } = event.detail;
       console.log("Header received wishlist update:", { count, action, itemId, itemType });
       
@@ -419,16 +640,16 @@ const Header = (props) => {
       sessionStorage.setItem("wishlistCount", count.toString());
     };
 
-    const handleStorageChange = (e) => {
+    const handleStorageChange = (e: StorageEvent): void => {
       if (e.key === "wishlist" || e.key === "wishlistCount") {
-        const storedWishlist = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
+        const storedWishlist: WishlistItem[] = JSON.parse(sessionStorage.getItem("wishlist") || "[]");
         const storedCount = parseInt(sessionStorage.getItem("wishlistCount") || "0");
         setWishlistItems(storedWishlist);
         setWishlistCount(storedCount);
       }
       
       if (e.key === "unauthWishlist") {
-        const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+        const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
         if (!isAuthenticated) {
           setWishlistItems(unauthWishlist);
           setWishlistCount(unauthWishlist.length);
@@ -439,17 +660,17 @@ const Header = (props) => {
       }
     };
 
-    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
     window.addEventListener("storage", handleStorageChange);
     
     return () => {
-      window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate as EventListener);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [isAuthenticated]);
 
-  const normalizeDepartmentName = (name, type) => {
-    const prefixMap = {
+  const normalizeDepartmentName = (name: string, type: string): string => {
+    const prefixMap: {[key: string]: string} = {
       doctors: "أطباء",
       services: "خدمات",
       offers: "عروض",
@@ -461,7 +682,7 @@ const Header = (props) => {
   };
   
   useEffect(() => {
-    const fetchMenuData = async () => {
+    const fetchMenuData = async (): Promise<void> => {
       try {
         const res = await fetch("https://www.ss.mastersclinics.com/navbar-data");
         const data = await res.json();
@@ -485,8 +706,8 @@ const Header = (props) => {
   const mainDepartments = ["قسم الجلدية", "قسم الاسنان", "قسم النساء والولادة", "قسم التغذية"];
 
   const groupedDepartments = {
-    main: (menuData.departments || []).filter((dept) => mainDepartments.includes(dept.name)),
-    general: (menuData.departments || []).filter((dept) => !mainDepartments.includes(dept.name)),
+    main: (menuData.departments || []).filter((dept: any) => mainDepartments.includes(dept.name)),
+    general: (menuData.departments || []).filter((dept: any) => !mainDepartments.includes(dept.name)),
   };
 
   useEffect(() => {
@@ -500,7 +721,7 @@ const Header = (props) => {
 
       if (savedClientInfo) {
         try {
-          const parsedClientInfo = JSON.parse(savedClientInfo);
+          const parsedClientInfo: ClientInfo = JSON.parse(savedClientInfo);
           setClientName(parsedClientInfo.first_name + " " + parsedClientInfo.last_name);
           setClientInfo(parsedClientInfo);
           console.log("Restored client info from localStorage:", {
@@ -523,7 +744,7 @@ const Header = (props) => {
         timestamp: new Date().toISOString(),
       });
     } else {
-      const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+      const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
       setWishlistItems(unauthWishlist);
       setWishlistCount(unauthWishlist.length);
       
@@ -533,7 +754,7 @@ const Header = (props) => {
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = (event) => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent): void => {
       if (isAuthenticated && email) {
         try {
           
@@ -561,7 +782,7 @@ const Header = (props) => {
 
   useEffect(() => {
     if (codeExpirationTime && authStep === 2) {
-      const updateTimer = () => {
+      const updateTimer = (): void => {
         const now = Date.now();
         const remaining = Math.max(0, codeExpirationTime - now);
         setTimeRemaining(remaining);
@@ -585,7 +806,7 @@ const Header = (props) => {
     }
   }, [codeExpirationTime, authStep]);
 
-  const handleEmailSubmit = async (e) => {
+  const handleEmailSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setAuthError("");
 
@@ -618,11 +839,11 @@ const Header = (props) => {
       setAuthStep(2);
     } catch (error) {
       console.error("Error sending verification code:", error);
-      setAuthError(error.message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.");
+      setAuthError((error as Error).message || "حدث خطأ أثناء إرسال رمز التحقق. يرجى المحاولة مرة أخرى.");
     }
   };
 
-  const handleVerificationSubmit = async (e) => {
+  const handleVerificationSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setAuthError("");
 
@@ -690,11 +911,11 @@ const Header = (props) => {
       }
     } catch (error) {
       console.error("Error verifying code:", error);
-      setAuthError(error.message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.");
+      setAuthError((error as Error).message || "رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.");
     }
   };
 
-  const handleUserInfoSubmit = async (e) => {
+  const handleUserInfoSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setAuthError("");
 
@@ -733,7 +954,7 @@ const Header = (props) => {
         timestamp: new Date().toISOString(),
       });
 
-      const newClientInfo = {
+      const newClientInfo: ClientInfo = {
         id: data.clientId,
         email,
         first_name: firstName,
@@ -762,11 +983,11 @@ const Header = (props) => {
       resetAuthForm();
     } catch (error) {
       console.error("Error creating user:", error);
-      setAuthError(error.message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+      setAuthError((error as Error).message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
     }
   };
 
-  const handleResendCode = async () => {
+  const handleResendCode = async (): Promise<void> => {
     setIsResending(true);
     setAuthError("");
 
@@ -802,13 +1023,13 @@ const Header = (props) => {
       setTimeout(() => setAuthError(""), 3000);
     } catch (error) {
       console.error("Error resending verification code:", error);
-      setAuthError(error.message || "حدث خطأ أثناء إعادة إرسال رمز التحقق.");
+      setAuthError((error as Error).message || "حدث خطأ أثناء إعادة إرسال رمز التحقق.");
     } finally {
       setIsResending(false);
     }
   };
 
-  const resetAuthForm = () => {
+  const resetAuthForm = (): void => {
     setAuthStep(1);
     setEmail("");
     setVerificationCode("");
@@ -822,7 +1043,7 @@ const Header = (props) => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     setWishlistOpen(false);
     localStorage.removeItem("userEmail");
     localStorage.removeItem("isAuthenticated");
@@ -838,7 +1059,7 @@ const Header = (props) => {
     setShowAuthPopup(false);
     resetAuthForm();
 
-    const unauthWishlist = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
+    const unauthWishlist: WishlistItem[] = JSON.parse(localStorage.getItem("unauthWishlist") || "[]");
     setWishlistItems(unauthWishlist);
     setWishlistCount(unauthWishlist.length);
 
@@ -851,7 +1072,7 @@ const Header = (props) => {
     }
   };
 
-  const handleSearch = async (searchQuery) => {
+  const handleSearch = async (searchQuery: string): Promise<void> => {
     if (!searchQuery.trim()) {
       setResults(null);
       return;
@@ -867,27 +1088,27 @@ const Header = (props) => {
     }
   };
 
-  const debouncedSearch = useCallback((value) => {
+  const debouncedSearch = useCallback((value: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       handleSearch(value);
     }, 500);
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value;
     setQuery(value);
     debouncedSearch(value);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       handleSearch(query);
     }
   };
 
-  const handleItemClick = async (entity, id) => {
+  const handleItemClick = async (entity: string, id: string | number): Promise<void> => {
     const router = getRouter();
 
     if (entity === "testimonials") {
@@ -913,11 +1134,11 @@ const Header = (props) => {
     setResults(null);
   };
 
-  const ClickHandler = () => {
+  const ClickHandler = (): void => {
     window.scrollTo(10, 0);
   };
 
-  const toggleSearch = () => {
+  const toggleSearch = (): void => {
     setShowSearch(!showSearch);
     if (showSearch) {
       setQuery("");
@@ -926,12 +1147,12 @@ const Header = (props) => {
   };
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSearch(false);
         setResults(null);
       }
-      if (authPopupRef.current && !authPopupRef.current.contains(e.target)) {
+      if (authPopupRef.current && !authPopupRef.current.contains(e.target as Node)) {
         setShowAuthPopup(false);
       }
     };
@@ -941,7 +1162,7 @@ const Header = (props) => {
   }, []);
   
   useEffect(() => {
-    const checkScreenSize = () => {
+    const checkScreenSize = (): void => {
       setIsMobile(window.innerWidth < 768);
     };
 
@@ -950,7 +1171,7 @@ const Header = (props) => {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
   
-  const groupedBranches = (menuData.branches || []).reduce((acc, branch) => {
+  const groupedBranches = (menuData.branches || []).reduce((acc: {[key: string]: any[]}, branch: any) => {
     if (!acc[branch.region_name]) {
       acc[branch.region_name] = [];
     }
@@ -958,13 +1179,13 @@ const Header = (props) => {
     return acc;
   }, {});
 
-  const renderEntityDropdown = (items, entityType) => (
+  const renderEntityDropdown = (items: any[], entityType: string): JSX.Element => (
     <ul 
       className={`absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px] ${
         items.length > 8 ? 'max-h-80 overflow-y-auto' : ''
       }`}
     >
-      {items.map((item) => (
+      {items.map((item: any) => (
         <li key={item.department_id}>
           <Link
             href={`/${entityType}?departmentId=${item.department_id}`}
@@ -978,15 +1199,15 @@ const Header = (props) => {
     </ul>
   );
 
-  const renderBranchesDropdown = () => (
+  const renderBranchesDropdown = (): JSX.Element => (
     <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
-      {Object.keys(groupedBranches).map((region) => (
+      {Object.keys(groupedBranches).map((region: string) => (
         <div key={region} className="relative group/region">
           <div className="block flex justify-between items-center px-4 py-2 text-black hover:!text-[#CBA853] hover:bg-gray-50 transition-colors duration-300 whitespace-nowrap text-right cursor-default">
             {region} <FaChevronLeft className="mr-1 text-xs" />
           </div>
           <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/region:block min-w-[200px] border-t-2 border-[#CBA853]">
-            {groupedBranches[region].map((branch) => (
+            {groupedBranches[region].map((branch: any) => (
               <li key={branch.id}>
                 <Link
                   href={`/branches/${branch.id}`}
@@ -1003,9 +1224,9 @@ const Header = (props) => {
     </div>
   );
 
-  const renderDepartmentsDropdown = () => (
+  const renderDepartmentsDropdown = (): JSX.Element => (
     <div className="absolute top-full right-0 bg-white shadow-lg rounded-md py-2 hidden group-hover:block z-50 border-t-2 border-[#CBA853] min-w-[200px]">
-      {groupedDepartments.main.map((dept) => (
+      {groupedDepartments.main.map((dept: any) => (
         <li key={dept.id}>
           <Link
             href={`/departments/${dept.id}`}
@@ -1022,7 +1243,7 @@ const Header = (props) => {
           <FaChevronLeft className="mr-1 text-xs" />
         </div>
         <ul className="absolute top-0 right-full bg-white shadow-lg rounded-md py-2 hidden group-hover/general:block min-w-[200px] border-t-2 border-[#CBA853]">
-          {groupedDepartments.general.map((dept) => (
+          {groupedDepartments.general.map((dept: any) => (
             <li key={dept.id}>
               <Link
                 href={`/departments/${dept.id}`}
@@ -1038,7 +1259,7 @@ const Header = (props) => {
     </div>
   );
 
-  const renderWishlistIcon = () => {
+  const renderWishlistIcon = (): JSX.Element => {
     const count = wishlistCount;
     
     return (
@@ -1068,7 +1289,7 @@ const Header = (props) => {
     );
   };
 
-  const renderAppointmentIcon = () => {
+  const renderAppointmentIcon = (): JSX.Element => {
     return (
       <div className="relative">
         <div
@@ -1082,6 +1303,58 @@ const Header = (props) => {
             </div>
           )}
         </div>
+      </div>
+    );
+  };
+
+  const renderNotificationsIcon = (): JSX.Element => {
+    return (
+      <div className="relative">
+        <div
+          onClick={() => {
+            const next = !showNotifications;
+            setShowNotifications(next);
+            if (next) {
+              // refresh immediately when opening the dropdown
+              fetchNotifications();
+            }
+          }}
+          className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+        >
+          <FaBell className="text-[#dec06a]" size={20} />
+          {unreadCount > 0 && (
+            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </div>
+          )}
+        </div>
+        {showNotifications && (
+          <div className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-auto bg-white shadow-lg rounded-lg border z-50">
+            <div className="p-3 border-b font-semibold text-right">الإشعارات</div>
+            <ul className="divide-y">
+              {notifications.length === 0 && (
+                <li className="p-4 text-sm text-gray-500 text-right">لا توجد إشعارات</li>
+              )}
+              {notifications.map((n) => (
+                <li key={n.id} className={`p-3 text-right cursor-pointer hover:bg-gray-50 ${!n.is_read ? 'bg-yellow-50' : ''}`}
+                    onClick={async () => {
+                      setShowNotifications(false);
+                      await markNotificationRead(n.id);
+                      const target = n?.appointment_id || n?.appointmentId;
+                      if (target) {
+                        safeNavigate(`/profile?tab=appointments&focus=${encodeURIComponent(target)}`);
+                      } else {
+                        safeNavigate(`/profile?tab=appointments`);
+                      }
+                    }}>
+                  <div className="text-sm font-medium">{n.title || 'إشعار'}</div>
+                  {n.message && <div className="text-xs text-gray-600 mt-1">{n.message}</div>}
+                  <div className="text-[11px] text-gray-400 mt-1">{n.created_at ? new Date(n.created_at).toLocaleString() : ''}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     );
   };
@@ -1103,7 +1376,7 @@ const Header = (props) => {
                 value={query}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#dec06a] transition text-lg"
+                className="w-full px-4 py-2 pr-12 border border-[#dec06a] bg-white rounded-full focus:outline-none focus:ring-2 focus:ring-[#CBA853] transition text-lg"
               />
               <FaSearch
                 className="absolute top-1/2 transform -translate-y-1/2 left-4 text-[#dec06a]"
@@ -1114,7 +1387,7 @@ const Header = (props) => {
                   {results.doctors && results.doctors.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">الأطباء</h3>
-                      {results.doctors.map((doctor) => (
+                      {results.doctors.map((doctor: any) => (
                         <div 
                           key={doctor.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1128,7 +1401,7 @@ const Header = (props) => {
                   {results.services && results.services.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">الخدمات</h3>
-                      {results.services.map((service) => (
+                      {results.services.map((service: any) => (
                         <div 
                           key={service.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1142,7 +1415,7 @@ const Header = (props) => {
                   {results.offers && results.offers.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">العروض</h3>
-                      {results.offers.map((offer) => (
+                      {results.offers.map((offer: any) => (
                         <div 
                           key={offer.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1156,7 +1429,7 @@ const Header = (props) => {
                   {results.departments && results.departments.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">الأقسام</h3>
-                      {results.departments.map((department) => (
+                      {results.departments.map((department: any) => (
                         <div 
                           key={department.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1170,7 +1443,7 @@ const Header = (props) => {
                   {results.blogs && results.blogs.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">المقالات</h3>
-                      {results.blogs.map((blog) => (
+                      {results.blogs.map((blog: any) => (
                         <div 
                           key={blog.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1184,7 +1457,7 @@ const Header = (props) => {
                   {results.testimonials && results.testimonials.length > 0 && (
                     <div className="p-2">
                       <h3 className="font-semibold mb-2 border-b pb-1">التوصيات</h3>
-                      {results.testimonials.map((testimonial) => (
+                      {results.testimonials.map((testimonial: any) => (
                         <div 
                           key={testimonial.id} 
                           className="p-2 hover:bg-gray-100 cursor-pointer"
@@ -1319,220 +1592,230 @@ const Header = (props) => {
               </div>
 
               {/* Search and Account Icons */}
-        <div
-  className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3
-    ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
->
-  {/* Account Icon (User) */}
-  <div className="relative">
-    <div
-      onClick={() => setShowAuthPopup(!showAuthPopup)}
-      className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
-    >
-      <FaUser className="text-[#dec06a]" size={20} />
-      {isAuthenticated && (
-        <div className="flex flex-col">
-          <span className="text-black text-sm hidden md:inline">مرحبًا</span>
-          <span className="text-black text-sm hidden md:inline">{clientName}</span>
-          <FaCheckCircle className="text-green-500 md:hidden" />
-        </div>
-      )}
-    </div>
-
-    {/* Popup */}
-    {(showAuthPopup || props.showAuthprop) && (
-      <div
-        ref={authPopupRef}
-        className="absolute top-full left-0 md:top-[-115px] !left-15 mt-2 w-70 bg-white rounded-lg shadow-lg p-4 z-50"
-      >
-        {!isAuthenticated ? (
-          <>
-            {authStep === 1 && (
-              <form onSubmit={handleEmailSubmit}>
-                <h3 className="text-lg font-semibold mb-4 text-right">تسجيل الدخول</h3>
-                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-                <div className="mb-4">
-                  <label className="block text-right mb-2">البريد الإلكتروني</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-2 py-2 border border-gray-300 rounded text-right"
-                    placeholder="example@example.com"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-                >
-                  إرسال رمز التحقق 
-                </button>
-              </form>
-            )}
-            
-            {authStep === 2 && (
-              <form onSubmit={handleVerificationSubmit}>
-                <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
-                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-                <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
-                
-                <div className="mb-4">
-                  <label className="block text-right mb-2">رمز التحقق</label>
-                  <div className="flex gap-2 justify-end" dir="ltr">
-                    {[0, 1, 2, 3].map((index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        maxLength="1"
-                        value={verificationCode[index] || ''}
-                        onChange={(e) => {
-                          if (e.target.value.length > 1) {
-                            const pastedCode = e.target.value.slice(0, 4);
-                            setVerificationCode(pastedCode);
-                            return;
-                          }
-                          
-                          const newCode = [...verificationCode.padEnd(4, ' ')];
-                          newCode[index] = e.target.value;
-                          setVerificationCode(newCode.join('').trim());
-                          
-                          if (e.target.value && index < 3) {
-                            e.target.nextElementSibling.focus();
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                            e.target.previousElementSibling.focus();
-                          }
-                        }}
-                        onPaste={(e) => {
-                          e.preventDefault();
-                          const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
-                          if (pastedData.length === 4) {
-                            setVerificationCode(pastedData);
-                          }
-                        }}
-                        required
-                        className="w-12 h-12 px-3 py-2 border border-gray-300 rounded text-center text-xl"
-                        pattern="[0-9]"
-                        inputMode="numeric"
-                      />
-                    ))}
+              <div
+                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3
+                  ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
+              >
+                {/* Account Icon (User) */}
+                <div className="relative">
+                  <div
+                    onClick={() => setShowAuthPopup(!showAuthPopup)}
+                    className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
+                    <FaUser className="text-[#dec06a]" size={20} />
+                    {isAuthenticated && (
+                      <div className="flex flex-col">
+                        <span className="text-black text-sm hidden md:inline">مرحبًا</span>
+                        <span className="text-black text-sm hidden md:inline">{clientName}</span>
+                        <FaCheckCircle className="text-green-500 md:hidden" />
+                      </div>
+                    )}
                   </div>
+
+                  {/* Popup */}
+                  {(showAuthPopup || props.showAuthprop) && (
+                    <div
+                      ref={authPopupRef}
+                      className="absolute top-full left-0 md:top-[-115px] !left-15 mt-2 w-70 bg-white rounded-lg shadow-lg p-4 z-50"
+                    >
+                      {!isAuthenticated ? (
+                        <>
+                          {authStep === 1 && (
+                            <form onSubmit={handleEmailSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">تسجيل الدخول</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">البريد الإلكتروني</label>
+                                <input
+                                  type="email"
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
+                                  required
+                                  className="w-full px-2 py-2 border border-gray-300 rounded text-right"
+                                  placeholder="example@example.com"
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                إرسال رمز التحقق 
+                              </button>
+                            </form>
+                          )}
+                          
+                          {authStep === 2 && (
+                            <form onSubmit={handleVerificationSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">تحقق من البريد الإلكتروني</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              <p className="text-right mb-4">تم إرسال رمز التحقق إلى {email}</p>
+                              
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رمز التحقق</label>
+                                <div className="flex gap-2 justify-end" dir="ltr">
+                                  {[0, 1, 2, 3].map((index) => (
+                                    <input
+                                      key={index}
+                                      type="text"
+                                      maxLength={1}
+                                      value={verificationCode[index] || ''}
+
+onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.value.length > 1) {
+    const pastedCode = e.target.value.slice(0, 4);
+    setVerificationCode(pastedCode);
+    return;
+  }
+  
+  const newCode = [...verificationCode.padEnd(4, ' ')];
+  newCode[index] = e.target.value;
+  setVerificationCode(newCode.join('').trim());
+  
+  if (e.target.value && index < 3) {
+    const nextElement = e.target.nextElementSibling as HTMLInputElement;
+    if (nextElement) {
+      nextElement.focus();
+    }
+  }
+}}
+onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+  const target = e.target as HTMLInputElement;
+  if (e.key === 'Backspace' && !target.value && index > 0) {
+    const prevElement = target.previousElementSibling as HTMLInputElement;
+    if (prevElement) {
+      prevElement.focus();
+    }
+  }
+}}
+                                      onPaste={(e) => {
+                                        e.preventDefault();
+                                        const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
+                                        if (pastedData.length === 4) {
+                                          setVerificationCode(pastedData);
+                                        }
+                                      }}
+                                      required
+                                      className="w-12 h-12 px-3 py-2 border border-gray-300 rounded text-center text-xl"
+                                      pattern="[0-9]"
+                                      inputMode="numeric"
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                تأكيد
+                              </button>
+                              
+                              <button
+                                type="button"
+                                onClick={() => setAuthStep(1)}
+                                className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
+                              >
+                                تغيير البريد الإلكتروني او ارسال رمز جديد
+                              </button>
+                            </form>
+                          )}
+                          
+                          {authStep === 3 && (
+                            <form onSubmit={handleUserInfoSubmit}>
+                              <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
+                              {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
+                              
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأول</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.firstName}
+                                  onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">الاسم الأخير</label>
+                                <input
+                                  type="text"
+                                  value={userInfo.lastName}
+                                  onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رقم الهاتف</label>
+                                <input
+                                  type="tel"
+                                  value={userInfo.phoneNumber}
+                                  onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
+                                  required
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+
+                              <div className="mb-4">
+                                <label className="block text-right mb-2">رقم الهوية</label>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={userInfo.identity_number || ""}
+                                  onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
+                                  placeholder="1234567890"
+                                  required
+                                  minLength={10}
+                                  maxLength={10}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+                                />
+                              </div>
+
+                              <button
+                                type="submit"
+                                className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
+                              >
+                                حفظ
+                              </button>
+                            </form>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-right">
+                          <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
+                          <p className="mb-4">الاسم: {clientName}</p>
+                          <p className="mb-4">البريد الإلكتروني: {email}</p>
+                          <button className="w-full gradient py-2 rounded transition mb-1">
+                            <Link href={"/profile"} className="!text-white">
+                              حسابي
+                            </Link>
+                          </button>
+                          <button
+                            onClick={handleLogout}
+                            className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
+                          >
+                            تسجيل الخروج
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-                
-                <button
-                  type="submit"
-                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-                >
-                  تأكيد
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => setAuthStep(1)}
-                  className="w-full mt-2 text-[#CBA853] py-2 rounded hover:underline"
-                >
-                  تغيير البريد الإلكتروني او ارسال رمز جديد
-                </button>
-              </form>
-            )}
-            
-            {authStep === 3 && (
-              <form onSubmit={handleUserInfoSubmit}>
-                <h3 className="text-lg font-semibold mb-4 text-right">أكمل معلوماتك</h3>
-                {authError && <div className="text-red-500 text-sm mb-4 text-right">{authError}</div>}
-                
-                <div className="mb-4">
-                  <label className="block text-right mb-2">الاسم الأول</label>
-                  <input
-                    type="text"
-                    value={userInfo.firstName}
-                    onChange={(e) => setUserInfo({ ...userInfo, firstName: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                  />
+
+                {/* Show wishlist + calendar only on same row if not authenticated */}
+                <div className={`flex flex-col md:flex-row gap-3`}>
+                  {/* Wishlist Icon */}
+                  {renderWishlistIcon()}
+
+                  {/* Calendar Icon with appointment count */}
+                  {renderAppointmentIcon()}
+
+                  {/* Notifications Bell */}
+                  {isAuthenticated && renderNotificationsIcon()}
                 </div>
-
-                <div className="mb-4">
-                  <label className="block text-right mb-2">الاسم الأخير</label>
-                  <input
-                    type="text"
-                    value={userInfo.lastName}
-                    onChange={(e) => setUserInfo({ ...userInfo, lastName: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-right mb-2">رقم الهاتف</label>
-                  <input
-                    type="tel"
-                    value={userInfo.phoneNumber}
-                    onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-right mb-2">رقم الهوية</label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={userInfo.identity_number || ""}
-                    onChange={(e) => setUserInfo({ ...userInfo, identity_number: e.target.value })}
-                    placeholder="1234567890"
-                    required
-                    minLength="10"
-                    maxLength="10"
-                    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#CBA853] text-white py-2 rounded hover:bg-[#A58532] transition"
-                >
-                  حفظ
-                </button>
-              </form>
-            )}
-          </>
-        ) : (
-          <div className="text-right">
-            <h3 className="text-lg font-semibold mb-2">مرحباً</h3>
-            <p className="mb-4">الاسم: {clientName}</p>
-            <p className="mb-4">البريد الإلكتروني: {email}</p>
-            <button className="w-full gradient py-2 rounded transition mb-1">
-              <Link href={"/profile"} className="!text-white">
-                حسابي
-              </Link>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition"
-            >
-              تسجيل الخروج
-            </button>
-          </div>
-        )}
-      </div>
-    )}
-  </div>
-
-  {/* Show wishlist + calendar only on same row if not authenticated */}
-  <div className={`flex flex-col md:flex-row gap-3`}>
-    {/* Wishlist Icon */}
-    {renderWishlistIcon()}
-
-    {/* Calendar Icon with appointment count */}
-    {renderAppointmentIcon()}
-  </div>
-</div>
-
+              </div>
 
               {/* Mobile Navigation */}
               <div className="flex md:hidden order-1 md:order-none">
@@ -1546,15 +1829,8 @@ const Header = (props) => {
       {/* Wishlist Sidebar */}
       <WishlistSidebar 
         wishlistOpen={wishlistOpen} 
-        setWishlistOpen={setWishlistOpen} 
-        wishlistItems={wishlistItems}
-        setWishlistItems={setWishlistItems}
-        wishlistCount={wishlistCount}
-        setWishlistCount={setWishlistCount}
-        isAuthenticated={isAuthenticated}
-        setShowAuthPopup={setShowAuthPopup}
+        setWishlistOpen={setWishlistOpen}
       />
-
       {/* Navigation Loading Indicator */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
@@ -1569,4 +1845,3 @@ const Header = (props) => {
 };
 
 export default Header;
-

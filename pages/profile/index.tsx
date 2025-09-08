@@ -392,6 +392,23 @@ export default function ProfilePage() {
   const [lastRequestTime, setLastRequestTime] = useState<number>(0)
   const searchParams = useSearchParams()
   const router = useRouter()
+  // Focus handling for notifications deep-link
+  useEffect(() => {
+    const focusId = searchParams.get("focus")
+    if (focusId) {
+      // Wait a tick to ensure appointments are rendered
+      setTimeout(() => {
+        const el = document.querySelector(`[data-appointment-id="${focusId}"]`)
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" })
+          el.classList.add("ring-2", "ring-[#CBA853]", "ring-offset-2")
+          setTimeout(() => {
+            el.classList.remove("ring-2", "ring-[#CBA853]", "ring-offset-2")
+          }, 3000)
+        }
+      }, 300)
+    }
+  }, [searchParams, appointments])
 
   const activeTab = searchParams.get("tab") || "info"
 
@@ -674,6 +691,11 @@ console.log(response);
         "pending": "تم إعادة الموعد إلى قيد الانتظار"
       };
       toast.success(statusMessages[newStatus as keyof typeof statusMessages] || "تم تحديث الموعد بنجاح");
+
+      // Ask header to refresh notifications immediately
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('refreshNotifications'))
+      }
       return true;
     } catch (err) {
       console.error("Update appointment status error:", err);
@@ -1586,6 +1608,7 @@ console.log(response);
                       {appointments.map((appointment) => (
                         <Card
                           key={appointment.id}
+                          data-appointment-id={`${appointment.id}`}
                           className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-0 shadow-lg ${getTypeColor()}`}
                         >
                           <CardContent className="p-6">

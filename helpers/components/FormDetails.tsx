@@ -199,6 +199,20 @@ const usePaymentStatus = (sessionId: string | null) => {
   return { status, loading, error };
 };
 
+// Get service name - FIXED VERSION
+const getServiceName = (doctor: any, device: any, offer: any): string => {
+  if (doctor && typeof doctor === 'object' && doctor.name) return doctor.name;
+  if (doctor && typeof doctor === 'string') return doctor;
+  
+  if (device && typeof device === 'object' && device.name) return device.name;
+  if (device && typeof device === 'string') return device;
+  
+  if (offer && typeof offer === 'object' && offer.title) return offer.title;
+  if (offer && typeof offer === 'string') return offer;
+  
+  return "خدمات التجميل";
+};
+
 /* =========================
    🔹 SimpleCtaForm Component
    ========================= */
@@ -213,6 +227,12 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   device = null,
   landingPageId = null,
 }) => {
+  console.log("Form type:", type);
+  console.log("Entity ID:", entityId);
+  console.log("Offer data:", offer);
+  console.log("Doctor data:", doctor);
+  console.log("Device data:", device);
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
     phone: "",
@@ -248,14 +268,6 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
       ...prev,
       branch: branchId
     }));
-  };
-
-  // Get service name
-  const getServiceName = (doctor: any, device: any, offer: any): string => {
-    if (doctor) return doctor;
-    if (device) return device;
-    if (offer) return offer;
-    return "خدمات التجميل";
   };
 
   // ✅ redirect after payment
@@ -361,12 +373,23 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         }
       }
 
+      // FIX: Use the correct entityId based on type
+      let finalEntityId: number | null = null;
+      
+      if (type === "device") {
+        // For devices, use the branch ID as entityId
+        finalEntityId = Number(formData.branch);
+      } else {
+        // For offers, doctors, etc., use the original entityId
+        finalEntityId = entityId ? Number(entityId) : null;
+      }
+
       const submissionData: AppointmentData = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
         utmSource: getUtmSource(),
         clientId: clientId,
-        entityId: type === "device" ? Number(formData.branch) : (entityId ? Number(entityId) : null),
+        entityId: finalEntityId,
         type: type,
         scheduledAt: null,
         is_authed: isAuthenticated,
@@ -374,16 +397,33 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
       };
 
       console.log("📤 Final request payload:", submissionData);
+      console.log("Entity type:", type);
+      console.log("Entity ID:", finalEntityId);
 
       const result = await makeAppointment(submissionData);
       console.log("✅ Appointment created:", result);
 
+      // DEBUG: Check what type is returned from backend
+      console.log("Backend returned appointment type:", result.appointment?.type);
+      console.log("Expected type:", type);
+
+      // If backend is returning wrong type, we can override it temporarily
+      if (result.appointment && result.appointment.type !== type) {
+        console.warn(`Backend returned type "${result.appointment.type}" but expected "${type}"`);
+        // Override the type for frontend display
+        result.appointment.type = type;
+      }
+
       if (formData.payNow && result?.appointmentId) {
         try {
           const serviceName = getServiceName(doctor, device, offer);
+          
+          // FIX: Use the correct ID for payment
+          const paymentEntityId = type === "device" ? Number(formData.branch) : entityId;
+          
           const paymentData = await createStripePayment(
             result.appointmentId, 
-            type === "device" ? Number(formData.branch) : entityId, 
+            paymentEntityId, 
             formData.name, 
             type, 
             serviceName
@@ -414,16 +454,22 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
 
         const queryParams = new URLSearchParams({
           appointment_id: appointment.id,
-          name: encodeURIComponent(appointment.name || ""),
-          phone: encodeURIComponent(appointment.phone || ""),
-          branch: encodeURIComponent(appointment.branch || ""),
-          doctor: encodeURIComponent(appointment.doctor || ""),
-          offer: encodeURIComponent(appointment.offer || ""),
-          device: encodeURIComponent(appointment.device || ""),
-          service: encodeURIComponent(getServiceName(appointment.doctor, appointment.device, appointment.offer)),
-          type: appointment.type || "",
-          utmSource: encodeURIComponent(appointment.utmSource || ""),
-          createdAt: appointment.createdAt || "",
+          name: encodeURIComponent(appointment.name || formData.name),
+          phone: encodeURIComponent(appointment.phone || formData.phone),
+          branch: encodeURIComponent(appointment.branch || formData.branch || ""),
+          doctor: encodeURIComponent(
+            type === "doctor" ? getServiceName(doctor, null, null) : ""
+          ),
+          offer: encodeURIComponent(
+            type === "offer" ? getServiceName(null, null, offer) : ""
+          ),
+          device: encodeURIComponent(
+            type === "device" ? getServiceName(null, device, null) : ""
+          ),
+          service: encodeURIComponent(getServiceName(doctor, device, offer)),
+          type: appointment.type || type,
+          utmSource: encodeURIComponent(appointment.utmSource || getUtmSource()),
+          createdAt: appointment.createdAt || new Date().toISOString(),
           scheduledAt: appointment.scheduledAt || "",
           payment_status: appointment.payment_status || "unpaid",
         }).toString();
@@ -581,8 +627,11 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         )}
 
         {/* Pay Now Checkbox */}
-        <div className="w-full flex items-center gap-3 justify-end">
-          <label htmlFor="payNow" className="text-white text-lg font-medium cursor-pointer flex items-center gap-2">
+        {type !== "branch" && (
+          <div className="w-full flex flex-row-reverse items-center justify-end gap-3 mt-2">
+            <label htmlFor="payNow" className="text-white text-lg font-medium cursor-pointer pt-3">
+              الدفع الآن ببطاقة الائتمان
+            </label>
             <input
               id="payNow"
               type="checkbox"
@@ -590,11 +639,10 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
               checked={formData.payNow}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-5 h-5 rounded border-white/40 bg-white/20 text-blue-500 focus:ring-white/30 cursor-pointer"
+              className="w-5 h-5 rounded focus:ring-2 focus:ring-white/30 focus:ring-offset-2 cursor-pointer"
             />
-            <span>ادفع الآن</span>
-          </label>
-        </div>
+          </div>
+        )}
 
         {/* Error message */}
         {errorMessage && (
@@ -602,13 +650,47 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         )}
 
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg font-medium py-4 px-8 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? "جاري الإرسال..." : "احجز الآن"}
-        </button>
+        <div className="w-full mt-2">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full px-8 h-[56px] md:h-[60px] rounded-full text-lg md:text-xl font-semibold border-2 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 transition-all duration-200 shadow-lg ${
+              isSubmitting
+                ? "bg-white/50 text-gray-500 cursor-not-allowed"
+                : submitStatus === "success"
+                ? "bg-green-500 text-white border-green-400"
+                : submitStatus === "error"
+                ? "bg-red-500 text-white border-red-400"
+                : "bg-white text-[#D4AF37] hover:text-[#B7950B] hover:border-white/20 hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl"
+            }`}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current ml-2"></div>
+                {formData.payNow ? "جاري الدفع..." : "جاري الإرسال..."}
+              </div>
+            ) : submitStatus === "success" ? (
+              <div className="flex items-center justify-center">
+                <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                تم الإرسال بنجاح!
+              </div>
+            ) : submitStatus === "error" ? (
+              <div className="flex items-center justify-center">
+                <svg className="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                حدث خطأ، حاول مرة أخرى
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                {formData.payNow ? "ادفع الآن" : "احجزي الآن"}
+                <span className="mr-2">←</span>
+              </div>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
