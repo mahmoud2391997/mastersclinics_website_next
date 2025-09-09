@@ -1665,7 +1665,7 @@ const renderNotificationsIcon = (): JSX.Element => {
 
               {/* Search and Account Icons */}
               <div
-                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3 mt-[40px]
+                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3 mt-[41px] md:mt-0
                   ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
               >
                 {/* Account Icon (User) */}
