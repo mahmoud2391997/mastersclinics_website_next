@@ -87,14 +87,28 @@ const Logo = () => (
 // Interfaces
 interface Notification {
   id: string;
+  type: string;
+  title: string;
+  message: string;
+  is_read: number;
+  created_at: string;
+  appointment?: {
+    id: string;
+    status: string;
+    type: string;
+    bookingId: string;
+    related: {
+      id: number;
+      title: string;
+      image: string;
+    };
+  };
+  // Add these properties to match the API response
+  serviceTitle?: string;
+  serviceImage?: string;
   appointment_id?: string;
   appointmentId?: string;
-  title: string;
-  message?: string;
-  is_read: boolean;
-  created_at: string;
 }
-
 interface ClientInfo {
   id: string;
   email: string;
@@ -160,70 +174,93 @@ export const useNotifications = () => {
       return null;
     }
   };
-
-  const fetchNotifications = async (): Promise<void> => {
-    try {
-      const clientId = getClientId();
-      if (!clientId) {
-        setNotifications([]);
-        setUnreadCount(0);
-        return;
-      }
-
-      const response = await fetch(
-        `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/notifications`,
-        {
-          cache: "no-store",
-          headers: {
-            'Content-Type': 'application/json',
-            ...(localStorage.getItem("token") && {
-              'Authorization': `Bearer ${localStorage.getItem("token")}`
-            })
-          }
-        }
-      );
-console.log("notification response:", response);
-
-      if (!response.ok) {
-        console.error("Failed to fetch notifications", response.status);
-        return;
-      }
-
-      const data = await response.json();
-      const items = Array.isArray(data?.notifications) ? data.notifications : (Array.isArray(data) ? data : []);
-      setNotifications(items);
-      setUnreadCount(items.filter((n: Notification) => !n.is_read).length);
-    } catch (error) {
-      console.error("Error fetching notifications", error);
+const fetchNotifications = async (): Promise<void> => {
+  try {
+    const clientId = getClientId();
+    if (!clientId) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
     }
-  };
 
-  const markNotificationRead = async (notificationId: string): Promise<void> => {
-    try {
-      const clientId = getClientId();
-      if (!clientId) return;
-      
-      await fetch(
-        `https://www.ss.mastersclinics.com/api/client-auth/notifications/${notificationId}/read`,
-        {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-            ...(localStorage.getItem("token") && {
-              'Authorization': `Bearer ${localStorage.getItem("token")}`
-            })
-          }
-        }
-      );
-      
-      // Optimistically update UI
-      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error("Failed to mark notification as read", error);
+    const response = await fetch(
+      `https://www.ss.mastersclinics.com/api/client-auth/${clientId}/notifications`,
+      {
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          ...(localStorage.getItem("token") && {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          }),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => null);
+      console.error("❌ Failed to fetch notifications:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: text,
+      });
+      return;
     }
-  };
 
+    const data = await response.json();
+    console.log("✅ Raw notifications response:", data);
+
+    // Normalize is_read to number
+    const items = (Array.isArray(data?.notifications)
+      ? data.notifications
+      : Array.isArray(data)
+      ? data
+      : []
+    ).map((n: any) => ({
+      ...n,
+      is_read: Number(n.is_read) || 0,
+    }));
+
+    setNotifications(items);
+    setUnreadCount(items.filter((n: Notification) => !n.is_read).length);
+  } catch (error: any) {
+    console.error("🔥 Error fetching notifications:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+  }
+};
+
+
+const markNotificationRead = async (notificationId: string): Promise<void> => {
+  try {
+    const clientId = getClientId();
+    if (!clientId) return;
+    console.log(`Marking notification ${notificationId} as read for client ${clientId}`);
+
+    await fetch(
+      `https://www.ss.mastersclinics.com/api/client-auth/notifications/${notificationId}/read`,
+      {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem("token") && {
+            'Authorization': `Bearer ${localStorage.getItem("token")}`
+          })
+        }
+      }
+    );
+    
+    // Fix: Use boolean true instead of number 1
+// In the markNotificationRead function, use 1 instead of true
+setNotifications(prev => prev.map(n => 
+  n.id === notificationId ? { ...n, is_read: 1 } : n  // Use 1 instead of true
+));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  } catch (error) {
+    console.error("Failed to mark notification as read", error);
+  }
+};
   // Initialize and set up polling
   useEffect(() => {
     const clientId = getClientId();
@@ -1307,58 +1344,93 @@ const Header = (props: HeaderProps) => {
     );
   };
 
-  const renderNotificationsIcon = (): JSX.Element => {
-    return (
-      <div className="relative">
-        <div
-          onClick={() => {
-            const next = !showNotifications;
-            setShowNotifications(next);
-            if (next) {
-              // refresh immediately when opening the dropdown
-              fetchNotifications();
-            }
-          }}
-          className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
-        >
-          <FaBell className="text-[#dec06a]" size={20} />
-          {unreadCount > 0 && (
-            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </div>
-          )}
-        </div>
-        {showNotifications && (
-          <div className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-auto bg-white shadow-lg rounded-lg border z-50">
-            <div className="p-3 border-b font-semibold text-right">الإشعارات</div>
-            <ul className="divide-y">
-              {notifications.length === 0 && (
-                <li className="p-4 text-sm text-gray-500 text-right">لا توجد إشعارات</li>
-              )}
-              {notifications.map((n) => (
-                <li key={n.id} className={`p-3 text-right cursor-pointer hover:bg-gray-50 ${!n.is_read ? 'bg-yellow-50' : ''}`}
-                    onClick={async () => {
-                      setShowNotifications(false);
-                      await markNotificationRead(n.id);
-                      const target = n?.appointment_id || n?.appointmentId;
-                      if (target) {
-                        safeNavigate(`/profile?tab=appointments&focus=${encodeURIComponent(target)}`);
-                      } else {
-                        safeNavigate(`/profile?tab=appointments`);
-                      }
-                    }}>
-                  <div className="text-sm font-medium">{n.title || 'إشعار'}</div>
-                  {n.message && <div className="text-xs text-gray-600 mt-1">{n.message}</div>}
-                  <div className="text-[11px] text-gray-400 mt-1">{n.created_at ? new Date(n.created_at).toLocaleString() : ''}</div>
-                </li>
-              ))}
-            </ul>
+const renderNotificationsIcon = (): JSX.Element => {
+  return (
+    <div className="relative">
+      <div
+        onClick={() => {
+          const next = !showNotifications;
+          setShowNotifications(next);
+          if (next) {
+            // refresh immediately when opening the dropdown
+            fetchNotifications();
+          }
+        }}
+        className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+      >
+        <FaBell className="text-[#dec06a]" size={20} />
+        {unreadCount > 0 && (
+          <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-medium">
+            {unreadCount > 99 ? "99+" : unreadCount}
           </div>
         )}
       </div>
-    );
-  };
-
+      {showNotifications && (
+        <div className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-auto bg-white shadow-lg rounded-lg border z-50">
+          <div className="p-3 border-b font-semibold text-right">الإشعارات</div>
+          <ul className="divide-y">
+            {notifications.length === 0 && (
+              <li className="p-4 text-sm text-gray-500 text-right">لا توجد إشعارات</li>
+            )}
+            {notifications.map((n) => {
+              // Get service image from either serviceImage or appointment.related.image
+              const serviceImage = n.serviceImage || n.appointment?.related?.image;
+              // Get service title from either serviceTitle or appointment.related.title
+              const serviceTitle = n.serviceTitle || n.appointment?.related?.title;
+              
+              return (
+                <li 
+                  key={n.id} 
+                  className={`p-3 text-right cursor-pointer hover:bg-gray-50 ${!n.is_read ? 'bg-yellow-50' : ''}`}
+                  onClick={async () => {
+                    setShowNotifications(false);
+                    await markNotificationRead(n.id);
+                    const target = n.appointment_id || n.appointmentId || n.appointment?.id;
+                    if (target) {
+                      safeNavigate(`/profile?tab=appointments&focus=${encodeURIComponent(target)}`);
+                    } else {
+                      safeNavigate(`/profile?tab=appointments`);
+                    }
+                  }}
+                >
+                  {/* Service Image */}
+                  {serviceImage && (
+                    <div className="mb-2">
+                      <img 
+                        src={`https://www.ss.mastersclinics.com${serviceImage}`} 
+                        alt={serviceTitle || 'Service'}
+                        className="w-full h-32 object-cover rounded-md"
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="text-sm font-medium">{n.title || 'إشعار'}</div>
+                  
+                  {/* Service Title */}
+                  {serviceTitle && (
+                    <div className="text-xs text-[#CBA853] font-medium mt-1">
+                      الخدمة: {serviceTitle}
+                    </div>
+                  )}
+                  
+                  {n.message && <div className="text-xs text-gray-600 mt-1">{n.message}</div>}
+                  
+                  <div className="text-[11px] text-gray-400 mt-1">
+                    {n.created_at ? new Date(n.created_at).toLocaleString('ar-SA') : ''}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
   return (
     <div className="relative w-full">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
@@ -1593,7 +1665,7 @@ const Header = (props: HeaderProps) => {
 
               {/* Search and Account Icons */}
               <div
-                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3
+                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3 mt-[40px]
                   ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
               >
                 {/* Account Icon (User) */}
