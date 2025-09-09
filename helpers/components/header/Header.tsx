@@ -1434,7 +1434,7 @@ const renderNotificationsIcon = (): JSX.Element => {
   return (
     <div className="relative w-full">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-        <div className={`${props.hclass} m-auto !w-full`}>
+        <div className={`${props.hclass} m-auto !w-full p-0 !pr-2`}>
           <ContactBar nav={props.nav} />
        
           <div
@@ -1572,8 +1572,8 @@ const renderNotificationsIcon = (): JSX.Element => {
               </div>
 
               {/* Main Navigation */}
-              <div className="hidden md:flex w-full max-w-[800px] mx-auto order-2 md:!mr-10 lg:!mr-auto lg:!mx-auto ">
-                <ul className="flex justify-center text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap gap-2 lg:gap-4 w-full">
+              <div className="hidden md:flex w-full max-w-[800px] mx-auto order-2 md:!mr-25 lg:!mr-auto lg:!mx-auto ">
+                <ul className="flex justify-center text-sm lg:text-lg xl:text-xl font-medium items-center whitespace-nowrap !gap-1 lg:gap-4 w-full">
                   <li>
                     <Link 
                       href="/" 
@@ -1665,20 +1665,20 @@ const renderNotificationsIcon = (): JSX.Element => {
 
               {/* Search and Account Icons */}
               <div
-                className={`flex items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[40px] md:transform md:-translate-y-1/2 gap-3 mt-[41px] md:mt-0
-                  ${isAuthenticated ? "flex-col" : "flex-row"} xl:flex-row`}
+                className={`flex flex-col items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[32px] md:transform md:-translate-y-1/2 gap-3  lg:mt-0 md:!gap-8 xl:!gap-3
+                   ` + (isAuthenticated ? " mt-[41px] md:mt-[7px]" :null)}
               >
                 {/* Account Icon (User) */}
-                <div className="relative">
+                <div className="relative ">
                   <div
                     onClick={() => setShowAuthPopup(!showAuthPopup)}
-                    className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 bg-white rounded-full p-2 cursor-pointer hover:bg-gray-50 transition-colors  "
                   >
                     <FaUser className="text-[#dec06a]" size={20} />
                     {isAuthenticated && (
                       <div className="flex flex-col">
                         <span className="text-black text-sm hidden md:inline">مرحبًا</span>
-                        <span className="text-black text-sm hidden md:inline">{clientName}</span>
+                        <span className="text-black text-sm hidden lg:inline">{clientName}</span>
                         <FaCheckCircle className="text-green-500 md:hidden" />
                       </div>
                     )}
@@ -1882,7 +1882,7 @@ onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   {renderWishlistIcon()}
 
                   {/* Calendar Icon with appointment count */}
-                  {renderAppointmentIcon()}
+               {isAuthenticated && renderAppointmentIcon()}
 
                   {/* Notifications Bell */}
                   {isAuthenticated && renderNotificationsIcon()}
