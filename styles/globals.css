@@ -2344,13 +2344,7 @@ Version:        1.0.0
 .wpo-site-header .navigation > .container {
   position: relative;
 }
-
-@media (min-width: 991px) {
-  .wpo-site-header {
-    padding: 0 100px;
-  }
-}
-.wpo-site-header .row {
+o-site-header .row {
   width: 100%;
 }
 

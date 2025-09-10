@@ -1434,7 +1434,9 @@ const renderNotificationsIcon = (): JSX.Element => {
   return (
     <div className="relative w-full">
       <header id="header" dir="rtl" className="relative z-[1111] w-full">
-        <div className={`${props.hclass} m-auto !w-full p-0 !pr-2`}>
+<div
+  className={`${props.hclass} m-auto !w-full pl-0 !pr-4 lg:px-[100px]`}
+>
           <ContactBar nav={props.nav} />
        
           <div
