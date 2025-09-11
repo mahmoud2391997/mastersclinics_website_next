@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import { fetchBranches } from '../../store/slices/branches';
@@ -10,11 +10,18 @@ import { FaMapMarkerAlt, FaClock } from 'react-icons/fa';
 import TeamSection from '@/helpers/components/TeamSection/TeamSection';
 import Footer from '@/helpers/components/footer/Footer';
 import { fetchDepartmentById } from '@/store/slices/departments';
+import { fetchServices } from '@/store/slices/services';
+import ServiceSection from "../../helpers/main-component/servicesSection/index";
+import ProjectSection from '@/helpers/components/ProjectSection/ProjectSection';
+import OffersSlider from '@/helpers/components/adsSlider';
+import DepartmentOffersSection from '@/helpers/components/offersSection/index';
+import OffersSection from '@/helpers/components/offersSection/index';
 
 export default function DepartmentPage() {
   const router = useRouter();
   const { id } = router.query;
   const dispatch = useDispatch();
+const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   const {
     selectedDepartment: department,
@@ -22,20 +29,38 @@ export default function DepartmentPage() {
     error: deptError,
   } = useSelector((state) => state.departments);
 
+  const { services, loading: servicesLoading, error: servicesError } = useSelector(
+    (state) => state.services
+  );
+
   useEffect(() => {
     if (id) {
       dispatch(fetchDepartmentById(id));
+      dispatch(fetchServices(id)); // ✅ fetch services of this department
     }
   }, [id, dispatch]);
 
   const departmentImage = getImageUrl(department?.image) || '/placeholder.png';
 
+  // Determine which department to filter devices by
+  const getDeviceDepartment = () => {
+    if (!department?.name) return null;
+    
+    if (department.name.includes("تغذية") || department.name.includes("قوام")) {
+      return "أجهزة التغذية";
+    } else if (department.name.includes("جلدية") || department.name.includes("ليزر")) {
+      return "أجهزة الجلدية";
+    }
+    
+    return null;
+  };
+
+  const deviceDepartment = getDeviceDepartment();
+
   return (
     <>
-
-
-      <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'}/>
-      <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={"/departments1.png"}/>
+      <Navbar hclass={'wpo-site-header wpo-site-header-s2 absoulte top-0'} />
+      <PageTitle pageTitle={department?.name} pagesub={"قسم"} bgImage={"/departments1.png"} />
 
       <section className="py-12">
         <div className="container mx-auto">
@@ -50,7 +75,6 @@ export default function DepartmentPage() {
             <h2 className="text-3xl font-bold">{department?.name}</h2>
             <p className="mt-4 text-gray-600">{department?.description}</p>
           </div>
-
         </div>
       </section>
 
@@ -61,19 +85,14 @@ export default function DepartmentPage() {
           </h3>
 
           {deptLoading && <p className="text-center">جاري التحميل...</p>}
-          {deptError && (
-            <p className="text-center text-red-500">حدث خطأ: {deptError}</p>
-          )}
+          {deptError && <p className="text-center text-red-500">حدث خطأ: {deptError}</p>}
 
           {department?.branches?.length === 0 ? (
             <p className="text-center text-gray-500">لا توجد فروع متاحة لهذا القسم حالياً</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {department?.branches?.map((branch) => (
-                <div
-                  key={branch.id}
-                  className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col"
-                >
+                <div key={branch.id} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
                   <div className="w-full h-48">
                     <img
                       className="w-full h-full object-cover"
@@ -114,8 +133,8 @@ export default function DepartmentPage() {
                       <a
                         href={`/branches/${branch.id}`}
                         className="px-4 py-2 border border-[#dec06a] text-[#dec06a] font-medium rounded-lg text-sm text-center"
-                   style={{color: "#dec06a"}}
-                   >
+                        style={{ color: "#dec06a" }}
+                      >
                         المزيد من التفاصيل
                       </a>
                       {branch.location_link && (
@@ -136,6 +155,16 @@ export default function DepartmentPage() {
           )}
         </div>
       </section>
+
+      {/* ✅ Show services */}
+      {servicesLoading ? (
+        <p className="text-center my-10">جاري تحميل الخدمات...</p>
+      ) : servicesError ? (
+        <p className="text-center text-red-500">{servicesError}</p>
+      ) : (
+        <ServiceSection services={services} showTitle={true} />
+      )}
+
       <TeamSection
         departmentId={id}
         showSectionTitle={true}
@@ -143,8 +172,24 @@ export default function DepartmentPage() {
         sectionTitle={"اطباء القسم"}
         sectionSubtitle={"الاطباء المتاحيين بالقسم "}
       />
-
-
+    
+<OffersSection 
+  departmentId={id} 
+  setShowAuthPopup={setShowAuthPopup}
+  showTitle={true}
+/>
+      {/* Show devices related to this department */}
+      {deviceDepartment && (
+        <ProjectSection 
+          hclass={'project_section section-padding'} 
+          slider={true} 
+          sliceStart={0} 
+          sliceEnd={6}
+          forcedDepartment={deviceDepartment}
+          ShowSectionTitle={true}
+        />
+      )}
+      
       <Footer hclass={'wpo-site-footer'} />
     </>
   );

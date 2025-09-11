@@ -6,7 +6,7 @@ import { fetchDevices } from '../../../store/slices/devices';
 import { fetchBranches } from '../../../store/slices/branches';
 import SectionTitle from "../SectionTitle/SectionTitle";
 import { getImageUrl } from "@/helpers/hooks/imageUrl";
-import ServiceSidebar from "../../main-component/ServiceSinglePage/sidebar"
+import ServiceSidebar from "../../main-component/ServiceSinglePage/sidebar";
 import { useSearchParams } from 'next/navigation';
 
 // Swiper imports
@@ -37,7 +37,8 @@ const ProjectSection = ({
     branchId = null,
     showFilters = false,
     slider = true,
-    showSidebar = false
+    showSidebar = false,
+    forcedDepartment = null
 }) => {
     const dispatch = useDispatch();
     const searchParams = useSearchParams();
@@ -45,7 +46,6 @@ const ProjectSection = ({
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [selectedBranch, setSelectedBranch] = useState(null);
-    const [swiperInitialized, setSwiperInitialized] = useState(false);
 
     const departmentNameFromParams = searchParams?.get('departmentName');
 
@@ -57,13 +57,15 @@ const ProjectSection = ({
     }, [dispatch, showFilters, showSidebar]);
 
     useEffect(() => {
-        if (departmentNameFromParams) {
+        if (forcedDepartment) {
+            setSelectedDepartment(forcedDepartment);
+        } else if (departmentNameFromParams) {
             setSelectedDepartment(departmentNameFromParams);
         }
         if (branchId) {
             setSelectedBranch(branchId);
         }
-    }, [departmentNameFromParams, branchId]);
+    }, [forcedDepartment, departmentNameFromParams, branchId]);
 
     const { items: devices = [], loading: devicesLoading = false, error: devicesError = null } =
         useSelector(state => state.devices || {});
@@ -141,16 +143,13 @@ const ProjectSection = ({
 
     const renderDeviceCard = (device, index) => (
         <div key={index} className="project_card text-right h-full mx-2 bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 relative">
-            {/* Wishlist Button - positioned absolutely in top right corner */}
+            {/* Wishlist Button */}
             <div className="absolute top-3 left-3 z-10">
                 <WishlistButton 
                     itemId={device._id}
                     itemType="device"
                     size="sm"
                     className="shadow-md"
-                    onWishlistChange={(isWishlisted) => {
-                        // Optional: handle wishlist change if needed
-                    }}
                 />
             </div>
             
@@ -218,16 +217,16 @@ const ProjectSection = ({
         <section className={hclass} dir="rtl">
             <div className="container">
                 {showSidebar ? (
-                    <div className="col">
-                        <div className="w-full">{renderSidebar()}</div>
-                        <div className="w-full">{renderContent()}</div>
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="w-full md:w-1/4">{renderSidebar()}</div>
+                        <div className="w-full md:w-3/4">{renderContent()}</div>
                     </div>
                 ) : (
                     renderContent()
                 )}
             </div>
             
-            {/* Add custom styles for swiper navigation */}
+            {/* Custom styles for swiper navigation */}
             <style jsx global>{`
                 .swiper-container-wrapper {
                     position: relative;
@@ -236,7 +235,6 @@ const ProjectSection = ({
                 
                 .swiper-button-prev,
                 .swiper-button-next {
-                
                     position: absolute;
                     top: 50%;
                     transform: translateY(-50%);
@@ -250,8 +248,6 @@ const ProjectSection = ({
                     align-items: center;
                     justify-content: center;
                     color: #CBA853 !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
                 }
                 
                 .swiper-button-prev {
@@ -266,6 +262,10 @@ const ProjectSection = ({
                 .swiper-button-next::after {
                     font-size: 15px;
                     font-weight: bold;
+                }
+                
+                .swiper-pagination-bullet-active {
+                    background-color: #CBA853 !important;
                 }
                 
                 @media (max-width: 768px) {
@@ -292,8 +292,8 @@ const ProjectSection = ({
         return (
             <>
                 {ShowSectionTitle && (
-                    <div className="row align-items-center">
-                        <div className="col-lg-6 col-12 order-lg-1">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                        <div className="md:flex-1 mb-4 md:mb-0">
                             <SectionTitle
                                 title={getSectionTitle()}
                                 subtitle={getSectionSubtitle()}
@@ -302,7 +302,7 @@ const ProjectSection = ({
                             />
                         </div>
                         {!branchId && (
-                            <div className="col-lg-6 col-12 order-lg-2 text-left">
+                            <div className="md:text-left">
                                 <div className="project_btn">
                                     <Link
                                         href="/devices"
@@ -353,27 +353,9 @@ const ProjectSection = ({
                                     clickable: true,
                                     el: '.swiper-pagination',
                                     type: 'bullets',
-                                    renderBullet: (index, className) => {
-                                        return `<span class="${className}" style="background-color: #e0e0e0; width: 10px; height: 10px; display: inline-block; border-radius: 50%;"></span>`;
-                                    }
                                 }}
                                 autoplay={{ delay: 5000, disableOnInteraction: false }}
                                 loop={true}
-                                onInit={() => {
-                                    setSwiperInitialized(true);
-                                    setTimeout(() => {
-                                        document.querySelectorAll('.swiper-pagination-bullet-active')
-                                            .forEach(el => el.style.backgroundColor = '#CBA853');
-                                    }, 0);
-                                }}
-                                onSlideChange={() => {
-                                    setTimeout(() => {
-                                        document.querySelectorAll('.swiper-pagination-bullet')
-                                            .forEach(el => el.style.backgroundColor = '#e0e0e0');
-                                        document.querySelectorAll('.swiper-pagination-bullet-active')
-                                            .forEach(el => el.style.backgroundColor = '#CBA853');
-                                    }, 0);
-                                }}
                                 className="pb-12"
                             >
                                 {filteredDevices.slice(sliceStart, sliceEnd ? sliceEnd : filteredDevices.length).map((device, pitem) => (
@@ -383,7 +365,7 @@ const ProjectSection = ({
                                 ))}
                             </Swiper>
                             
-                            {/* Navigation arrows - always visible */}
+                            {/* Navigation arrows */}
                             <div className="swiper-button-prev"></div>
                             <div className="swiper-button-next"></div>
                             

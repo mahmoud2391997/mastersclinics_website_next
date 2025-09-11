@@ -9,6 +9,7 @@ import Image from "next/image";
 
 const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = null ,showTitle = true}) => {
   const router = useRouter();
+console.log(selectedDepartment);
 
   const getBranchName = (branchCode) => {
     const branchMap = {
@@ -23,6 +24,7 @@ const ServiceSection = ({ services = [], searchTerm = '', selectedDepartment = n
   };
 
   const filteredServices = services.filter(service => {
+
     // Filter by department if selected
     if (selectedDepartment && service.department_id !== selectedDepartment) {
       return false;

@@ -35,6 +35,7 @@ import {
   Clock,
   MapPin,
   Eye,
+  AlertCircle,
 } from "lucide-react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUserDoctor, faLaptopMedical, faGift } from "@fortawesome/free-solid-svg-icons"
@@ -132,38 +133,48 @@ interface ApiWishlistItem {
   typee?: string
 }
 
+interface CallLog {
+  id: number;
+  appointmentId: string;
+  timestamp: string;
+  status: string;
+  notes: string;
+  timestamp_str: string;
+}
+
 interface Appointment {
-  status: "pending" | "confirmed" | "completed" | "cancelled"
-  id: number
-  bookingId: string
-  type: "doctor" | "offer" | "device" | "branch"
-  scheduledAt: string | null
-  createdAt: string
-  payment_status: string 
-  phone?: string
-  branch?: string
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  id: number;
+  bookingId: string;
+  type: "doctor" | "offer" | "device" | "branch";
+  scheduledAt: string | null;
+  createdAt: string;
+  payment_status: string;
+  phone?: string;
+  branch?: string;
+  callLogs?: CallLog[];
   related?: {
-    id: number
-    payment_status: string
-    name?: string
-    specialty?: string
-    rating?: number
-    experience?: string
-    services?: string
-    image?: string
-    title?: string
-    description?: string
-    priceBefore?: string
-    priceAfter?: string
-    discountPercentage?: string
-    validUntil?: string
-    type?: string
-    available_times?: string
-    location?: string
-    address?: string
-    google_map_link?: string
-    image_url?: string
-  }
+    id: number;
+    payment_status: string;
+    name?: string;
+    specialty?: string;
+    rating?: number;
+    experience?: string;
+    services?: string;
+    image?: string;
+    title?: string;
+    description?: string;
+    priceBefore?: string;
+    priceAfter?: string;
+    discountPercentage?: string;
+    validUntil?: string;
+    type?: string;
+    available_times?: string;
+    location?: string;
+    address?: string;
+    google_map_link?: string;
+    image_url?: string;
+  };
 }
 
 interface ProfileResponse {
@@ -1982,6 +1993,10 @@ console.log(response);
                               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 px-3 py-2 rounded-full">
                                 {formatDate(appointment.createdAt)}
                               </div>
+  <CallLogsDialog 
+    appointment={appointment} 
+    onStatusUpdate={updateAppointmentStatus} 
+  />
                               <Button
                                 onClick={() => router.push(`/${appointment.type}s/${appointment.related?.id}`)}
                                 variant="outline"
@@ -2021,3 +2036,222 @@ console.log(response);
     </div>
   )
 }
+// Add these helper functions outside your component
+
+const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
+// Arabic month names
+const arabicMonths = [
+  'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+];
+
+// Function to check if a date is today
+const isToday = (date: Date) => {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+};
+
+// Function to check if a date is yesterday
+const isYesterday = (date: Date) => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return date.getDate() === yesterday.getDate() &&
+         date.getMonth() === yesterday.getMonth() &&
+         date.getFullYear() === yesterday.getFullYear();
+};
+
+// Custom Arabic time formatter
+const formatToArabicTime = (timestamp: string | Date) => {
+  try {
+    const date = new Date(timestamp);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'وقت غير صالح';
+    }
+    
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    
+    // Convert to 12-hour format with AM/PM in Arabic
+    const period = hour >= 12 ? 'م' : 'ص';
+    const twelveHour = hour % 12 || 12;
+    
+    return `${twelveHour}:${minute.toString().padStart(2, '0')} ${period}`;
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return 'وقت غير صالح';
+  }
+};
+
+// Custom Arabic date formatter
+const formatToArabicDateTime = (timestamp: string | Date) => {
+  try {
+    const date = new Date(timestamp);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'تاريخ غير صالح';
+    }
+    
+    if (isToday(date)) {
+      return `اليوم - ${formatToArabicTime(date)}`;
+    }
+    
+    if (isYesterday(date)) {
+      return `أمس - ${formatToArabicTime(date)}`;
+    }
+    
+    const day = arabicDays[date.getDay()];
+    const dayNumber = date.getDate();
+    const month = arabicMonths[date.getMonth()];
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    
+    // Convert to 12-hour format with AM/PM in Arabic
+    const period = hour >= 12 ? 'م' : 'ص';
+    const twelveHour = hour % 12 || 12;
+    
+    return `${day}، ${dayNumber} ${month} ${year} - ${twelveHour}:${minute.toString().padStart(2, '0')} ${period}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'تاريخ غير صالح';
+  }
+};
+
+// CallLogsDialog component - place this before the main ProfilePage component
+const CallLogsDialog = ({ appointment, onStatusUpdate }: {
+  appointment: Appointment,
+  onStatusUpdate: (id: number, status: string) => Promise<boolean>
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [callLogs, setCallLogs] = useState<CallLog[]>(appointment.callLogs || []);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchCallLogs = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch(`https://www.ss.mastersclinics.com/api/appointments/${appointment.id}/call-logs`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCallLogs(data.callLogs || []);
+      } else if (response.status === 500) {
+        // Handle case where the table might not exist
+        const errorData = await response.json();
+        if (errorData.error?.code === 'ER_NO_SUCH_TABLE') {
+          setError('سجل المكالمات غير متوفر حالياً');
+        } else {
+          setError('فشل في تحميل سجل المكالمات');
+        }
+      } else {
+        setError('فشل في تحميل سجل المكالمات');
+      }
+    } catch (err) {
+      console.error("Failed to fetch call logs:", err);
+      setError('فشل في تحميل سجل المكالمات');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatCallStatus = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'answered': 'تم الرد',
+      'missed': 'مكالمة فائتة',
+      'voicemail': 'البريد الصوتي',
+      'no_answer': 'لم يتم الرد',
+      'busy': 'خط مشغول',
+      'failed': 'فشل الاتصال',
+      'completed': 'مكتملة'
+    };
+    return statusMap[status] || status;
+  };
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+          onClick={() => {
+            setIsOpen(true);
+            if (!appointment.callLogs || appointment.callLogs.length === 0) {
+              fetchCallLogs();
+            }
+          }}
+        >
+          <Phone className="w-4 h-4 ml-1" />
+          سجل المكالمات
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent dir="rtl" className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-xl font-bold flex items-center gap-2">
+            <Phone className="w-5 h-5" />
+            سجل المكالمات للموعد 
+          </AlertDialogTitle>
+        </AlertDialogHeader>
+        
+        <div className="py-4">
+          {error ? (
+            <div className="text-center py-8 text-red-500">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+              <p>{error}</p>
+            </div>
+          ) : isLoading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 mx-auto animate-spin text-blue-500" />
+              <p className="mt-2 text-gray-600">جاري تحميل سجل المكالمات...</p>
+            </div>
+          ) : callLogs.length > 0 ? (
+            <div className="space-y-4">
+              {callLogs.map((log) => (
+                <div key={log.id} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{formatCallStatus(log.status)}</div>
+                      <div className="text-sm text-gray-600">
+                        {formatToArabicDateTime(log.timestamp_str) || formatToArabicDateTime(log.timestamp)}
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="ml-2">
+                      {formatToArabicDateTime(log.timestamp_str) || formatToArabicTime(log.timestamp)}
+                    </Badge>
+                  </div>
+                  
+                  {log.notes && (
+                    <div className="mt-2 p-2 bg-white rounded border">
+                      <div className="font-medium text-sm">ملاحظات:</div>
+                      <div className="text-sm">{log.notes}</div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Phone className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>لا توجد مكالمات مسجلة لهذا الموعد</p>
+            </div>
+          )}
+        </div>
+        
+        <AlertDialogFooter>
+          <AlertDialogCancel className="font-medium">إغلاق</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
+// Then use these functions in your component instead:
+// {log.timestamp_str || formatToCustomArabicDateTime(log.timestamp)}
+// {log.timestamp_str || formatToCustomArabicTime(log.timestamp)}

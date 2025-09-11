@@ -117,12 +117,15 @@ const serviceReducer = (state = initialState, action) => {
 export default serviceReducer;
 
 // ✅ Thunk: Fetch all services
-export const fetchServices = () => async (dispatch) => {
+export const fetchServices = (departmentId) => async (dispatch) => {
   dispatch({ type: FETCH_SERVICES_START });
 
   try {
-    const data = await get("/services/active");
-console.log(data);
+    const url = departmentId
+      ? `/services/active?departmentId=${departmentId}`
+      : `/services/active`;
+
+    const data = await get(url);
 
     const normalized = Array.isArray(data)
       ? data.map(normalizeService)
@@ -130,13 +133,14 @@ console.log(data);
 
     dispatch({
       type: FETCH_SERVICES_SUCCESS,
-      payload: normalized.length ? normalized : localServices,
+      payload: normalized.length ? normalized : [],
     });
   } catch (error) {
     console.error("fetchServices error:", error);
     dispatch({ type: FETCH_SERVICES_SUCCESS, payload: localServices }); // fallback
   }
 };
+
 
 export const fetchServiceById = (id) => async (dispatch) => {
   dispatch({ type: FETCH_SERVICE_BY_ID_START });

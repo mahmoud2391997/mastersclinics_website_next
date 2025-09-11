@@ -14,6 +14,8 @@ import Scrollbar from '../../components/scrollbar/scrollbar';
 import ImageSlider from '../../components/adsSlider/index';
 import DepartmentsGrid from '@/pages/departments/grid';
 import { useRouter } from 'next/router';
+import { Filter } from 'lucide-react';
+import ArabicSearchForm from './filtering';
 
 const HomePage = () => {
   const [showAuthPopup, setShowAuthPopup] = useState(false);
@@ -42,8 +44,8 @@ const HomePage = () => {
         handleToggleBackground={handleToggleBackground}
         isBackgroundBlack={isBackgroundBlack}
       />
-
       <Hero hclass={'static-hero'} />
+    <ArabicSearchForm />
       <ImageSlider setShowAuthPopup={setShowAuthPopup} />
       <DepartmentsGrid isSwiper={true} slidesToShow={3} slidesToScroll={2} />
       <ServiceSection hclass={"service_section section-padding"} sliceEnd={6} slider={true}/>

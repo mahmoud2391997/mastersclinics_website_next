@@ -1115,7 +1115,7 @@ const Header = (props: HeaderProps) => {
       return;
     }
     try {
-      const res = await fetch(`https://www.ss.mastersclinics.com/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`https://www.ss.mastersclinics.com/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       console.log(data);
       

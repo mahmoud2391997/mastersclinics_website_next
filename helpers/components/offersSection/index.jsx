@@ -12,7 +12,12 @@ import SectionTitle from "../SectionTitle/SectionTitle";
 import Link from "next/link";
 import { CustomSelect } from "../../main-component/ServiceSinglePage/sidebar";
 
-const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAuthPopup}) => {
+const OffersSection = ({ 
+  isOfferPage = false, 
+  departmentId = null, 
+  setShowAuthPopup,
+  showTitle = true 
+}) => {
   const dispatch = useDispatch();
   const { items: offers, loading, error } = useSelector((state) => state.offers);
   
@@ -62,15 +67,12 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
     };
   }, [offers]);
 
-  // Initialize department from URL
+  // Initialize department from props if provided
   useEffect(() => {
-    if (urlDepartmentId) {
-      const deptId = Number.parseInt(urlDepartmentId, 10);
-      if (!isNaN(deptId)) {
-        setSelectedDepartment(deptId);
-      }
+    if (departmentId) {
+      setSelectedDepartment(departmentId);
     }
-  }, [urlDepartmentId]);
+  }, [departmentId]);
 
   // Fetch offers on mount
   useEffect(() => {
@@ -86,6 +88,19 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
 
   const filterOffers = useCallback(() => {
     let results = offers;
+
+    // If departmentId is provided (department-specific view), filter by that department
+    if (departmentId) {
+      results = results.filter(offer =>
+        offer.doctors_ids.some(d => d.department_id == departmentId)
+      );
+    }
+    // If in full offers page and a department is selected, filter by that department
+    else if (isOfferPage && selectedDepartment) {
+      results = results.filter(offer =>
+        offer.doctors_ids.some(d => d.department_id == selectedDepartment)
+      );
+    }
 
     // Filter by search term
     if (searchTerm) {
@@ -106,15 +121,8 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
       );
     }
 
-    // Filter by department
-    if (selectedDepartment) {
-      results = results.filter(offer =>
-        offer.doctors_ids.some(d => d.department_id == selectedDepartment)
-      );
-    }
-
     setFilteredOffers(results);
-  }, [offers, searchTerm, selectedBranch, selectedDepartment]);
+  }, [offers, searchTerm, selectedBranch, selectedDepartment, departmentId, isOfferPage]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -128,6 +136,9 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
     setSelectedDepartment(deptId === "all" ? null : deptId);
   };
 
+  // Determine if we should show filters
+  const shouldShowFilters = isOfferPage || !departmentId;
+
   if (loading) {
     return <p className="text-center py-8">جاري التحميل...</p>;
   }
@@ -138,12 +149,21 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
 
   return (
     <div className="w-full relative mt-5" dir="rtl">
-      {isOfferPage && (
-        <>
-          {/* Horizontal Filter Bar */}
-          <div className="container mx-auto px-4 mb-8 !z-[99999999]">
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              {/* Desktop Department Tabs - Hidden on mobile */}
+      {/* Section Title for department-specific view */}
+      {departmentId && showTitle && (
+        <SectionTitle
+          title="عروض القسم"
+          subtitle="استفد من العروض الحصرية المتاحة في هذا القسم"
+          dir="rtl"
+        />
+      )}
+      
+      {/* Filter Bar */}
+      {shouldShowFilters && (
+        <div className="container mx-auto px-4 mb-8">
+          <div className="bg-white p-4 rounded-lg shadow-sm">
+            {/* Desktop Department Tabs - Only show in full offers page */}
+            {isOfferPage && (
               <div className="hidden md:block mb-4">
                 <div className="flex border-b border-gray-200">
                   <button
@@ -172,101 +192,175 @@ const OffersSection = ({ isOfferPage = false, urlDepartmentId = null ,setShowAut
                   ))}
                 </div>
               </div>
+            )}
 
-              <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 rtl">
-                {/* Search Widget */}
-                <div className="search_widget flex-1">
-                  <form onSubmit={(e) => e.preventDefault()} className="relative">
-                    <input
-                      className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
-                      type="text"
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      placeholder="ابحث عن عرض، وصف، طبيب أو تخصص..."
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 rtl">
+              {/* Search Widget */}
+              <div className="search_widget flex-1">
+                <form onSubmit={(e) => e.preventDefault()} className="relative">
+                  <input
+                    className="w-full p-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#dec06a] focus:border-transparent"
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder={departmentId ? "ابحث في عروض القسم..." : "ابحث عن عرض، وصف، طبيب أو تخصص..."}
+                  />
+                  <svg
+                    className="absolute left-3 top-3 h-4 w-4 text-gray-400"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
                     />
-                    <svg
-                      className="absolute left-3 top-3 h-4 w-4 text-gray-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </form>
-                </div>
-
-                {/* Departments Filter - Only on mobile */}
-                {isMobile && (
-                  <div className="departments_widget flex-1">
-                    <CustomSelect
-                      options={[
-                        { value: "all", label: "جميع الأقسام" },
-                        ...departments.map(department => ({
-                          value: department.id,
-                          label: department.name
-                        }))
-                      ]}
-                      value={selectedDepartment || "all"}
-                      onChange={handleDepartmentChange}
-                      placeholder="اختر القسم"
-                    />
-                  </div>
-                )}
-
-                {/* Branches Filter */}
-                {branches.length > 0 && (
-                  <div className="branches_widget flex-1 z-[9999]">
-                    <CustomSelect
-                      options={[
-                        { value: "all", label: "جميع الفروع" },
-                        ...branches.map(branch => ({
-                          value: branch.id,
-                          label: branch.name
-                        }))
-                      ]}
-                      value={selectedBranch}
-                      onChange={handleBranchChange}
-                      placeholder="اختر الفرع"
-                    />
-                  </div>
-                )}
+                  </svg>
+                </form>
               </div>
+
+              {/* Departments Filter - Only on mobile and only in full offers page */}
+              {isOfferPage && isMobile && (
+                <div className="departments_widget flex-1">
+                  <CustomSelect
+                    options={[
+                      { value: "all", label: "جميع الأقسام" },
+                      ...departments.map(department => ({
+                        value: department.id,
+                        label: department.name
+                      }))
+                    ]}
+                    value={selectedDepartment || "all"}
+                    onChange={handleDepartmentChange}
+                    placeholder="اختر القسم"
+                  />
+                </div>
+              )}
+
+              {/* Branches Filter */}
+              {branches.length > 0 && (
+                <div className="branches_widget flex-1">
+                  <CustomSelect
+                    options={[
+                      { value: "all", label: "جميع الفروع" },
+                      ...branches.map(branch => ({
+                        value: branch.id,
+                        label: branch.name
+                      }))
+                    ]}
+                    value={selectedBranch}
+                    onChange={handleBranchChange}
+                    placeholder="اختر الفرع"
+                  />
+                </div>
+              )}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Offers Grid */}
-          <div className="container mx-auto px-4">
-            {filteredOffers.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Offers Display */}
+      {filteredOffers.length > 0 ? (
+        <>
+          {/* For department view with multiple offers, use slider */}
+          {departmentId && filteredOffers.length > 1 ? (
+            <div className="container mx-auto px-4">
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={30}
+                slidesPerView={1}
+                breakpoints={{
+                  640: { slidesPerView: 1 },
+                  768: { slidesPerView: 2 },
+                  1024: { slidesPerView: 3 },
+                }}
+                navigation={true}
+                pagination={{ clickable: true }}
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                loop={true}
+                className="pb-12"
+              >
                 {filteredOffers.map((offer, index) => (
-                  <div key={index} className="px-2 py-4">
+                  <SwiperSlide key={index}>
+                    <div className="px-2 py-4">
+                      <TourCard
+                        image={offer.image}
+                        name={offer.title}
+                        priceAfter={offer.priceAfter}
+                        priceBefore={offer.priceBefore}
+                        description={offer.description}
+                        branches={offer.branches}
+                        doctors={offer.doctors_ids}
+                        onSelect={(data) => console.log("Selected offer:", data)}
+                        id={offer.id}
+                        setShowAuthPopup={setShowAuthPopup}
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          ) : (
+            // Grid layout for full offers page or single offer for department view
+            <div className="container mx-auto px-4">
+              {isOfferPage ? (
+                // Grid layout for full offers page
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredOffers.map((offer, index) => (
+                    <div key={index} className="px-2 py-4">
+                      <TourCard
+                        image={offer.image}
+                        name={offer.title}
+                        priceAfter={offer.priceAfter}
+                        priceBefore={offer.priceBefore}
+                        description={offer.description}
+                        branches={offer.branches}
+                        doctors={offer.doctors_ids}
+                        onSelect={(data) => console.log("Selected offer:", data)}
+                        id={offer.id}
+                        setShowAuthPopup={setShowAuthPopup}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Single offer display for department view
+                <div className="flex justify-center">
+                  <div className="w-full max-w-md">
                     <TourCard
-                      image={offer.image}
-                      name={offer.title}
-                      priceAfter={offer.priceAfter}
-                      priceBefore={offer.priceBefore}
-                      description={offer.description}
-                      branches={offer.branches}
-                      doctors={offer.doctors_ids}
+                      image={filteredOffers[0].image}
+                      name={filteredOffers[0].title}
+                      priceAfter={filteredOffers[0].priceAfter}
+                      priceBefore={filteredOffers[0].priceBefore}
+                      description={filteredOffers[0].description}
+                      branches={filteredOffers[0].branches}
+                      doctors={filteredOffers[0].doctors_ids}
                       onSelect={(data) => console.log("Selected offer:", data)}
-                      id={offer.id}
+                      id={filteredOffers[0].id}
                       setShowAuthPopup={setShowAuthPopup}
                     />
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <h3 className="text-xl text-gray-600">لا توجد عروض متاحة</h3>
-                <p className="text-gray-500 mt-2">حاول تغيير فلتر البحث أو اختيار قسم آخر</p>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </>
+      ) : (
+        <div className="text-center py-12">
+          <h3 className="text-xl text-gray-600">
+            {departmentId 
+              ? "لا توجد عروض متاحة لهذا القسم حالياً" 
+              : "لا توجد عروض متاحة"
+            }
+          </h3>
+          <p className="text-gray-500 mt-2">
+            {departmentId 
+              ? "يمكنك تجربة البحث بكلمات مختلفة أو اختيار فرع آخر" 
+              : "حاول تغيير فلتر البحث أو اختيار قسم آخر"
+            }
+          </p>
+        </div>
       )}
     </div>
   );
