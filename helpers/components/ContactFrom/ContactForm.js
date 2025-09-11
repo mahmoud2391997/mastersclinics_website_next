@@ -1,155 +1,180 @@
 "use client";
 
-import React, { useState } from 'react';
-import SimpleReactValidator from 'simple-react-validator';
-import { useRouter } from 'next/router';
-import axios from 'axios';
+import React, { useState } from "react";
+import SimpleReactValidator from "simple-react-validator";
+import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
 
-const makeAppointment = async (data) => {
-  const response = await axios.post(`https://www.ss.mastersclinics.com/appointments`, data);
+// API call
+const makeInquiry = async (data) => {
+  const response = await axios.post(
+    `https://www.ss.mastersclinics.com/api/inquiries`,
+    data
+  );
   return response.data;
 };
 
 const ContactForm = () => {
-    const router = useRouter();
-    const [forms, setForms] = useState({
-        name: '',
-        phone: '',
-    });
+  const [forms, setForms] = useState({
+    name: "",
+    phone: "",
+    question: "",
+  });
 
-    const [validator] = useState(new SimpleReactValidator({
-        className: 'errorMessage',
-    }));
+  // We'll use this only when necessary for re-rendering
+  const [, forceUpdate] = useState();
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitStatus, setSubmitStatus] = useState("idle");
-    const [errorMessage, setErrorMessage] = useState("");
+  const [validator] = useState(
+    new SimpleReactValidator({
+      className: "errorMessage",
+      messages: {
+        required: "هذا الحقل مطلوب",
+        numeric: "يجب أن يحتوي على أرقام فقط",
+        min: "الحد الأدنى للأحرف هو :min",
+        max: "الحد الأقصى للأحرف هو :max",
+      },
+      validators: {
+        arabic_alpha_space: {
+          message: "الاسم يجب أن يحتوي على حروف عربية ومسافات فقط",
+          rule: (val) => /^[\u0600-\u06FF\s]+$/.test(val),
+          required: true,
+        },
+      },
+    })
+  );
 
-    const changeHandler = (e) => {
-        setForms({ ...forms, [e.target.name]: e.target.value });
-        validator.showMessageFor(e.target.name);
-    };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const submitHandler = async (e) => {
-        e.preventDefault();
-        
-        if (validator.allValid()) {
-            validator.hideMessages();
-            setIsSubmitting(true);
-            setSubmitStatus("idle");
-            setErrorMessage("");
+  const changeHandler = (e) => {
+    const { name, value } = e.target;
+    setForms({ ...forms, [name]: value });
+    // Validate on change
+    if (validator.fieldValid(name)) {
+      validator.hideMessage(name);
+    } else {
+      validator.showMessageFor(name);
+    }
+    forceUpdate({});
+  };
 
-            try {
-                const submissionData = {
-                    name: forms.name,
-                    phone: forms.phone,
-                    createdAt: new Date().toISOString(),
-                };
+  const submitHandler = async (e) => {
+    e.preventDefault();
 
-                await makeAppointment(submissionData);
-                setSubmitStatus("success");
+    if (validator.allValid()) {
+      validator.hideMessages();
+      setIsSubmitting(true);
 
-                setTimeout(() => {
-                    router.push("/thankyou");
-                }, 1500);
+      try {
+        const submissionData = {
+          name: forms.name,
+          phone: forms.phone,
+          question: forms.question,
+          createdAt: new Date().toISOString(),
+        };
 
-                setForms({ name: '', phone: '' });
-            } catch (error) {
-                setSubmitStatus("error");
-                setErrorMessage(error?.response?.data?.message || "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.");
-            } finally {
-                setIsSubmitting(false);
-            }
-        } else {
-            validator.showMessages();
-        }
-    };
+        await makeInquiry(submissionData);
 
-    return (
-        <form onSubmit={submitHandler} className="contact-validation-active" dir="rtl">
-            <div className="row">
-                <div className="col col-lg-6 col-12">
-                    <div className="form-field">
-                        <input
-                            value={forms.name}
-                            type="text"
-                            name="name"
-                            onBlur={changeHandler}
-                            onChange={changeHandler}
-                            placeholder="اسمك"
-                            style={{ paddingRight: '10px' }}
-                            disabled={isSubmitting}
-                        />
-                        {validator.message('name', forms.name, 'required|alpha_space')}
-                    </div>
-                </div>
+        toast.success("تم إرسال استفسارك بنجاح! سنتواصل معك قريباً.");
 
-            <div className="col col-lg-6 col-12">
-    <div className="form-field">
-        <input
-            value={forms.phone}
-            type="tel"
-            name="phone"
-            onBlur={changeHandler}
-            onChange={changeHandler}
-            placeholder="رقم هاتفك"
-            style={{ 
-                paddingRight: '10px',
-                direction: 'ltr', // Numbers display LTR
-                textAlign: 'right' // Placeholder aligns right
-            }}
-            className="placeholder-rtl" // Additional class for RTL placeholder
-            disabled={isSubmitting}
-        />
-        {validator.message('phone', forms.phone, 'required|numeric|min:6|max:15')}
-    </div>
-</div>
+        // Reset form fields
+        setForms({ name: "", phone: "", question: "" });
+
+        // Hide any remaining messages
+        validator.hideMessages();
+
+        // 🔥 Critical: Purge internal field tracking to prevent reappearance
+        validator.purgeFields();
+
+        // Force re-render to ensure UI is clean
+        forceUpdate({});
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message ||
+            "حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      validator.showMessages();
+      forceUpdate({});
+    }
+  };
+
+  return (
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <form onSubmit={submitHandler} className="contact-validation-active" dir="rtl">
+        <div className="row">
+          {/* Name */}
+          <div className="col col-lg-6 col-12">
+            <div className="form-field">
+              <input
+                value={forms.name}
+                type="text"
+                name="name"
+                onChange={changeHandler}
+                placeholder="اسمك"
+                style={{
+                  paddingRight: "10px",
+                  direction: "rtl",
+                  textAlign: "right",
+                }}
+                disabled={isSubmitting}
+              />
+              {validator.message("name", forms.name, "required|arabic_alpha_space")}
             </div>
+          </div>
 
-            <div className="submit-area mt-4">
-                <button 
-                    type="submit" 
-                    className="theme-btn"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? (
-                        <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current mr-2"></div>
-                            جاري الإرسال...
-                        </div>
-                    ) : submitStatus === "success" ? (
-                        <div className="flex items-center justify-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            تم الإرسال بنجاح!
-                        </div>
-                    ) : submitStatus === "error" ? (
-                        <div className="flex items-center justify-center">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            حدث خطأ، حاول مرة أخرى
-                        </div>
-                    ) : (
-                        "تواصل معنا"
-                    )}
-                </button>
+          {/* Phone */}
+          <div className="col col-lg-6 col-12">
+            <div className="form-field">
+              <input
+                value={forms.phone}
+                type="tel"
+                name="phone"
+                onChange={changeHandler}
+                placeholder="رقم هاتفك"
+                style={{
+                  paddingRight: "10px",
+                  direction: "ltr", // Keep LTR for phone numbers
+                  textAlign: "right",
+                }}
+                disabled={isSubmitting}
+              />
+              {validator.message("phone", forms.phone, "required|numeric|min:6|max:15")}
             </div>
+          </div>
 
-            {submitStatus === "success" && (
-                <div className="mt-4 p-3 md:p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg text-center text-sm md:text-base">
-                    تم إرسال طلبك بنجاح! سنتواصل معك قريباً.
-                </div>
-            )}
+          {/* Question */}
+          <div className="col col-12 mt-3">
+            <div className="form-field">
+              <textarea
+                value={forms.question}
+                name="question"
+                onChange={changeHandler}
+                placeholder="اكتب سؤالك هنا"
+                rows={5}
+                style={{
+                  paddingRight: "10px",
+                  direction: "rtl",
+                  textAlign: "right",
+                }}
+                disabled={isSubmitting}
+              />
+              {validator.message("question", forms.question, "required|min:10")}
+            </div>
+          </div>
+        </div>
 
-            {submitStatus === "error" && (
-                <div className="mt-4 p-3 md:p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center text-sm md:text-base">
-                    {errorMessage}
-                </div>
-            )}
-        </form>
-    );
+        <div className="submit-area mt-4">
+          <button type="submit" className="theme-btn" disabled={isSubmitting}>
+            {isSubmitting ? "جاري الإرسال..." : "إرسال الاستفسار"}
+          </button>
+        </div>
+      </form>
+    </>
+  );
 };
 
 export default ContactForm;

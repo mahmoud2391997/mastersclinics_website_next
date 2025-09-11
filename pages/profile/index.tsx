@@ -1178,7 +1178,7 @@ console.log(response);
                 onClick={() => handleTabChange("appointments")}
               >
                 <Calendar className="w-4 h-4" />
-                المواعيد
+                المواعيد ({appointments.length})
               </TabsTrigger>
             </TabsList>
 
@@ -2013,14 +2013,14 @@ console.log(response);
                     </div>
                   ) : (
                     <div className="text-center py-20">
-                      <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-950/20 dark:to-emerald-900/20 rounded-full flex items-center justify-center shadow-lg">
-                        <Calendar className="w-16 h-16 text-emerald-500" />
+                      <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-[#CBA853] to-[#CBA853]/20 dark:from-[#CBA853] dark:to-[#CBA853]/20 rounded-full flex items-center justify-center shadow-lg">
+                        <Calendar className="w-16 h-16 text-[#CBA853]" />
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">لا توجد مواعيد محجوزة</h3>
                       <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
                         ابدأ رحلتك الصحية معنا واحجز موعدك الأول مع أفضل الأطباء والمتخصصين
                       </p>
-                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 text-base shadow-lg hover:shadow-xl transition-all">
+                      <Button className="bg-[#CBA853] hover:bg-[#CBA853]/80 text-white font-semibold px-8 py-3 text-base shadow-lg hover:shadow-xl transition-all">
                         احجز موعد جديد
                       </Button>
                     </div>
