@@ -21,47 +21,93 @@ const ContactForm = () => {
     question: "",
   });
 
-  // We'll use this only when necessary for re-rendering
-  const [, forceUpdate] = useState();
-
-  const [validator] = useState(
-    new SimpleReactValidator({
-      className: "errorMessage",
-      messages: {
-        required: "هذا الحقل مطلوب",
-        numeric: "يجب أن يحتوي على أرقام فقط",
-        min: "الحد الأدنى للأحرف هو :min",
-        max: "الحد الأقصى للأحرف هو :max",
-      },
-      validators: {
-        arabic_alpha_space: {
-          message: "الاسم يجب أن يحتوي على حروف عربية ومسافات فقط",
-          rule: (val) => /^[\u0600-\u06FF\s]+$/.test(val),
-          required: true,
-        },
-      },
-    })
-  );
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
+  // Custom validation functions
+  const validateField = (name, value) => {
+    let error = "";
+    
+    switch (name) {
+      case "name":
+        if (!value.trim()) {
+          error = "هذا الحقل مطلوب";
+        } else if (!/^[\u0600-\u06FF\s]+$/.test(value)) {
+          error = "الاسم يجب أن يحتوي على حروف عربية ومسافات فقط";
+        }
+        break;
+      case "phone":
+        if (!value.trim()) {
+          error = "هذا الحقل مطلوب";
+        } else if (!/^\d+$/.test(value)) {
+          error = "يجب أن يحتوي على أرقام فقط";
+        } else if (value.length < 6) {
+          error = "الحد الأدنى للأرقام هو 6";
+        } else if (value.length > 15) {
+          error = "الحد الأقصى للأرقام هو 15";
+        }
+        break;
+      case "question":
+        if (!value.trim()) {
+          error = "هذا الحقل مطلوب";
+        } else if (value.length < 10) {
+          error = "الحد الأدنى للأحرف هو 10";
+        }
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    Object.keys(forms).forEach(key => {
+      const error = validateField(key, forms[key]);
+      if (error) {
+        newErrors[key] = error;
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const changeHandler = (e) => {
     const { name, value } = e.target;
     setForms({ ...forms, [name]: value });
-    // Validate on change
-    if (validator.fieldValid(name)) {
-      validator.hideMessage(name);
-    } else {
-      validator.showMessageFor(name);
+    
+    // Validate field if it's been touched before
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: error }));
     }
-    forceUpdate({});
+  };
+
+  const blurHandler = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    // Validate field on blur
+    const error = validateField(name, forms[name]);
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
-    if (validator.allValid()) {
-      validator.hideMessages();
+    
+    // Mark all fields as touched
+    const allTouched = {};
+    Object.keys(forms).forEach(key => {
+      allTouched[key] = true;
+    });
+    setTouched(allTouched);
+    
+    // Validate all fields
+    if (validateForm()) {
       setIsSubmitting(true);
 
       try {
@@ -76,17 +122,11 @@ const ContactForm = () => {
 
         toast.success("تم إرسال استفسارك بنجاح! سنتواصل معك قريباً.");
 
-        // Reset form fields
+        // Reset form fields and errors
         setForms({ name: "", phone: "", question: "" });
-
-        // Hide any remaining messages
-        validator.hideMessages();
-
-        // 🔥 Critical: Purge internal field tracking to prevent reappearance
-        validator.purgeFields();
-
-        // Force re-render to ensure UI is clean
-        forceUpdate({});
+        setErrors({});
+        setTouched({});
+        
       } catch (error) {
         toast.error(
           error?.response?.data?.message ||
@@ -95,9 +135,6 @@ const ContactForm = () => {
       } finally {
         setIsSubmitting(false);
       }
-    } else {
-      validator.showMessages();
-      forceUpdate({});
     }
   };
 
@@ -114,6 +151,7 @@ const ContactForm = () => {
                 type="text"
                 name="name"
                 onChange={changeHandler}
+                onBlur={blurHandler}
                 placeholder="اسمك"
                 style={{
                   paddingRight: "10px",
@@ -122,7 +160,7 @@ const ContactForm = () => {
                 }}
                 disabled={isSubmitting}
               />
-              {validator.message("name", forms.name, "required|arabic_alpha_space")}
+              {errors.name && <div className="errorMessage">{errors.name}</div>}
             </div>
           </div>
 
@@ -134,15 +172,16 @@ const ContactForm = () => {
                 type="tel"
                 name="phone"
                 onChange={changeHandler}
+                onBlur={blurHandler}
                 placeholder="رقم هاتفك"
                 style={{
                   paddingRight: "10px",
-                  direction: "ltr", // Keep LTR for phone numbers
+                  direction: "ltr",
                   textAlign: "right",
                 }}
                 disabled={isSubmitting}
               />
-              {validator.message("phone", forms.phone, "required|numeric|min:6|max:15")}
+              {errors.phone && <div className="errorMessage">{errors.phone}</div>}
             </div>
           </div>
 
@@ -153,6 +192,7 @@ const ContactForm = () => {
                 value={forms.question}
                 name="question"
                 onChange={changeHandler}
+                onBlur={blurHandler}
                 placeholder="اكتب سؤالك هنا"
                 rows={5}
                 style={{
@@ -162,7 +202,7 @@ const ContactForm = () => {
                 }}
                 disabled={isSubmitting}
               />
-              {validator.message("question", forms.question, "required|min:10")}
+              {errors.question && <div className="errorMessage">{errors.question}</div>}
             </div>
           </div>
         </div>

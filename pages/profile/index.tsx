@@ -401,6 +401,40 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [lastRequestTime, setLastRequestTime] = useState<number>(0)
+  const validateSaudiPhoneNumber = (phone: string): boolean => {
+  // Saudi phone number patterns:
+  // 05xxxxxxxx (10 digits)
+  // +9665xxxxxxxx (12 digits with country code)
+  // 9665xxxxxxxx (11 digits with country code without +)
+  const saudiPhoneRegex = /^(?:(?:\+?966|0)?5[0-9]{8})$/;
+  return saudiPhoneRegex.test(phone.replace(/[\s\-]/g, '')); // Remove spaces and dashes before validation
+};
+
+// Update the validateFields function to include Saudi phone validation
+const validateFields = (data: Partial<ClientInfo>) => {
+  const errors: Record<string, string> = {};
+  if (data.first_name !== undefined && !data.first_name.trim()) {
+    errors.first_name = "الاسم الأول مطلوب";
+  }
+  if (data.last_name !== undefined && !data.last_name.trim()) {
+    errors.last_name = "الاسم الأخير مطلوب";
+  }
+  if (data.phone_number !== undefined) {
+    if (!data.phone_number.trim()) {
+      errors.phone_number = "رقم الهاتف مطلوب";
+    } else if (!validateSaudiPhoneNumber(data.phone_number)) {
+      errors.phone_number = "يرجى إدخال رقم هاتف سعودي صحيح (مثال: 05xxxxxxxx)";
+    }
+  }
+  if (data.identity_number !== undefined) {
+    if (!data.identity_number.trim()) {
+      errors.identity_number = "رقم الهوية مطلوب";
+    } else if (!/^\d{10,14}$/.test(data.identity_number.replace(/\s/g, ""))) {
+      errors.identity_number = "رقم الهوية يجب أن يكون من 10 إلى 14 رقم";
+    }
+  }
+  return errors;
+};
   const searchParams = useSearchParams()
   const router = useRouter()
   // Focus handling for notifications deep-link
@@ -443,30 +477,7 @@ export default function ProfilePage() {
     }
   }
 
-  const validateFields = (data: Partial<ClientInfo>) => {
-    const errors: Record<string, string> = {}
-    if (data.first_name !== undefined && !data.first_name.trim()) {
-      errors.first_name = "الاسم الأول مطلوب"
-    }
-    if (data.last_name !== undefined && !data.last_name.trim()) {
-      errors.last_name = "الاسم الأخير مطلوب"
-    }
-    if (data.phone_number !== undefined) {
-      if (!data.phone_number.trim()) {
-        errors.phone_number = "رقم الهاتف مطلوب"
-      } else if (!/^[0-9+\-\s()]+$/.test(data.phone_number)) {
-        errors.phone_number = "رقم الهاتف غير صحيح"
-      }
-    }
-    if (data.identity_number !== undefined) {
-      if (!data.identity_number.trim()) {
-        errors.identity_number = "رقم الهوية مطلوب"
-      } else if (!/^\d{10,14}$/.test(data.identity_number.replace(/\s/g, ""))) {
-        errors.identity_number = "رقم الهوية يجب أن يكون من 10 إلى 14 رقم"
-      }
-    }
-    return errors
-  }
+
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -1378,26 +1389,29 @@ console.log(response);
                         </div>
                       )}
                     </div>
-                    <div>
-                      <Label htmlFor="phoneNumber">رقم الهاتف</Label>
-                      {editState.isEditing ? (
-                        <>
-                          <Input
-                            id="phoneNumber"
-                            value={editState.tempData.phone_number ?? clientInfo.phone_number}
-                            onChange={(e) => handleFieldChange("phone_number", e.target.value)}
-                          />
-                          {editState.errors.phone_number && (
-                            <p className="text-red-500 text-sm mt-1">{editState.errors.phone_number}</p>
-                          )}
-                        </>
-                      ) : (
-                        <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-gray-500" />
-                          {clientInfo.phone_number}
-                        </div>
-                      )}
-                    </div>
+                  <div>
+  <Label htmlFor="phoneNumber">رقم الهاتف*</Label>
+  {editState.isEditing ? (
+    <>
+      <Input
+        id="phoneNumber"
+        value={editState.tempData.phone_number ?? clientInfo.phone_number}
+        onChange={(e) => handleFieldChange("phone_number", e.target.value)}
+        placeholder="رقم الهاتف السعودي (مثال: 05xxxxxxxx)*"
+        pattern="^(?:(?:\+?966|0)?5[0-9]{8})$"
+        inputMode="numeric"
+      />
+      {editState.errors.phone_number && (
+        <p className="text-red-500 text-sm mt-1">{editState.errors.phone_number}</p>
+      )}
+    </>
+  ) : (
+    <div className="mt-1 p-2 bg-gray-50 rounded flex items-center gap-2">
+      <Phone className="w-4 h-4 text-gray-500" />
+      {clientInfo.phone_number}
+    </div>
+  )}
+</div>
                     <div>
                       <Label htmlFor="identityNumber">رقم الهوية</Label>
                       {editState.isEditing ? (

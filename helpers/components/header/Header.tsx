@@ -349,12 +349,7 @@ const Header = (props: HeaderProps) => {
   const [authStep, setAuthStep] = useState<number>(1);
   const [email, setEmail] = useState<string>("");
   const [verificationCode, setVerificationCode] = useState<string>("");
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    identity_number: "",
-  });
+ 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>("");
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
@@ -412,7 +407,102 @@ const Header = (props: HeaderProps) => {
   const [wishlistCount, setWishlistCount] = useState<number>(0);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const toggleWishlist = (): void => setWishlistOpen(!wishlistOpen)
+const [userInfo, setUserInfo] = useState<UserInfo>({
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  identity_number: "",
+});
 
+// Add Saudi phone validation function
+const validateSaudiPhoneNumber = (phone: string): boolean => {
+  // Saudi phone number patterns:
+  // 05xxxxxxxx (10 digits)
+  // +9665xxxxxxxx (12 digits with country code)
+  // 9665xxxxxxxx (11 digits with country code without +)
+  const saudiPhoneRegex = /^(?:(?:\+?966|0)?5[0-9]{8})$/;
+  return saudiPhoneRegex.test(phone.replace(/[\s\-]/g, '')); // Remove spaces and dashes before validation
+};
+
+// Update the handleUserInfoSubmit function to include phone validation
+const handleUserInfoSubmit = async (e: React.FormEvent): Promise<void> => {
+  e.preventDefault();
+  setAuthError("");
+
+  const { firstName, lastName, phoneNumber, identity_number } = userInfo;
+
+  // Validate identity number
+  if (!identity_number || !/^\d{10}$/.test(identity_number.trim())) {
+    setAuthError("يرجى إدخال رقم هوية صالح مكون من 10 أرقام.");
+    return;
+  }
+
+  // Validate Saudi phone number
+  if (!validateSaudiPhoneNumber(phoneNumber)) {
+    setAuthError("يرجى إدخال رقم هاتف سعودي صحيح (مثال: 05xxxxxxxx)");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        phoneNumber,
+        email: email,
+        code: verificationCode,
+        identity_number: identity_number.trim(),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to create user");
+    }
+
+    const data = await response.json();
+    console.log("User creation response:", {
+      response: data,
+      email,
+      timestamp: new Date().toISOString(),
+    });
+
+    const newClientInfo: ClientInfo = {
+      id: data.clientId,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phoneNumber,
+      identity_number: identity_number.trim(),
+      unique_number: data.uniqueNumber,
+      created_at: new Date().toISOString(),
+    };
+
+    setClientInfo(newClientInfo);
+    setIsAuthenticated(true);
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("clientInfo", JSON.stringify(newClientInfo));
+
+    syncUnauthenticatedWishlist(data.clientId);
+
+    console.log("New user created and authenticated:", {
+      email,
+      clientInfo: newClientInfo,
+      timestamp: new Date().toISOString(),
+    });
+
+    setShowAuthPopup(false);
+    resetAuthForm();
+  } catch (error) {
+    console.error("Error creating user:", error);
+    setAuthError((error as Error).message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
+  }
+};
   // Improved fetch appointment count with better error handling and rate limiting
   const fetchAppointmentCount = async (retryCount: number = 0): Promise<void> => {
     const clientId = getClientId();
@@ -952,77 +1042,6 @@ const Header = (props: HeaderProps) => {
     }
   };
 
-  const handleUserInfoSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
-    setAuthError("");
-
-    const { firstName, lastName, phoneNumber, identity_number } = userInfo;
-
-    if (!identity_number || !/^\d{10}$/.test(identity_number.trim())) {
-      setAuthError("يرجى إدخال رقم هوية صالح مكون من 10 أرقام.");
-      return;
-    }
-
-    try {
-      const response = await fetch("https://www.ss.mastersclinics.com/api/client-auth/authenticate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          phoneNumber,
-          email: email,
-          code: verificationCode,
-          identity_number: identity_number.trim(),
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create user");
-      }
-
-      const data = await response.json();
-      console.log("User creation response:", {
-        response: data,
-        email,
-        timestamp: new Date().toISOString(),
-      });
-
-      const newClientInfo: ClientInfo = {
-        id: data.clientId,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: phoneNumber,
-        identity_number: identity_number.trim(),
-        unique_number: data.uniqueNumber,
-        created_at: new Date().toISOString(),
-      };
-
-      setClientInfo(newClientInfo);
-      setIsAuthenticated(true);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("clientInfo", JSON.stringify(newClientInfo));
-
-      syncUnauthenticatedWishlist(data.clientId);
-
-      console.log("New user created and authenticated:", {
-        email,
-        clientInfo: newClientInfo,
-        timestamp: new Date().toISOString(),
-      });
-
-      setShowAuthPopup(false);
-      resetAuthForm();
-    } catch (error) {
-      console.error("Error creating user:", error);
-      setAuthError((error as Error).message || "حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.");
-    }
-  };
 
   const handleResendCode = async (): Promise<void> => {
     setIsResending(true);
@@ -1558,7 +1577,7 @@ const renderNotificationsIcon = (): JSX.Element => {
           <nav className="navigation !w-full mx-auto relative mt-[35px] md:mt-3">
             <div className="container-fluid flex flex-row items-center justify-between md:justify-center !w-full px-2 md:!px-0 lg:px-4 py-2 mx-auto relative h-20">
               {/* Logo */}
-              <div className="flex-shrink-0 order-2 md:order-1 md:absolute right-0 md:top-1/2 md:transform md:-translate-y-1/2">
+              <div className="flex-shrink-0 order-2 md:order-1 md:absolute !mr-4 !mt-6 md:!mt-0 md:mr-0 right-0 md:top-1/2 md:transform md:-translate-y-1/2">
                 <Link href="/" className="navbar-brand">
                   {props.nav ? (
                     <img
@@ -1667,8 +1686,8 @@ const renderNotificationsIcon = (): JSX.Element => {
 
               {/* Search and Account Icons */}
               <div
-                className={`flex flex-col items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[32px] md:transform md:-translate-y-1/2 gap-3  lg:mt-0 md:!gap-8 xl:!gap-3
-                   ` + (isAuthenticated ? " mt-[41px] md:mt-[7px]" :null)}
+                className={`flex flex-col  items-center order-3 md:order-3 md:absolute md:left-3 lg:left-8 md:top-[32px] md:transform md:-translate-y-1/2 gap-3  lg:mt-0 md:!gap-8 xl:!gap-3
+                   ` + (isAuthenticated ? " mt-[50px] md:mt-[7px]" :"md:flex-row !gap-1")}
               >
                 {/* Account Icon (User) */}
                 <div className="relative ">
@@ -1822,15 +1841,18 @@ onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                               </div>
 
                               <div className="mb-4">
-                                <label className="block text-right mb-2">رقم الهاتف</label>
-                                <input
-                                  type="tel"
-                                  value={userInfo.phoneNumber}
-                                  onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
-                                  required
-                                  className="w-full px-3 py-2 border border-gray-300 rounded text-right"
-                                />
-                              </div>
+  <label className="block text-right mb-2">رقم الهاتف*</label>
+  <input
+    type="tel"
+    value={userInfo.phoneNumber}
+    onChange={(e) => setUserInfo({ ...userInfo, phoneNumber: e.target.value })}
+    required
+    className="w-full px-3 py-2 border border-gray-300 rounded text-right"
+    placeholder="رقم الهاتف السعودي (مثال: 05xxxxxxxx)*"
+    pattern="^(?:(?:\+?966|0)?5[0-9]{8})$"
+    inputMode="numeric"
+  />
+</div>
 
                               <div className="mb-4">
                                 <label className="block text-right mb-2">رقم الهوية</label>
@@ -1892,7 +1914,7 @@ onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
               </div>
 
               {/* Mobile Navigation */}
-              <div className="flex md:hidden order-1 md:order-none">
+              <div className="flex md:hidden order-1 md:order-none mt-4">
                 <MobileMenu menuData={menuData} />
               </div>
             </div>

@@ -97,6 +97,7 @@ export const makeAppointment = async (data: AppointmentData): Promise<any> => {
     type: data.type,
     scheduledAt: data.scheduledAt || null,
     is_authed: data.is_authed || false,
+    branch: data.branch
   };
 
   console.log("🚀 Sending clean appointment data:", cleanData);
@@ -154,11 +155,15 @@ const getUtmSource = (): string => {
 };
 
 /* =========================
-   🔹 Phone Number Validation
+   🔹 Phone Number Validation - UPDATED WITH SAUDI VALIDATION
    ========================= */
 const validatePhoneNumber = (phone: string): boolean => {
-  const cleanedPhone = phone.replace(/\D/g, '');
-  return cleanedPhone.length >= 9 && cleanedPhone.length <= 12;
+  // Saudi phone number patterns:
+  // 05xxxxxxxx (10 digits)
+  // +9665xxxxxxxx (12 digits with country code)
+  // 9665xxxxxxxx (11 digits with country code without +)
+  const saudiPhoneRegex = /^(?:(?:\+?966|0)?5[0-9]{8})$/;
+  return saudiPhoneRegex.test(phone.replace(/[\s\-]/g, '')); // Remove spaces and dashes before validation
 };
 
 /* =========================
@@ -199,7 +204,7 @@ const usePaymentStatus = (sessionId: string | null) => {
   return { status, loading, error };
 };
 
-// Get service name - FIXED VERSION
+// Get service name
 const getServiceName = (doctor: any, device: any, offer: any): string => {
   if (doctor && typeof doctor === 'object' && doctor.name) return doctor.name;
   if (doctor && typeof doctor === 'string') return doctor;
@@ -245,6 +250,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [phoneError, setPhoneError] = useState<string>("");
   const [paymentSessionId, setPaymentSessionId] = useState<string | null>(null);
+  const [appointmentData, setAppointmentData] = useState<any>(null);
   const router = useRouter();
   
   const { status: paymentStatus } = usePaymentStatus(paymentSessionId);
@@ -272,20 +278,37 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
 
   // ✅ redirect after payment
   useEffect(() => {
-    if (paymentStatus === 'paid') {
+    if (paymentStatus === 'paid' && appointmentData) {
       toast.success("تم الدفع بنجاح!");
+      
+      const queryParams = new URLSearchParams({
+        appointment_id: appointmentData.id || "",
+        name: encodeURIComponent(appointmentData.name || formData.name),
+        phone: encodeURIComponent(appointmentData.phone || formData.phone),
+        branch: encodeURIComponent(formData.branch || ""),
+        doctor: encodeURIComponent(
+          type === "doctor" ? getServiceName(doctor, null, null) : ""
+        ),
+        offer: encodeURIComponent(
+          type === "offer" ? getServiceName(null, null, offer) : ""
+        ),
+        device: encodeURIComponent(
+          type === "device" ? getServiceName(null, device, null) : ""
+        ),
+        service: encodeURIComponent(getServiceName(doctor, device, offer)),
+        type: appointmentData.type || type,
+        utmSource: encodeURIComponent(appointmentData.utmSource || getUtmSource()),
+        createdAt: appointmentData.createdAt || new Date().toISOString(),
+        scheduledAt: appointmentData.scheduledAt || "",
+        payment_status: "paid",
+        session_id: paymentSessionId || "",
+      }).toString();
+      
       setTimeout(() => {
-        const queryParams = new URLSearchParams({
-          session_id: paymentSessionId || "",
-          name: encodeURIComponent(formData.name),
-          type: type || "",
-          service: encodeURIComponent(getServiceName(doctor, device, offer))
-        }).toString();
-        
         router.push(`/thankyou?${queryParams}`);
       }, 2000);
     }
-  }, [paymentStatus, router]);
+  }, [paymentStatus, appointmentData, router]);
 
   /* ✅ Autofill if logged in */
   useEffect(() => {
@@ -348,8 +371,9 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
     setErrorMessage("");
     setPhoneError("");
 
+    // UPDATED PHONE VALIDATION
     if (!validatePhoneNumber(formData.phone)) {
-      setPhoneError("يرجى إدخال رقم هاتف صحيح");
+      setPhoneError("يرجى إدخال رقم هاتف سعودي صحيح (مثال: 05xxxxxxxx)");
       setIsSubmitting(false);
       return;
     }
@@ -373,7 +397,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         }
       }
 
-      // FIX: Use the correct entityId based on type
+      // Determine the correct entityId to use
       let finalEntityId: number | null = null;
       
       if (type === "device") {
@@ -403,22 +427,24 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
       const result = await makeAppointment(submissionData);
       console.log("✅ Appointment created:", result);
 
-      // DEBUG: Check what type is returned from backend
-      console.log("Backend returned appointment type:", result.appointment?.type);
-      console.log("Expected type:", type);
-
-      // If backend is returning wrong type, we can override it temporarily
-      if (result.appointment && result.appointment.type !== type) {
-        console.warn(`Backend returned type "${result.appointment.type}" but expected "${type}"`);
-        // Override the type for frontend display
-        result.appointment.type = type;
-      }
+      // Store appointment data for potential redirect
+      const appointment = result.appointment || {
+        id: result.appointmentId,
+        name: formData.name,
+        phone: formData.phone,
+        type: type,
+        utmSource: getUtmSource(),
+        createdAt: new Date().toISOString(),
+        payment_status: formData.payNow ? "pending" : "unpaid"
+      };
+      
+      setAppointmentData(appointment);
 
       if (formData.payNow && result?.appointmentId) {
         try {
           const serviceName = getServiceName(doctor, device, offer);
           
-          // FIX: Use the correct ID for payment
+          // Use the correct ID for payment
           const paymentEntityId = type === "device" ? Number(formData.branch) : entityId;
           
           const paymentData = await createStripePayment(
@@ -447,40 +473,40 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         }
       }
 
+      // Handle successful appointment creation without payment
       setSubmitStatus("success");
+      
+      const queryParams = new URLSearchParams({
+        appointment_id: appointment.id || result.appointmentId,
+        name: encodeURIComponent(appointment.name || formData.name),
+        phone: encodeURIComponent(appointment.phone || formData.phone),
+        branch: encodeURIComponent(formData.branch || ""),
+        doctor: encodeURIComponent(
+          type === "doctor" ? getServiceName(doctor, null, null) : ""
+        ),
+        offer: encodeURIComponent(
+          type === "offer" ? getServiceName(null, null, offer) : ""
+        ),
+        device: encodeURIComponent(
+          type === "device" ? getServiceName(null, device, null) : ""
+        ),
+        service: encodeURIComponent(getServiceName(doctor, device, offer)),
+        type: appointment.type || type,
+        utmSource: encodeURIComponent(appointment.utmSource || getUtmSource()),
+        createdAt: appointment.createdAt || new Date().toISOString(),
+        scheduledAt: appointment.scheduledAt || "",
+        payment_status: appointment.payment_status || (formData.payNow ? "pending" : "unpaid"),
+      }).toString();
 
-      if (result?.appointment) {
-        const appointment = result.appointment;
-
-        const queryParams = new URLSearchParams({
-          appointment_id: appointment.id,
-          name: encodeURIComponent(appointment.name || formData.name),
-          phone: encodeURIComponent(appointment.phone || formData.phone),
-          branch: encodeURIComponent(appointment.branch || formData.branch || ""),
-          doctor: encodeURIComponent(
-            type === "doctor" ? getServiceName(doctor, null, null) : ""
-          ),
-          offer: encodeURIComponent(
-            type === "offer" ? getServiceName(null, null, offer) : ""
-          ),
-          device: encodeURIComponent(
-            type === "device" ? getServiceName(null, device, null) : ""
-          ),
-          service: encodeURIComponent(getServiceName(doctor, device, offer)),
-          type: appointment.type || type,
-          utmSource: encodeURIComponent(appointment.utmSource || getUtmSource()),
-          createdAt: appointment.createdAt || new Date().toISOString(),
-          scheduledAt: appointment.scheduledAt || "",
-          payment_status: appointment.payment_status || "unpaid",
-        }).toString();
-
-        setTimeout(() => {
-          router.push(`/thankyou?${queryParams}`);
-        }, 1500);
-      }
-
+      // Reset form
       setFormData({ name: "", phone: "", payNow: false, branch: "" });
       setSelectedBranch("");
+      
+      // Navigate to thank you page
+      setTimeout(() => {
+        router.push(`/thankyou?${queryParams}`);
+      }, 1500);
+
     } catch (error: any) {
       console.error("❌ Appointment submission error:", error);
       setSubmitStatus("error");
@@ -570,7 +596,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
               value={formData.phone}
               onChange={handleChange}
               dir="rtl"
-              placeholder="رقم الهاتف*"
+              placeholder="رقم الهاتف السعودي (مثال: 05xxxxxxxx)*"
               required
               disabled={isSubmitting}
               className="w-full text-white text-lg md:text-xl font-normal rounded-xl bg-white/20 py-4 px-6 border border-transparent focus:border-white/40 focus:outline-none focus:ring-1 focus:ring-white/20 placeholder:text-white/70 transition-all duration-200 hover:bg-white/30 disabled:opacity-50"
