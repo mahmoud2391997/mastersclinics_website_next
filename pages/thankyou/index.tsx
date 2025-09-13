@@ -49,6 +49,7 @@ const ThankYouPage: React.FC = () => {
   const branchName = safeDecode(searchParams.get("branch"))
   const serviceType = searchParams.get("type") || "" // doctor | device | offer | branch
   const serviceName = safeDecode(searchParams.get("service")) || searchQuery
+console.log("Service Name:", serviceName);
 
   // map type to arabic label
   const serviceLabel =
@@ -184,7 +185,7 @@ const ThankYouPage: React.FC = () => {
         return `عزيزي/عزيزتي ${customerData.name}، فشلت عملية الدفع. يرجى المحاولة مرة أخرى.`
       case "no_payment":
         if (serviceType === "branch") {
-          return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب ${serviceLabel} (${branchName || serviceName}) بنجاح!`
+          return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب ${serviceLabel} (${serviceName || branchName}) بنجاح!`
         }
         return `عزيزي/عزيزتي ${customerData.name}، تم تسجيل طلب حجز ${serviceLabel} (${serviceName}) بنجاح!`
       default:
@@ -344,7 +345,7 @@ const ThankYouPage: React.FC = () => {
               }`}
             >
               <p className="text-sm text-blue-700" dir="rtl">
-                {serviceLabel}: <span className="font-bold text-blue-800">{branchName || serviceName}</span>
+                {serviceLabel}: <span className="font-bold text-blue-800">{serviceName || branchName}</span>
               </p>
             </div>
           )}

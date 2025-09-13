@@ -170,7 +170,17 @@ console.log(branch);
               <h3>حجز موعد</h3>
               <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
             </div>
-            <CtafromSection id={id} type={"branch"} setShowAuthPopup={setShowAuthPopup}/>
+<CtafromSection 
+  id={branch.id} 
+  type={"branch"} 
+  setShowAuthPopup={setShowAuthPopup}  
+  availableBranches={[
+    {
+      value: branch.id,
+      label: branch.name // Pass the branch name here
+    }
+  ]}
+/>
           </div>
         </div>
       </div>

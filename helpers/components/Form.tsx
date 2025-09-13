@@ -13,7 +13,7 @@ interface CtafromSectionProps {
 
 const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: CtafromSectionProps) => {
   console.log(id);
-  console.log("asdasdsa", availableBranches);
+  console.log("Available branches:", availableBranches);
 
   return (
     <section className="relative z-10 my-10 py-5 rounded-xl" id="booking-form">
@@ -39,6 +39,7 @@ const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: 
                 setShowAuthPopup={setShowAuthPopup} 
                 type={type} 
                 availableBranches={availableBranches}
+                branch={availableBranches[0].label} // Pass the entire branch object instead of just value
               />
             </div>
           </div>

@@ -205,7 +205,7 @@ const usePaymentStatus = (sessionId: string | null) => {
 };
 
 // Get service name
-const getServiceName = (doctor: any, device: any, offer: any): string => {
+const getServiceName = (doctor: any, device: any, offer: any, branch: any): string => {
   if (doctor && typeof doctor === 'object' && doctor.name) return doctor.name;
   if (doctor && typeof doctor === 'string') return doctor;
   
@@ -214,7 +214,11 @@ const getServiceName = (doctor: any, device: any, offer: any): string => {
   
   if (offer && typeof offer === 'object' && offer.title) return offer.title;
   if (offer && typeof offer === 'string') return offer;
-  
+  console.log("Branch:", branch);
+
+  if (branch && typeof branch === 'object' && branch.label) return branch.label;
+  if (branch && typeof branch === 'string') return branch;
+
   return "خدمات التجميل";
 };
 
@@ -238,6 +242,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   console.log("Doctor data:", doctor);
   console.log("Device data:", device);
 console.log("Available branches:", availableBranches);
+console.log("Pre-selected branch:", branch);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -282,28 +287,32 @@ console.log("Available branches:", availableBranches);
     if (paymentStatus === 'paid' && appointmentData) {
       toast.success("تم الدفع بنجاح!");
       
-      const queryParams = new URLSearchParams({
-        appointment_id: appointmentData.id || "",
-        name: encodeURIComponent(appointmentData.name || formData.name),
-        phone: encodeURIComponent(appointmentData.phone || formData.phone),
-        branch: encodeURIComponent(formData.branch || ""),
-        doctor: encodeURIComponent(
-          type === "doctor" ? getServiceName(doctor, null, null) : ""
-        ),
-        offer: encodeURIComponent(
-          type === "offer" ? getServiceName(null, null, offer) : ""
-        ),
-        device: encodeURIComponent(
-          type === "device" ? getServiceName(null, device, null) : ""
-        ),
-        service: encodeURIComponent(getServiceName(doctor, device, offer)),
-        type: appointmentData.type || type,
-        utmSource: encodeURIComponent(appointmentData.utmSource || getUtmSource()),
-        createdAt: appointmentData.createdAt || new Date().toISOString(),
-        scheduledAt: appointmentData.scheduledAt || "",
-        payment_status: "paid",
-        session_id: paymentSessionId || "",
-      }).toString();
+     // In SimpleCtaForm.tsx, update the queryParams section
+const queryParams = new URLSearchParams({
+  appointment_id: appointmentData.id || "",
+  name: encodeURIComponent(appointmentData.name || formData.name),
+  phone: encodeURIComponent(appointmentData.phone || formData.phone),
+  branch: encodeURIComponent(
+    // Get the branch label/name from availableBranches
+    availableBranches.find(b => String(b.value) === String(formData.branch))?.label || formData.branch || ""
+  ),
+  branch_id: encodeURIComponent(formData.branch || ""), // Keep ID for reference
+  doctor: encodeURIComponent(
+    type === "doctor" ? getServiceName(doctor, null, null,null) : ""
+  ),
+  offer: encodeURIComponent(
+    type === "offer" ? getServiceName(null, null, offer,null) : ""
+  ),
+  device: encodeURIComponent(
+    type === "device" ? getServiceName(null, device, null,null) : ""
+  ),
+  service: encodeURIComponent(getServiceName(doctor, device, offer, branch)),
+  type: appointmentData.type || type,
+  utmSource: encodeURIComponent(appointmentData.utmSource || getUtmSource()),
+  createdAt: appointmentData.createdAt || new Date().toISOString(),
+  scheduledAt: appointmentData.scheduledAt || "",
+  payment_status: appointmentData.payment_status || (formData.payNow ? "pending" : "unpaid"),
+}).toString();
       
       setTimeout(() => {
         router.push(`/thankyou?${queryParams}`);
@@ -443,8 +452,8 @@ console.log("Available branches:", availableBranches);
 
       if (formData.payNow && result?.appointmentId) {
         try {
-          const serviceName = getServiceName(doctor, device, offer);
-          
+          const serviceName = getServiceName(doctor, device, offer, branch.value);
+
           // Use the correct ID for payment
           const paymentEntityId = type === "device" ? Number(formData.branch) : entityId;
           
@@ -481,17 +490,17 @@ console.log("Available branches:", availableBranches);
         appointment_id: appointment.id || result.appointmentId,
         name: encodeURIComponent(appointment.name || formData.name),
         phone: encodeURIComponent(appointment.phone || formData.phone),
-        branch: encodeURIComponent(formData.branch || ""),
+        branch: encodeURIComponent(branch.value || formData.branch || ""),
         doctor: encodeURIComponent(
-          type === "doctor" ? getServiceName(doctor, null, null) : ""
+          type === "doctor" ? getServiceName(doctor, null, null, null) : ""
         ),
         offer: encodeURIComponent(
-          type === "offer" ? getServiceName(null, null, offer) : ""
+          type === "offer" ? getServiceName(null, null, offer, null) : ""
         ),
         device: encodeURIComponent(
-          type === "device" ? getServiceName(null, device, null) : ""
+          type === "device" ? getServiceName(null, device, null, null) : ""
         ),
-        service: encodeURIComponent(getServiceName(doctor, device, offer)),
+        service: encodeURIComponent(getServiceName(doctor, device, offer, branch)),
         type: appointment.type || type,
         utmSource: encodeURIComponent(appointment.utmSource || getUtmSource()),
         createdAt: appointment.createdAt || new Date().toISOString(),
@@ -609,7 +618,7 @@ console.log("Available branches:", availableBranches);
         </div>
 
         {/* Branch Selection */}
-        {(type !== "branch") && (
+        {
           availableBranches.length > 1 ? (
             <div className="w-full md:w-full relative group branch-field">
               <label htmlFor="branch" className="block text-white text-right text-lg font-medium mb-2 opacity-80">
@@ -651,7 +660,7 @@ console.log("Available branches:", availableBranches);
               </p>
             </div>
           ) : null
-        )}
+        }
 
         {/* Pay Now Checkbox */}
         {type !== "branch" && (
