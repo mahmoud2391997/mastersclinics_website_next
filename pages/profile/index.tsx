@@ -234,7 +234,10 @@ const formatDate = (dateString: string) => {
 
 const formatScheduledDate = (dateString: string | null) => {
   if (!dateString) return null
+
   const date = new Date(dateString)
+  date.setHours(date.getHours() + 1) // ✅ add 1 hour
+
   return new Intl.DateTimeFormat("ar-EG", {
     year: "numeric",
     month: "long",
@@ -243,6 +246,7 @@ const formatScheduledDate = (dateString: string | null) => {
     minute: "2-digit",
   }).format(date)
 }
+
 
 const transformWishlistItem = (item: ApiWishlistItem): WishlistItem | null => {
   if (!item) return null
@@ -1682,7 +1686,14 @@ console.log(response);
     "غير محدد"
   }
 </p>
-
+{appointment.branch && (
+                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg mb-3">
+                                      <MapPin className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                                      <span className="text-gray-700 dark:text-gray-300">
+                                        الفرع: {appointment.branch}
+                                      </span>
+                                    </div>
+                                  )}
                             {/* Doctor Appointment */}
                             {appointment.type === "doctor" && appointment.related && (
                               <div className="space-y-4">
@@ -2138,7 +2149,7 @@ const formatToArabicDateTime = (timestamp: string | Date) => {
 };
 
 // CallLogsDialog component - place this before the main ProfilePage component
-const CallLogsDialog = ({ appointment, onStatusUpdate }: {
+const CallLogsDialog = ({ appointment }: {
   appointment: Appointment,
   onStatusUpdate: (id: number, status: string) => Promise<boolean>
 }) => {

@@ -83,6 +83,7 @@ const OfferSinglePage = () => {
       </div>
     );
   }
+console.log(offer);
 
   const images = [offer.image || '/default-image.jpg'];
   const discountPercentage = Math.round(((offer.priceBefore - offer.priceAfter) / offer.priceBefore) * 100);
@@ -271,7 +272,18 @@ const OfferSinglePage = () => {
               <h3>حجز موعد</h3>
               <p>تواصل معنا لحجز موعد ومعرفة كيف يمكننا خدمتك.</p>
             </div>
-<CtafromSection id={id} type={"offer"} setShowAuthPopup={setShowAuthPopup}/>          </div>
+<CtafromSection 
+  id={id} 
+  type={"offer"} 
+  availableBranches={
+    offer.branches?.map((branch) => ({
+      value: branch.id,
+      label: branch.name
+    })) || []
+  }
+  setShowAuthPopup={setShowAuthPopup} 
+/>
+        </div>
         </div>
       </div>
 

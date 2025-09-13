@@ -13,7 +13,8 @@ interface CtafromSectionProps {
 
 const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: CtafromSectionProps) => {
   console.log(id);
-  
+  console.log("asdasdsa", availableBranches);
+
   return (
     <section className="relative z-10 my-10 py-5 rounded-xl" id="booking-form">
       <div className="container mx-auto rounded-xl">

@@ -1639,7 +1639,7 @@ const renderNotificationsIcon = (): JSX.Element => {
                       className="py-2 px-[2px] lg:px-3 hover:!text-[#CBA853] flex items-center" 
                       style={{ color: props.nav ? 'black' : 'white' }}
                     >
-                      الخدمات 
+                      الخدمات <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
                     </Link>
                     {menuData.services && menuData.services.length > 0 && renderEntityDropdown(menuData.services, "services")}
                   </li>
@@ -1649,7 +1649,7 @@ const renderNotificationsIcon = (): JSX.Element => {
                       className="py-2 px-[2px] lg:px-3 hover:!text-[#CBA853] flex items-center" 
                       style={{ color: props.nav ? 'black' : 'white' }}
                     >
-                      الاطباء 
+                      الاطباء <FaChevronDown className="mr-1 text-xs" style={{ color: props.nav ? 'black' : 'white' }} />
                     </Link>
                     {menuData.doctors && menuData.doctors.length > 0 && renderEntityDropdown(menuData.doctors, "doctors")}
                   </li>

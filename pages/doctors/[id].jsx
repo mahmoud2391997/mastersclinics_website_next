@@ -196,7 +196,17 @@ const TeamSinglePage = () => {
                     </p>
                   </div>
                   <div className="p-6">
-                    <CtafromSection id={id} type={"doctor"} setShowAuthPopup={setShowAuthPopup} />
+                    <CtafromSection 
+                      id={id} 
+                      type={"doctor"} 
+                      availableBranches={[
+                        {
+                          value: currentMember.branch.id,
+                          label: currentMember.branch.name
+                        }
+                      ]} 
+                      setShowAuthPopup={setShowAuthPopup} 
+                    />
                   </div>
                 </div>
               </div>

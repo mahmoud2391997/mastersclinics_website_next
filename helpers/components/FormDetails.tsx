@@ -237,6 +237,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   console.log("Offer data:", offer);
   console.log("Doctor data:", doctor);
   console.log("Device data:", device);
+console.log("Available branches:", availableBranches);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -257,7 +258,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
 
   /* ✅ Auto-select branch if only one available */
   useEffect(() => {
-    if (type === "device" && availableBranches.length === 1) {
+    if (availableBranches.length === 1) {
       const onlyBranch = availableBranches[0];
       setSelectedBranch(String(onlyBranch.value));
       setFormData((prev) => ({
@@ -608,7 +609,7 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
         </div>
 
         {/* Branch Selection */}
-        {type === "device" && (
+        {(type !== "branch") && (
           availableBranches.length > 1 ? (
             <div className="w-full md:w-full relative group branch-field">
               <label htmlFor="branch" className="block text-white text-right text-lg font-medium mb-2 opacity-80">
