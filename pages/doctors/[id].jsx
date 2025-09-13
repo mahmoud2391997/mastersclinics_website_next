@@ -197,6 +197,7 @@ const TeamSinglePage = () => {
                   </div>
                   <div className="p-6">
                     <CtafromSection 
+                      service={currentMember.name}
                       id={id} 
                       type={"doctor"} 
                       availableBranches={[

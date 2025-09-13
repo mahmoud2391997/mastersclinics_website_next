@@ -110,6 +110,7 @@ export const makeAppointment = async (data: AppointmentData): Promise<any> => {
 };
 
 export const createStripePayment = async (
+  
   id: number, 
   entityId: number, 
   name: string, 
@@ -226,6 +227,7 @@ const getServiceName = (doctor: any, device: any, offer: any, branch: any): stri
    🔹 SimpleCtaForm Component
    ========================= */
 const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
+  
   type,
   entityId,
   setShowAuthPopup,
@@ -240,6 +242,8 @@ const SimpleCtaForm: React.FC<SimpleCtaFormProps> = ({
   console.log("Entity ID:", entityId);
   console.log("Offer data:", offer);
   console.log("Doctor data:", doctor);
+  console.log(doctor);
+  
   console.log("Device data:", device);
 console.log("Available branches:", availableBranches);
 console.log("Pre-selected branch:", branch);

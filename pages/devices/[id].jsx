@@ -51,6 +51,7 @@ const ProjectSinglePage = () => {
   if (!currentDevice) {
     return <div className="text-center py-5">لا توجد بيانات متاحة</div>;
   }
+console.log(currentDevice);
 
   return (
     <Fragment>
@@ -234,6 +235,7 @@ const ProjectSinglePage = () => {
 <CtafromSection 
   id={id} 
   type={"device"}  // Changed from "branch" to "device"
+  service={currentDevice.name}
   setShowAuthPopup={setShowAuthPopup}
   availableBranches={currentDevice.branches?.map(branch => ({
     value: branch.id,

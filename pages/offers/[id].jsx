@@ -275,6 +275,7 @@ console.log(offer);
 <CtafromSection 
   id={id} 
   type={"offer"} 
+  service={offer.title}
   availableBranches={
     offer.branches?.map((branch) => ({
       value: branch.id,

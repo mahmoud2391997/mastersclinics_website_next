@@ -6,12 +6,13 @@ import SimpleCtaForm from "./FormDetails";
 // Define the type for the component props
 interface CtafromSectionProps {
   id: number;
+  service?: string;
   type: string;
   setShowAuthPopup: (show: boolean) => void;
   availableBranches?: Array<{ value: string | number; label: string }>;
 }
 
-const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: CtafromSectionProps) => {
+const CtafromSection = ({ service,id, type, setShowAuthPopup, availableBranches = [] }: CtafromSectionProps) => {
   console.log(id);
   console.log("Available branches:", availableBranches);
 
@@ -34,13 +35,43 @@ const CtafromSection = ({ id, type, setShowAuthPopup, availableBranches = [] }: 
           {/* Form container with wide inputs */}
           <div className="w-full flex justify-center">
             <div className="w-full max-w-4xl"> {/* Increased max-width */}
-              <SimpleCtaForm 
-                entityId={id} 
-                setShowAuthPopup={setShowAuthPopup} 
+              {
+                (type === "doctor" && service) ? (
+                  <SimpleCtaForm
+                  doctor={service}
+                    entityId={id}
+                    setShowAuthPopup={setShowAuthPopup}
                 type={type} 
                 availableBranches={availableBranches}
-                branch={availableBranches[0].label} // Pass the entire branch object instead of just value
-              />
+                branch={availableBranches[0].label}
+              />) : (type === "device" && service) ? (
+                <SimpleCtaForm
+                device={service}
+                  entityId={id}
+                  setShowAuthPopup={setShowAuthPopup}
+                  type={type}
+                  availableBranches={availableBranches}
+                  branch={availableBranches[0].label}
+                />
+              ) : (type === "offer" && service) ? (
+                <SimpleCtaForm
+                offer={service}
+                  entityId={id}
+                  setShowAuthPopup={setShowAuthPopup}   
+                  type={type}
+                  availableBranches={availableBranches}
+                  branch={availableBranches[0].label}
+                />
+              ) :  (
+                <SimpleCtaForm
+                  entityId={id}
+                  setShowAuthPopup={setShowAuthPopup}
+                  type={type}
+                  availableBranches={availableBranches}
+                  branch={availableBranches[0].label}
+                />
+              )
+            }
             </div>
           </div>
         </div>
